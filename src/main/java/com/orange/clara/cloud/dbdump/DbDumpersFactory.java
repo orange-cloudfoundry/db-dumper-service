@@ -1,9 +1,5 @@
 package com.orange.clara.cloud.dbdump;
 
-import com.orange.clara.cloud.dbdump.DatabaseDumper;
-import com.orange.clara.cloud.dbdump.MongodbDatabaseDumper;
-import com.orange.clara.cloud.dbdump.MysqlDatabaseDumper;
-import com.orange.clara.cloud.dbdump.PostgresqlDatabaseDumper;
 import com.orange.clara.cloud.model.DatabaseType;
 import org.springframework.beans.factory.annotation.Value;
 

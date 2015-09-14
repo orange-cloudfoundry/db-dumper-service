@@ -7,10 +7,6 @@ public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements 
         super(binaryDump, binaryRestore);
     }
 
-    @Override
-    public Boolean handles(String type) {
-        return type.equals("postgres");
-    }
 
     @Override
     public String[] getDumpCommandLine(String inputPath) {
@@ -30,7 +26,7 @@ public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements 
     public String[] getRestoreCommandLine(String outputPath) {
         return String.format(
                 "%s --dbname=postgresql://%s:%s@%s:%s/%s -f %s",
-                this.binaryDump.getAbsolutePath(),
+                this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
                 this.databaseRef.getHost(),

@@ -8,11 +8,6 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     }
 
     @Override
-    public Boolean handles(String type) {
-        return type.equals("mongodb");
-    }
-
-    @Override
     public String[] getDumpCommandLine(String inputPath) {
         return String.format(
                 "%s --host %s --port %s --username %s --password %s --db %s --out %s",
@@ -30,7 +25,7 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     public String[] getRestoreCommandLine(String outputPath) {
         return String.format(
                 "%s --host %s --port %s --username %s --password %s --db %s %s",
-                this.binaryDump.getAbsolutePath(),
+                this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
                 this.databaseRef.getUser(),

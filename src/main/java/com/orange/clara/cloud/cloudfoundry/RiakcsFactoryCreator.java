@@ -35,7 +35,7 @@ public class RiakcsFactoryCreator extends AbstractServiceConnectorCreator<Riakcs
         if (serviceInfo.getPort() != -1) {
             port += ":" + serviceInfo.getPort();
         }
-        String host = serviceInfo.getHost() + port;
+        String host = serviceInfo.getScheme() + "://" + serviceInfo.getHost() + port;
         Properties storeProviderInitProperties = new Properties();
         storeProviderInitProperties.put(PROPERTY_TRUST_ALL_CERTS, true);
         storeProviderInitProperties.put(PROPERTY_RELAX_HOSTNAME, true);

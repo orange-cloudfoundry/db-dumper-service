@@ -61,11 +61,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.cloudfoundry-incubator</groupId>
-            <artifactId>riakcs-java-client</artifactId>
-            <version>61e62480dc</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cloud-connectors</artifactId>
         </dependency>
@@ -84,6 +79,19 @@
             <artifactId>jclouds-slf4j</artifactId>
             <version>1.9.0</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <version>1.4</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <repositories>
         <repository>

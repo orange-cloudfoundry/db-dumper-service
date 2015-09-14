@@ -17,11 +17,6 @@ public class MysqlDatabaseDumper extends AbstractDatabaseDumper implements Datab
         super(binaryDump, binaryRestore);
     }
 
-    @Override
-    public Boolean handles(String type) {
-        return type.equals("mysql");
-    }
-
 
     @Override
     public String[] getDumpCommandLine(String inputPath) {
@@ -38,14 +33,15 @@ public class MysqlDatabaseDumper extends AbstractDatabaseDumper implements Datab
 
     @Override
     public String[] getRestoreCommandLine(String outputPath) {
-        return String.format("%s --host=%s --port=%s --user=%s --password=%s %s -e \"source %s;\"",
+        return new String[]{
                 this.binaryRestore.getAbsolutePath(),
-                this.databaseRef.getHost(),
-                this.databaseRef.getPort(),
-                this.databaseRef.getUser(),
-                this.databaseRef.getPassword(),
+                "--host=" + this.databaseRef.getHost(),
+                "--port=" + this.databaseRef.getPort(),
+                "--user=" + this.databaseRef.getUser(),
+                "--password=" + this.databaseRef.getPassword(),
                 this.databaseRef.getDatabaseName(),
-                outputPath
-        ).split(" ");
+                "-e",
+                "\"source " + outputPath + ";\""
+        };
     }
 }

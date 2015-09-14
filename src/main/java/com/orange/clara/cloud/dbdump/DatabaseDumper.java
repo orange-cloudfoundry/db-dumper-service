@@ -4,8 +4,6 @@ import com.orange.clara.cloud.model.DatabaseRef;
 
 public interface DatabaseDumper {
 
-    Boolean handles(String type);
-
     void setDatabaseRef(DatabaseRef databaseRef);
 
     String[] getDumpCommandLine(String inputPath);

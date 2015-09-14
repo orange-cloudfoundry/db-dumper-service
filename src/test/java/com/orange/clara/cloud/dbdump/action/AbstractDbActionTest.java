@@ -1,6 +1,12 @@
 package com.orange.clara.cloud.dbdump.action;
 
-import static org.junit.Assert.*;
+import com.orange.clara.cloud.model.DatabaseRef;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.fest.assertions.Assertions.assertThat;
+
 
 /**
  * Copyright (C) 2015 Arthur Halet
@@ -14,8 +20,24 @@ import static org.junit.Assert.*;
  */
 public class AbstractDbActionTest {
 
-    @org.junit.Test
-    public void testRunCommandLine() throws Exception {
+    @Test
+    public void runs_commandline_and_returns_output() throws Exception {
+        //given
+        //a commandline
+        String [] commandLine = {"java", "-version"};
 
+        //when
+        AbstractDbAction cmdLineRunner = new AbstractDbAction() {
+            @Override
+            public String action(DatabaseRef databaseRef) throws IOException, InterruptedException {
+                return null;
+            }
+        };
+
+        //then
+        //command output is available:
+        String output = cmdLineRunner.runCommandLine(commandLine);
+
+        assertThat(output).contains("version");
     }
 }

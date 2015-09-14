@@ -1,10 +1,9 @@
 package com.orange.clara.cloud.model;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,12 +19,17 @@ public class DatabaseRef {
     @Enumerated(EnumType.STRING)
     protected DatabaseType type;
 
+    @OneToMany(mappedBy = "databaseRef")
+    protected List<DatabaseDumpFile> databaseDumpFiles;
+
     protected Integer port;
 
     public DatabaseRef() {
+        this.databaseDumpFiles = new ArrayList<>();
     }
 
     public DatabaseRef(String serviceName, URI databaseUri) {
+        super();
         this.extractDatabaseType(databaseUri.getScheme());
         this.name = serviceName;
         this.host = databaseUri.getHost();
@@ -105,5 +109,56 @@ public class DatabaseRef {
 
     public void setType(DatabaseType type) {
         this.type = type;
+    }
+
+    public List<DatabaseDumpFile> getDatabaseDumpFiles() {
+        return databaseDumpFiles;
+    }
+
+    public void setDatabaseDumpFiles(List<DatabaseDumpFile> databaseDumpFiles) {
+        this.databaseDumpFiles = databaseDumpFiles;
+    }
+
+    public void addDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
+        if (this.databaseDumpFiles.contains(databaseDumpFile)) {
+            return;
+        }
+        this.databaseDumpFiles.add(databaseDumpFile);
+    }
+
+    public void removeDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
+        if (!this.databaseDumpFiles.contains(databaseDumpFile)) {
+            return;
+        }
+        this.databaseDumpFiles.remove(databaseDumpFile);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (host != null ? host.hashCode() : 0);
+        result = 31 * result + (databaseName != null ? databaseName.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (port != null ? port.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DatabaseRef that = (DatabaseRef) o;
+
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+        if (password != null ? !password.equals(that.password) : that.password != null) return false;
+        if (host != null ? !host.equals(that.host) : that.host != null) return false;
+        if (databaseName != null ? !databaseName.equals(that.databaseName) : that.databaseName != null) return false;
+        if (type != that.type) return false;
+        return !(port != null ? !port.equals(that.port) : that.port != null);
+
     }
 }

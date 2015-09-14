@@ -43,3 +43,33 @@ databaseChangeLog:
                   type: int
                   constraints:
                     nullable: false
+        - createTable:
+            tableName: database_dump_file
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: file_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: database_ref_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseColumnNames: database_ref_id
+            baseTableName: database_dump_file
+            constraintName: fk_database_dump_file_database_ref
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+            referencedColumnNames: name
+            referencedTableName: database_ref

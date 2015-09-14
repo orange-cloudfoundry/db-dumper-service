@@ -14,6 +14,6 @@ public class RiakcsServiceInfo extends UriBasedServiceInfo {
 
 
     public String getBucket() {
-        return this.getPath().substring(1);
+        return this.getPath();
     }
 }

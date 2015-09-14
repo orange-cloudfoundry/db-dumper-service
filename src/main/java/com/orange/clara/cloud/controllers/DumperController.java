@@ -1,26 +1,15 @@
 package com.orange.clara.cloud.controllers;
 
-import com.google.common.base.Joiner;
-import com.google.common.io.Files;
-import com.orange.clara.cloud.dbdump.DatabaseDumper;
-import com.orange.clara.cloud.dbdump.DbDumpersFactory;
-import com.orange.clara.cloud.dbdump.Dumper;
+import com.orange.clara.cloud.dbdump.action.Dumper;
 import com.orange.clara.cloud.model.DatabaseRef;
 import com.orange.clara.cloud.repo.DatabaseRefRepo;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 
 @RestController
 public class DumperController {
@@ -43,15 +32,36 @@ public class DumperController {
 
     @RequestMapping(value = "/dumpdb", method = RequestMethod.GET)
     public String dump(@RequestParam String dbUrl) throws IOException, InterruptedException {
+        DatabaseRef databaseRef = this.getDatabaseRefFromUrl(dbUrl);
+        return this.dumper.action(databaseRef);
+    }
+
+    private DatabaseRef getDatabaseRefFromUrl(String dbUrl) {
         String serviceName = "temp";
-        DatabaseRef databaseRef = null;
+        DatabaseRef databaseRef = new DatabaseRef("temp", URI.create(dbUrl));
+        DatabaseRef databaseRefDao = null;
         if (!this.databaseRefRepo.exists(serviceName)) {
-            databaseRef = new DatabaseRef("temp", URI.create(dbUrl));
             this.databaseRefRepo.save(databaseRef);
-        } else {
-            databaseRef = this.databaseRefRepo.findOne(serviceName);
+            return databaseRef;
         }
-        return this.dumper.dump(databaseRef);
+        databaseRefDao = this.databaseRefRepo.findOne(serviceName);
+        this.updateDatabaseRef(databaseRef, databaseRefDao);
+        databaseRef = databaseRefDao;
+
+        return databaseRef;
+    }
+
+    private void updateDatabaseRef(DatabaseRef databaseRefTemp, DatabaseRef databaseRefDao) {
+        if (databaseRefDao.equals(databaseRefTemp)) {
+            return;
+        }
+        databaseRefDao.setDatabaseName(databaseRefTemp.getDatabaseName());
+        databaseRefDao.setHost(databaseRefTemp.getHost());
+        databaseRefDao.setPassword(databaseRefTemp.getPassword());
+        databaseRefDao.setPort(databaseRefTemp.getPort());
+        databaseRefDao.setType(databaseRefTemp.getType());
+        databaseRefDao.setUser(databaseRefTemp.getUser());
+        this.databaseRefRepo.save(databaseRefDao);
     }
 
     public void setBlobStoreContext(BlobStoreContext blobStoreContext) {

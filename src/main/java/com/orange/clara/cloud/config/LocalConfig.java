@@ -1,9 +1,7 @@
 package com.orange.clara.cloud.config;
 
-import com.basho.riakcs.client.api.RiakCSClient;
 import com.orange.clara.cloud.cloudfoundry.RiakcsContextBuilder;
 import com.orange.clara.cloud.cloudfoundry.RiakcsFactoryCreator;
-import com.orange.clara.cloud.riak.RiakcsClientCloudFoundry;
 import com.orange.clara.cloud.riak.RiakcsServiceInfo;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.context.annotation.Bean;

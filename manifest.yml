@@ -1,7 +1,7 @@
 ---
 #Generated manifest
 name: service-db-dumper
-memory: 512M
+memory: 1G
 instances: 1
 path: ./target/service-db-dumper-1.0-SNAPSHOT.war
 host: service-db-dumper

@@ -31,33 +31,10 @@ import java.util.List;
  * Author: Arthur Halet
  * Date: 09/09/2015
  */
-public class Dumper {
-    public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
+public class Dumper extends AbstractDbAction {
 
-    @Autowired
-    @Qualifier(value = "dbDumpersFactory")
-    private DbDumpersFactory dbDumpersFactory;
 
-    @Autowired
-    @Qualifier(value = "riakcsContextBuilderBean")
-    private RiakcsContextBuilder riakcsContextBuilder;
-
-    @Autowired
-    private DatabaseDumpFileRepo databaseDumpFileRepo;
-
-    @Autowired
-    @Qualifier(value = "blobStoreContext")
-    private BlobStoreContext blobStoreContext;
-
-    private static BufferedReader getOutput(Process p) {
-        return new BufferedReader(new InputStreamReader(p.getInputStream()));
-    }
-
-    private static BufferedReader getError(Process p) {
-        return new BufferedReader(new InputStreamReader(p.getErrorStream()));
-    }
-
-    public String dump(DatabaseRef databaseRef) throws IOException, InterruptedException {
+    public String action(DatabaseRef databaseRef) throws IOException, InterruptedException {
         String fileName = this.getFileName(databaseRef);
         File dumpFileOutput = this.createNewDumpFile(databaseRef, fileName);
 
@@ -68,9 +45,9 @@ public class Dumper {
         BlobStore blobStore = this.blobStoreContext.getBlobStore();
         Blob blob = blobStore.blobBuilder(fileName).build();
         blob.setPayload(dumpFileOutput);
-        blobStore.putBlob(this.riakcsContextBuilder.getBucketName(), blob);
+        blobStore.putBlob(this.bucketName, blob);
 
-        blob = blobStore.getBlob(this.riakcsContextBuilder.getBucketName(), fileName);
+        blob = blobStore.getBlob(this.bucketName, fileName);
         InputStream inputStream = blob.getPayload().openStream();
 
         List<String> lines = new ArrayList<String>();
@@ -85,45 +62,5 @@ public class Dumper {
         return Joiner.on("\n").join(lines);
     }
 
-    private String streamToString(InputStream in) throws IOException {
-        StringBuilder out = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            out.append(line);
-            out.append("\n");
-        }
-        br.close();
-        return out.toString();
-    }
 
-    private File createNewDumpFile(DatabaseRef databaseRef, String fileName) throws IOException {
-        File dumpFileOutput = new File(TMPFOLDER + "/" + fileName);
-        dumpFileOutput.getParentFile().mkdirs();
-        dumpFileOutput.createNewFile();
-        return dumpFileOutput;
-    }
-
-    private String getFileName(DatabaseRef databaseRef) {
-        Date d = new Date();
-        SimpleDateFormat form = new SimpleDateFormat("dd-mm-yyyy_hhmmss");
-        return databaseRef.getName() + "/" + form.format(d) + ".sql";
-    }
-
-    private String runCommandLine(String[] commandLine) throws IOException, InterruptedException {
-        Process p = Runtime.getRuntime().exec(commandLine);
-        BufferedReader output = getOutput(p);
-        BufferedReader error = getError(p);
-        String outputLine = "";
-        String line = "";
-
-        while ((line = output.readLine()) != null) {
-            outputLine += line;
-        }
-
-        while ((line = error.readLine()) != null) {
-            outputLine += line;
-        }
-        p.waitFor();
-        return outputLine;
-    }
 }
