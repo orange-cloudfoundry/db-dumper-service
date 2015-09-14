@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: arthurhalet
+      changes:
+        - createTable:
+            tableName: database_ref
+            columns:
+              - column:
+                  name: name
+                  type: varchar(255)
+                  autoIncrement: false
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: host
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: database_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: port
+                  type: int
+                  constraints:
+                    nullable: false

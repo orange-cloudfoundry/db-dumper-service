@@ -1,0 +1,41 @@
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    <context:annotation-config/>
+    <context:property-placeholder/>
+    <!--<bean id="vcapservices" class="org.intalio.cloudfoundry.vcapservices.impl.VCapServices"/>
+    <bean id="riakUrl" factory-bean="vcapservices" factory-method="getConnectionAsURI">
+        <constructor-arg value="RIAK_URL"/>
+        <constructor-arg value="https"/>
+        <constructor-arg value="/.*riak.*/"/>
+    </bean>
+    <bean id="riakcsFactory" class="com.orange.clara.cloud.riak.RiakClientFactory"/>
+    <bean id="riakcs.client" factory-bean="riakcsFactory" factory-method="getRiakCSClientFromUri">
+        <constructor-arg ref="riakUrl"/>
+    </bean>
+    <bean id="riakcs.bucketName" factory-bean="riakcsFactory" factory-method="getBucketNameFromUri">
+        <constructor-arg ref="riakUrl"/>
+    </bean>-->
+    <!--<bean id="dbdump.mysql" class="com.orange.clara.cloud.dbdump.MysqlDatabaseDumper">
+        <property name="binaryDump" value="binaries/mysql/bin/mysqldump"/>
+        <property name="binaryRestore" value="binaries/mysql/bin/mysql"/>
+    </bean>
+    <bean id="dbdump.postgresql" class="com.orange.clara.cloud.dbdump.PostgresqlDatabaseDumper">
+        <property name="binaryDump" value="binaries/postgresql/bin/pg_dump"/>
+        <property name="binaryRestore" value="binaries/postgresql/bin/psql"/>
+    </bean>
+    <bean id="dbdump.mongodb" class="com.orange.clara.cloud.dbdump.MysqlDatabaseDumper">
+        <property name="binaryDump" value="binaries/mongodb/bin/mongodump"/>
+        <property name="binaryRestore" value="binaries/mongodb/bin/mongorestore"/>
+    </bean>
+
+    <util:map id="dbdumpers" value-type="com.orange.clara.cloud.dbdump.DatabaseDumper">
+        <entry key="mysql" value-ref="dbdump.mysql"/>
+        <entry key="postgresql" value-ref="dbdump.postgresql"/>
+        <entry key="mongodb" value-ref="dbdump.mongodb"/>
+    </util:map>-->
+</beans>
