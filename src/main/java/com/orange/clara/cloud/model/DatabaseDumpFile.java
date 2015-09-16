@@ -3,7 +3,6 @@ package com.orange.clara.cloud.model;
 
 import javax.persistence.*;
 import java.io.File;
-import java.sql.Date;
 
 @Entity
 public class DatabaseDumpFile {
@@ -52,12 +51,12 @@ public class DatabaseDumpFile {
         return this.fileName;
     }
 
-    public void setFileName(File file) {
-        this.fileName = file.getName();
-    }
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void setFileName(File file) {
+        this.fileName = file.getName();
     }
 
     public File getFile() {

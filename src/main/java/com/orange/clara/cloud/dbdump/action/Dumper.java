@@ -2,21 +2,13 @@ package com.orange.clara.cloud.dbdump.action;
 
 import com.google.common.base.Joiner;
 import com.orange.clara.cloud.dbdump.DatabaseDumper;
-import com.orange.clara.cloud.dbdump.DbDumpersFactory;
 import com.orange.clara.cloud.model.DatabaseDumpFile;
 import com.orange.clara.cloud.model.DatabaseRef;
-import com.orange.clara.cloud.repo.DatabaseDumpFileRepo;
 import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.domain.Blob;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

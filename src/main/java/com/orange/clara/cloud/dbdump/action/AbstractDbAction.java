@@ -75,7 +75,7 @@ public abstract class AbstractDbAction {
 
     protected String getFileName(DatabaseRef databaseRef) {
         Date d = new Date();
-        SimpleDateFormat form = new SimpleDateFormat("dd-mm-yyyy");
+        SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
         return databaseRef.getName() + "/" + form.format(d) + ".sql";
     }
 
