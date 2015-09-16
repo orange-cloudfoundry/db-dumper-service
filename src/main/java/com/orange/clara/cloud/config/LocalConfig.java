@@ -1,8 +1,8 @@
 package com.orange.clara.cloud.config;
 
-import com.orange.clara.cloud.cloudfoundry.RiakcsContextBuilder;
-import com.orange.clara.cloud.cloudfoundry.RiakcsFactoryCreator;
-import com.orange.clara.cloud.riak.RiakcsServiceInfo;
+import com.orange.cloudfoundry.connector.factory.S3ContextBuilder;
+import com.orange.cloudfoundry.connector.factory.S3FactoryCreator;
+import com.orange.cloudfoundry.connector.service.info.S3ServiceInfo;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,13 +29,13 @@ import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCK
 public class LocalConfig {
     @Bean
     public BlobStoreContext blobStoreContext() {
-        RiakcsServiceInfo riakcsServiceInfo = new RiakcsServiceInfo("local", "s3", "localhost", 80, "access", "secret", "mybucket");
+        S3ServiceInfo riakcsServiceInfo = new S3ServiceInfo("local", "s3", "localhost", 80, "access", "secret", "mybucket");
         Properties storeProviderInitProperties = new Properties();
         storeProviderInitProperties.put(PROPERTY_TRUST_ALL_CERTS, true);
         storeProviderInitProperties.put(PROPERTY_RELAX_HOSTNAME, true);
         storeProviderInitProperties.put(PROPERTY_S3_VIRTUAL_HOST_BUCKETS, false);
-        RiakcsFactoryCreator riakcsFactoryCreator = new RiakcsFactoryCreator();
-        RiakcsContextBuilder riakcsContextBuilder = riakcsFactoryCreator.create(riakcsServiceInfo, null);
-        return riakcsContextBuilder.getContextBuilder().overrides(storeProviderInitProperties).buildView(BlobStoreContext.class);
+        S3FactoryCreator s3FactoryCreator = new S3FactoryCreator();
+        S3ContextBuilder s3ContextBuilder = s3FactoryCreator.create(riakcsServiceInfo, null);
+        return s3ContextBuilder.getContextBuilder().overrides(storeProviderInitProperties).buildView(BlobStoreContext.class);
     }
 }

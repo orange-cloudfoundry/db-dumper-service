@@ -1,8 +1,6 @@
 package com.orange.clara.cloud.dbdump.action;
 
 import com.google.common.base.Joiner;
-import com.google.common.io.Files;
-import com.orange.clara.cloud.cloudfoundry.RiakcsContextBuilder;
 import com.orange.clara.cloud.dbdump.DatabaseDumper;
 import com.orange.clara.cloud.dbdump.DbDumpersFactory;
 import com.orange.clara.cloud.model.DatabaseDumpFile;
