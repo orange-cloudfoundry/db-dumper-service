@@ -15,7 +15,7 @@ import static org.jclouds.Constants.PROPERTY_TRUST_ALL_CERTS;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS;
 
 /**
- * Copyright (C) 2015 Arthur Halet
+ * Copyright (C) 2015 Orange
  * <p/>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution

@@ -7,6 +7,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Copyright (C) 2015 Orange
+ * <p/>
+ * This software is distributed under the terms and conditions of the 'MIT'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'http://opensource.org/licenses/MIT'.
+ * <p/>
+ * Author: Arthur Halet
+ * Date: 03/06/2015
+ */
 @Entity
 public class DatabaseRef {
     @Id

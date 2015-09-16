@@ -11,6 +11,16 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Copyright (C) 2015 Orange
+ * <p/>
+ * This software is distributed under the terms and conditions of the 'MIT'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'http://opensource.org/licenses/MIT'.
+ * <p/>
+ * Author: Arthur Halet
+ * Date: 03/06/2015
+ */
 public abstract class AbstractDbAction {
     public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
 
