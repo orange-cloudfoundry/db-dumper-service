@@ -4,8 +4,6 @@ import javax.persistence.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Copyright (C) 2015 Orange
@@ -56,9 +54,7 @@ public class DatabaseRef {
 
     private void extractDatabaseType(String databaseTypeName) {
         for (DatabaseType databaseType : DatabaseType.values()) {
-            Pattern pattern = Pattern.compile(databaseType.getMatcher());
-            Matcher matcher = pattern.matcher(databaseTypeName);
-            if (matcher.find()) {
+            if (databaseTypeName.matches(databaseType.getMatcher())) {
                 this.type = databaseType;
                 break;
             }

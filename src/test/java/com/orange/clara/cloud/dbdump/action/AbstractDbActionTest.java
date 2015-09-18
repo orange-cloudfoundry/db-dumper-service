@@ -24,7 +24,7 @@ public class AbstractDbActionTest {
     public void runs_commandline_and_returns_output() throws Exception {
         //given
         //a commandline
-        String [] commandLine = {"java", "-version"};
+        String[] commandLine = {"java", "-version"};
 
         //when
         AbstractDbAction cmdLineRunner = new AbstractDbAction() {
