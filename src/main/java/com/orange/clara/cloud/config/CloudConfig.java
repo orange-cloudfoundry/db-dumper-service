@@ -10,6 +10,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.util.Properties;
+
+import static org.jclouds.Constants.PROPERTY_RELAX_HOSTNAME;
+import static org.jclouds.Constants.PROPERTY_TRUST_ALL_CERTS;
+
 /**
  * Copyright (C) 2015 Orange
  * <p/>
@@ -34,6 +39,11 @@ public class CloudConfig extends AbstractCloudConfig {
 
     @Bean
     public BlobStoreContext blobStoreContext() {
-        return this.s3ContextBuilder.getContextBuilder().buildView(BlobStoreContext.class);
+        Properties storeProviderInitProperties = new Properties();
+        storeProviderInitProperties.put(PROPERTY_TRUST_ALL_CERTS, true);
+        storeProviderInitProperties.put(PROPERTY_RELAX_HOSTNAME, true);
+        return this.s3ContextBuilder.getContextBuilder()
+                .overrides(storeProviderInitProperties)
+                .buildView(BlobStoreContext.class);
     }
 }
