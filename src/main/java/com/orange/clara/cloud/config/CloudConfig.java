@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.config;
 
 
-import com.orange.cloudfoundry.connector.factory.S3ContextBuilder;
+import com.orange.cloudfoundry.connector.s3.factory.S3ContextBuilder;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.config.java.AbstractCloudConfig;
