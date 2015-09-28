@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.dbdump.s3;
 
 import com.google.common.collect.Maps;
+import com.google.common.net.MediaType;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.KeyNotFoundException;
 import org.jclouds.blobstore.domain.Blob;
@@ -44,8 +45,8 @@ public class UploadS3Stream {
         String key = blob.getMetadata().getName();
         ContentMetadata metadata = blob.getMetadata().getContentMetadata();
         ObjectMetadataBuilder builder = ObjectMetadataBuilder.create().key(key)
-                .contentType(metadata.getContentType())
-                .contentDisposition(metadata.getContentDisposition())
+                .contentType(MediaType.OCTET_STREAM.toString())
+                .contentDisposition(key)
                 .contentEncoding(metadata.getContentEncoding())
                 .contentLanguage(metadata.getContentLanguage())
                 .userMetadata(blob.getMetadata().getUserMetadata());

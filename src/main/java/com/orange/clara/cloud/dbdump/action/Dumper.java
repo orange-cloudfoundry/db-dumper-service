@@ -1,7 +1,6 @@
 package com.orange.clara.cloud.dbdump.action;
 
 import com.google.common.base.Joiner;
-import com.google.common.net.MediaType;
 import com.orange.clara.cloud.dbdump.DatabaseDumper;
 import com.orange.clara.cloud.model.DatabaseDumpFile;
 import com.orange.clara.cloud.model.DatabaseRef;
@@ -36,34 +35,16 @@ public class Dumper extends AbstractDbAction {
         Process p = this.runCommandLine(databaseDumper.getDumpCommandLine());
 
         BlobStore blobStore = this.blobStoreContext.getBlobStore();
-        Blob blob = blobStore.blobBuilder(fileName)
-                .payload(dumpFileOutput)
-                .contentDisposition(fileName)
-                .contentLength(dumpFileOutput.length())
-                .contentType(MediaType.OCTET_STREAM.toString())
-                .build();
+        Blob blob = blobStore.blobBuilder(fileName).build();
         this.uploadS3Stream.upload(p.getInputStream(), blob);
-        /*BufferedReader output = getOutput(p);
-        BufferedReader error = getError(p);
-        String outputLine = "";
-        String line = "";
-        while ((line = output.readLine()) != null) {
-            outputLine += line;
-        }
-        while ((line = error.readLine()) != null) {
-            outputLine += line;
-        }*/
-        p.waitFor();
-
-        //blobStore.putBlob(this.bucketName, blob, multipart());
+        p.getInputStream().close();
 
         blob = blobStore.getBlob(this.bucketName, fileName);
         InputStream inputStream = blob.getPayload().openStream();
 
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         lines.add(this.streamToString(inputStream));
         inputStream.close();
-        //lines.add(outputLine);
 
         this.databaseDumpFileRepo.save(new DatabaseDumpFile(dumpFileOutput, databaseRef));
 
