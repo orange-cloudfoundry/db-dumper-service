@@ -1,7 +1,8 @@
 package com.orange.clara.cloud.config;
 
-import com.orange.clara.cloud.dbdump.*;
+import com.orange.clara.cloud.dbdump.DbDumpersFactory;
 import com.orange.clara.cloud.dbdump.action.Dumper;
+import com.orange.clara.cloud.dbdump.s3.UploadS3Stream;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,5 +27,10 @@ public class DbDumperConfig {
     @Bean
     public Dumper dumper() {
         return new Dumper();
+    }
+
+    @Bean
+    public UploadS3Stream uploadS3Stream() {
+        return new UploadS3Stream();
     }
 }

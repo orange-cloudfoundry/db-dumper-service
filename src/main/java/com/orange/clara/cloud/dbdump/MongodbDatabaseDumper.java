@@ -18,16 +18,15 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     }
 
     @Override
-    public String[] getDumpCommandLine(String inputPath) {
+    public String[] getDumpCommandLine() {
         return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s --out %s",
+                "%s --host %s --port %s --username %s --password %s --db %s",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
-                this.databaseRef.getDatabaseName(),
-                inputPath
+                this.databaseRef.getDatabaseName()
         ).split(" ");
     }
 

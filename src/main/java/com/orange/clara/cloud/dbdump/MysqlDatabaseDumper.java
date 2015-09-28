@@ -19,15 +19,14 @@ public class MysqlDatabaseDumper extends AbstractDatabaseDumper implements Datab
 
 
     @Override
-    public String[] getDumpCommandLine(String inputPath) {
-        return String.format("%s --routines --host=%s --port=%s --user=%s --password=%s %s --result-file=%s",
+    public String[] getDumpCommandLine() {
+        return String.format("%s --routines --host=%s --port=%s --user=%s --password=%s %s",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
-                this.databaseRef.getDatabaseName(),
-                inputPath
+                this.databaseRef.getDatabaseName()
         ).split(" ");
     }
 

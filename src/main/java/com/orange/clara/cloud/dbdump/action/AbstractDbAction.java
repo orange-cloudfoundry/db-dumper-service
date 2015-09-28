@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.dbdump.action;
 
 import com.orange.clara.cloud.dbdump.DbDumpersFactory;
+import com.orange.clara.cloud.dbdump.s3.UploadS3Stream;
 import com.orange.clara.cloud.model.DatabaseRef;
 import com.orange.clara.cloud.repo.DatabaseDumpFileRepo;
 import org.jclouds.blobstore.BlobStoreContext;
@@ -33,36 +34,28 @@ public abstract class AbstractDbAction {
     protected String bucketName;
 
     @Autowired
+    @Qualifier(value = "uploadS3Stream")
+    protected UploadS3Stream uploadS3Stream;
+
+    @Autowired
     protected DatabaseDumpFileRepo databaseDumpFileRepo;
 
     @Autowired
     @Qualifier(value = "blobStoreContext")
     protected BlobStoreContext blobStoreContext;
 
-    protected static BufferedReader getOutput(Process p) {
+    public static BufferedReader getOutput(Process p) {
         return new BufferedReader(new InputStreamReader(p.getInputStream()));
     }
 
-    protected static BufferedReader getError(Process p) {
+    public static BufferedReader getError(Process p) {
         return new BufferedReader(new InputStreamReader(p.getErrorStream()));
     }
 
-    protected String runCommandLine(String[] commandLine) throws IOException, InterruptedException {
-        Process p = Runtime.getRuntime().exec(commandLine);
-        BufferedReader output = getOutput(p);
-        BufferedReader error = getError(p);
-        String outputLine = "";
-        String line = "";
-
-        while ((line = output.readLine()) != null) {
-            outputLine += line;
-        }
-
-        while ((line = error.readLine()) != null) {
-            outputLine += line;
-        }
-        p.waitFor();
-        return outputLine;
+    protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(commandLine);
+        pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+        return pb.start();
     }
 
     protected String streamToString(InputStream in) throws IOException {

@@ -3,6 +3,7 @@ package com.orange.clara.cloud.dbdump.action;
 import com.orange.clara.cloud.model.DatabaseRef;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -36,8 +37,21 @@ public class AbstractDbActionTest {
 
         //then
         //command output is available:
-        String output = cmdLineRunner.runCommandLine(commandLine);
+        Process p = cmdLineRunner.runCommandLine(commandLine);
+        BufferedReader output = cmdLineRunner.getOutput(p);
+        BufferedReader error = cmdLineRunner.getError(p);
+        String outputLine = "";
+        String line = "";
 
-        assertThat(output).contains("version");
+        while ((line = output.readLine()) != null) {
+            outputLine += line;
+        }
+        while ((line = error.readLine()) != null) {
+            outputLine += line;
+        }
+        p.waitFor();
+
+
+        assertThat(outputLine).contains("version");
     }
 }

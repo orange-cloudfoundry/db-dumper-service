@@ -58,16 +58,15 @@ public class DatabaseDumperTest {
     @Test
     public void create_command_line_for_dump_postgres() throws Exception {
         String[] expected = String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f %s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s",
                 this.dumpBinaries.getAbsolutePath(),
                 this.user,
                 this.password,
                 this.host,
                 this.port,
-                this.databaseName,
-                dumpFileName
+                this.databaseName
         ).split(" ");
-        assertThat(postgresqlDatabaseDumper.getDumpCommandLine(this.dumpFileName)).isEqualTo(expected);
+        assertThat(postgresqlDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
     }
 
     @Test
@@ -99,10 +98,8 @@ public class DatabaseDumperTest {
                 this.password,
                 "--db",
                 this.databaseName,
-                "--out",
-                this.dumpFileName
         };
-        assertThat(mongodbDatabaseDumper.getDumpCommandLine(this.dumpFileName)).isEqualTo(expected);
+        assertThat(mongodbDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
     }
 
     @Test
@@ -133,10 +130,9 @@ public class DatabaseDumperTest {
                 "--port=" + this.port,
                 "--user=" + this.user,
                 "--password=" + this.password,
-                this.databaseName,
-                "--result-file=" + this.dumpFileName
+                this.databaseName
         };
-        assertThat(mysqlDatabaseDumper.getDumpCommandLine(this.dumpFileName)).isEqualTo(expected);
+        assertThat(mysqlDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
     }
 
     @Test

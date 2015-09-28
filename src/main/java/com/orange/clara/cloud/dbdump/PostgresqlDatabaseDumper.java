@@ -19,16 +19,15 @@ public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements 
 
 
     @Override
-    public String[] getDumpCommandLine(String inputPath) {
+    public String[] getDumpCommandLine() {
         return String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f %s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
-                this.databaseRef.getDatabaseName(),
-                inputPath
+                this.databaseRef.getDatabaseName()
         ).split(" ");
     }
 

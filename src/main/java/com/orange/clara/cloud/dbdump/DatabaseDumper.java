@@ -16,7 +16,7 @@ public interface DatabaseDumper {
 
     void setDatabaseRef(DatabaseRef databaseRef);
 
-    String[] getDumpCommandLine(String inputPath);
+    String[] getDumpCommandLine();
 
     String[] getRestoreCommandLine(String outputPath);
 
