@@ -13,6 +13,7 @@ import org.jclouds.s3.domain.ObjectMetadataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ public class UploadS3Stream {
     protected String bucketName;
 
     public String upload(InputStream content, Blob blob) throws IOException {
+        content = new BufferedInputStream(content, CHUNK_SIZE);
         S3Client client = this.getS3Client();
         String key = blob.getMetadata().getName();
         ContentMetadata metadata = blob.getMetadata().getContentMetadata();
@@ -54,20 +56,28 @@ public class UploadS3Stream {
         Integer partNum = 1;
         Payload part = null;
         int bytesRead = 0;
+        int i = 0;
+        byte[] reader = new byte[1];
+        byte[] chunk = new byte[CHUNK_SIZE];
         try {
             SortedMap<Integer, String> etags = Maps.newTreeMap();
             while (true) {
-                byte[] buffer = new byte[CHUNK_SIZE];
-                bytesRead = content.read(buffer);
+                bytesRead = content.read(reader);
+                chunk[i] = reader[0];
+                if (bytesRead == -1 && i < CHUNK_SIZE) {
+                    chunk = Arrays.copyOf(chunk, i);
+                }
+                i++;
+                if (i == CHUNK_SIZE || bytesRead == -1) {
+                    part = new ByteArrayPayload(chunk);
+                    prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);
+                    partNum++;
+                    chunk = new byte[CHUNK_SIZE];
+                    i = 0;
+                }
                 if (bytesRead == -1) {
                     break;
                 }
-                if (bytesRead < CHUNK_SIZE) {
-                    buffer = Arrays.copyOf(buffer, bytesRead);
-                }
-                part = new ByteArrayPayload(buffer);
-                prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);
-                partNum++;
             }
             return client.completeMultipartUpload(bucketName, key, uploadId, etags);
         } catch (RuntimeException ex) {
@@ -76,20 +86,20 @@ public class UploadS3Stream {
         }
     }
 
-    private void prepareUploadPart(String container, String key, String uploadId, int part, Payload chunkedPart, SortedMap<Integer, String> etags) {
+    private void prepareUploadPart(String container, String key, String uploadId, int numPart, Payload chunkedPart, SortedMap<Integer, String> etags) {
         S3Client client = this.getS3Client();
         String eTag = null;
         try {
-            eTag = client.uploadPart(container, key, part, uploadId, chunkedPart);
-            etags.put(Integer.valueOf(part), eTag);
+            eTag = client.uploadPart(container, key, numPart, uploadId, chunkedPart);
+            etags.put(Integer.valueOf(numPart), eTag);
         } catch (KeyNotFoundException e) {
             // note that because of eventual consistency, the upload id may not be
             // present yet we may wish to add this condition to the retry handler
 
             // we may also choose to implement ListParts and wait for the uploadId
             // to become available there.
-            eTag = client.uploadPart(container, key, part, uploadId, chunkedPart);
-            etags.put(Integer.valueOf(part), eTag);
+            eTag = client.uploadPart(container, key, numPart, uploadId, chunkedPart);
+            etags.put(Integer.valueOf(numPart), eTag);
         }
     }
 
