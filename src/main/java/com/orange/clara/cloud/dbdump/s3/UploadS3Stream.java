@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.dbdump.s3;
 
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.KeyNotFoundException;
@@ -13,7 +14,6 @@ import org.jclouds.s3.domain.ObjectMetadataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -42,7 +42,6 @@ public class UploadS3Stream {
     protected String bucketName;
 
     public String upload(InputStream content, Blob blob) throws IOException {
-        content = new BufferedInputStream(content, CHUNK_SIZE);
         S3Client client = this.getS3Client();
         String key = blob.getMetadata().getName();
         ContentMetadata metadata = blob.getMetadata().getContentMetadata();
@@ -56,28 +55,19 @@ public class UploadS3Stream {
         Integer partNum = 1;
         Payload part = null;
         int bytesRead = 0;
-        int i = 0;
-        byte[] reader = new byte[1];
-        byte[] chunk = new byte[CHUNK_SIZE];
+        boolean shouldContinue = true;
         try {
             SortedMap<Integer, String> etags = Maps.newTreeMap();
-            while (true) {
-                bytesRead = content.read(reader);
-                chunk[i] = reader[0];
-                if (bytesRead == -1 && i < CHUNK_SIZE) {
-                    chunk = Arrays.copyOf(chunk, i);
+            while (shouldContinue) {
+                byte[] chunk = new byte[CHUNK_SIZE];
+                bytesRead = ByteStreams.read(content, chunk, 0, chunk.length);
+                if (bytesRead != chunk.length) {
+                    shouldContinue = false;
+                    chunk = Arrays.copyOf(chunk, bytesRead);
                 }
-                i++;
-                if (i == CHUNK_SIZE || bytesRead == -1) {
-                    part = new ByteArrayPayload(chunk);
-                    prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);
-                    partNum++;
-                    chunk = new byte[CHUNK_SIZE];
-                    i = 0;
-                }
-                if (bytesRead == -1) {
-                    break;
-                }
+                part = new ByteArrayPayload(chunk);
+                prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);
+                partNum++;
             }
             return client.completeMultipartUpload(bucketName, key, uploadId, etags);
         } catch (RuntimeException ex) {
