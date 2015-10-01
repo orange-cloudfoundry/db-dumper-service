@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,8 +45,10 @@ public class Dumper extends AbstractDbAction {
         List<String> lines = new ArrayList<>();
         lines.add(this.streamToString(inputStream));
         inputStream.close();
+        if (this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRef, new Date()) == null) {
+            this.databaseDumpFileRepo.save(new DatabaseDumpFile(dumpFileOutput, databaseRef));
+        }
 
-        this.databaseDumpFileRepo.save(new DatabaseDumpFile(dumpFileOutput, databaseRef));
 
         dumpFileOutput.delete();
 

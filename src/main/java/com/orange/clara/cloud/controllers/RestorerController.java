@@ -4,12 +4,14 @@ import com.orange.clara.cloud.dbdump.action.Restorer;
 import com.orange.clara.cloud.model.DatabaseRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
@@ -30,9 +32,13 @@ public class RestorerController extends AbstractDbController {
     private Restorer restorer;
 
     @RequestMapping(value = "/restoredb", method = RequestMethod.GET)
-    public String restore(@RequestParam String dbUrlSource, @RequestParam String dbUrlTarget) throws IOException, InterruptedException {
+    public String restore(@RequestParam String dbUrlSource, @RequestParam String dbUrlTarget,
+                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date createdAt) throws IOException, InterruptedException {
         DatabaseRef databaseRefSource = this.getDatabaseRefFromUrl(dbUrlSource, "temp");
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(dbUrlTarget, "tempTarget");
-        return this.restorer.restore(databaseRefSource, databaseRefTarget);
+        if (createdAt == null) {
+            return this.restorer.restore(databaseRefSource, databaseRefTarget);
+        }
+        return this.restorer.restore(databaseRefSource, databaseRefTarget, createdAt);
     }
 }

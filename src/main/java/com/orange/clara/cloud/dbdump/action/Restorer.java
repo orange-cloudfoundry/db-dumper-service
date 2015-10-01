@@ -10,6 +10,7 @@ import org.jclouds.blobstore.domain.Blob;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
@@ -23,9 +24,16 @@ import java.io.OutputStream;
  */
 public class Restorer extends AbstractDbAction {
 
-    public String restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws IOException, InterruptedException {
-        DatabaseDumpFile dumpFile = this.databaseDumpFileRepo.findByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
-
+    public String restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget, Date date) throws IOException, InterruptedException {
+        DatabaseDumpFile dumpFile = null;
+        if (date == null) {
+            dumpFile = this.databaseDumpFileRepo.findByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
+        } else {
+            dumpFile = this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRefSource, date);
+        }
+        if (dumpFile == null) {
+            return "cannot restore because we can't find dump associated to " + date;
+        }
         String fileName = databaseRefSource.getName() + "/" + dumpFile.getFileName();
 
         DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRefTarget);
@@ -40,5 +48,9 @@ public class Restorer extends AbstractDbAction {
         outputStream.close();
         p.waitFor();
         return "restored";
+    }
+
+    public String restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws IOException, InterruptedException {
+        return this.restore(databaseRefSource, databaseRefTarget, null);
     }
 }
