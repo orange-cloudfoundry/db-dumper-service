@@ -78,3 +78,7 @@ databaseChangeLog:
             onUpdate: RESTRICT
             referencedColumnNames: name
             referencedTableName: database_ref
+        - addUniqueConstraint:
+            columnNames: created_at
+            constraintName: unique_database_dump_file_created_at
+            tableName: database_dump_file
