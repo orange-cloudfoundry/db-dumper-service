@@ -32,16 +32,15 @@ public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements 
     }
 
     @Override
-    public String[] getRestoreCommandLine(String outputPath) {
+    public String[] getRestoreCommandLine() {
         return String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f %s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f",
                 this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
-                this.databaseRef.getDatabaseName(),
-                outputPath
+                this.databaseRef.getDatabaseName()
         ).split(" ");
     }
 }

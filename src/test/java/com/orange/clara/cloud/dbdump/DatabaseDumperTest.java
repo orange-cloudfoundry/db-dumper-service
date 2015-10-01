@@ -72,16 +72,15 @@ public class DatabaseDumperTest {
     @Test
     public void create_command_line_for_restore_postgres() throws Exception {
         String[] expected = String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f %s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f",
                 this.restoreBinaries.getAbsolutePath(),
                 this.user,
                 this.password,
                 this.host,
                 this.port,
-                this.databaseName,
-                dumpFileName
+                this.databaseName
         ).split(" ");
-        assertThat(postgresqlDatabaseDumper.getRestoreCommandLine(this.dumpFileName)).isEqualTo(expected);
+        assertThat(postgresqlDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
     }
 
     @Test
@@ -115,10 +114,9 @@ public class DatabaseDumperTest {
                 "--password",
                 this.password,
                 "--db",
-                this.databaseName,
-                this.dumpFileName
+                this.databaseName
         };
-        assertThat(mongodbDatabaseDumper.getRestoreCommandLine(this.dumpFileName)).isEqualTo(expected);
+        assertThat(mongodbDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
     }
 
     @Test
@@ -144,9 +142,7 @@ public class DatabaseDumperTest {
                 "--user=" + this.user,
                 "--password=" + this.password,
                 this.databaseName,
-                "-e",
-                "\"source " + this.dumpFileName + ";\""
         };
-        assertThat(mysqlDatabaseDumper.getRestoreCommandLine(this.dumpFileName)).isEqualTo(expected);
+        assertThat(mysqlDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
     }
 }

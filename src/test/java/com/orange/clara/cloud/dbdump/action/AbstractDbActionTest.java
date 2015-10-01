@@ -1,10 +1,8 @@
 package com.orange.clara.cloud.dbdump.action;
 
-import com.orange.clara.cloud.model.DatabaseRef;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -29,10 +27,6 @@ public class AbstractDbActionTest {
 
         //when
         AbstractDbAction cmdLineRunner = new AbstractDbAction() {
-            @Override
-            public String action(DatabaseRef databaseRef) throws IOException, InterruptedException {
-                return null;
-            }
         };
 
         //then

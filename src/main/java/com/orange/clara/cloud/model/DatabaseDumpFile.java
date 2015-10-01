@@ -3,6 +3,7 @@ package com.orange.clara.cloud.model;
 
 import javax.persistence.*;
 import java.io.File;
+import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
@@ -22,12 +23,14 @@ public class DatabaseDumpFile {
 
     private String fileName;
 
+    @Column(name = "created_at")
+    private Date createdAt;
+
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
     private DatabaseRef databaseRef;
 
     public DatabaseDumpFile() {
-
     }
 
     public DatabaseDumpFile(String fileName, DatabaseRef databaseRef) {
@@ -61,15 +64,54 @@ public class DatabaseDumpFile {
         return this.fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
     public void setFileName(File file) {
         this.fileName = file.getName();
     }
 
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
     public File getFile() {
         return new File(this.fileName);
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    void createdAt() {
+        this.createdAt = new Date();
+    }
+
+    @Override
+    public String toString() {
+        return "DatabaseDumpFile{" +
+                "id=" + id +
+                ", fileName='" + fileName + '\'' +
+                ", createdAt=" + createdAt +
+                ", databaseRef=" + databaseRef +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DatabaseDumpFile that = (DatabaseDumpFile) o;
+
+        return id == that.id;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 }

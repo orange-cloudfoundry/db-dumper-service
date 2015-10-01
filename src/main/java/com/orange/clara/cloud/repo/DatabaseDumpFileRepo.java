@@ -1,7 +1,10 @@
 package com.orange.clara.cloud.repo;
 
 import com.orange.clara.cloud.model.DatabaseDumpFile;
+import com.orange.clara.cloud.model.DatabaseRef;
 import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
@@ -15,4 +18,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  */
 public interface DatabaseDumpFileRepo extends
         PagingAndSortingRepository<DatabaseDumpFile, Integer> {
+    DatabaseDumpFile findByDatabaseRefOrderByCreatedAtDesc(DatabaseRef databaseRef);
+
+    DatabaseDumpFile findByDatabaseRefAndCreatedAt(DatabaseRef databaseRef, Date date);
 }

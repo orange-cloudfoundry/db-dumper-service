@@ -37,7 +37,7 @@ public class DatabaseRef {
     }
 
     public DatabaseRef(String serviceName, URI databaseUri) {
-        super();
+        this.databaseDumpFiles = new ArrayList<>();
         this.extractDatabaseType(databaseUri.getScheme());
         this.name = serviceName;
         this.host = databaseUri.getHost();
@@ -167,4 +167,5 @@ public class DatabaseRef {
         return !(port != null ? !port.equals(that.port) : that.port != null);
 
     }
+
 }

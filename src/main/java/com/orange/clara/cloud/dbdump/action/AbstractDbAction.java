@@ -81,6 +81,4 @@ public abstract class AbstractDbAction {
         SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
         return databaseRef.getName() + "/" + form.format(d) + ".sql";
     }
-
-    abstract public String action(DatabaseRef databaseRef) throws IOException, InterruptedException;
 }

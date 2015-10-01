@@ -59,6 +59,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: created_at
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
                   name: database_ref_id
                   type: varchar(255)
                   constraints:

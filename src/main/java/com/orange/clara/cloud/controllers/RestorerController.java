@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.controllers;
 
-import com.orange.clara.cloud.dbdump.action.Dumper;
+import com.orange.clara.cloud.dbdump.action.Restorer;
 import com.orange.clara.cloud.model.DatabaseRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,23 +19,20 @@ import java.io.IOException;
  * or at 'http://opensource.org/licenses/MIT'.
  * <p/>
  * Author: Arthur Halet
- * Date: 03/06/2015
+ * Date: 01/10/2015
  */
 @RestController
-public class DumperController extends AbstractDbController {
+public class RestorerController extends AbstractDbController {
+
 
     @Autowired
-    @Qualifier(value = "dumper")
-    private Dumper dumper;
+    @Qualifier(value = "restorer")
+    private Restorer restorer;
 
-    @RequestMapping("/")
-    public String index() {
-        return "Greetings from Spring Boot!";
-    }
-
-    @RequestMapping(value = "/dumpdb", method = RequestMethod.GET)
-    public String dump(@RequestParam String dbUrl) throws IOException, InterruptedException {
-        DatabaseRef databaseRef = this.getDatabaseRefFromUrl(dbUrl, "temp");
-        return this.dumper.dump(databaseRef);
+    @RequestMapping(value = "/restoredb", method = RequestMethod.GET)
+    public String restore(@RequestParam String dbUrlSource, @RequestParam String dbUrlTarget) throws IOException, InterruptedException {
+        DatabaseRef databaseRefSource = this.getDatabaseRefFromUrl(dbUrlSource, "temp");
+        DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(dbUrlTarget, "tempTarget");
+        return this.restorer.restore(databaseRefSource, databaseRefTarget);
     }
 }

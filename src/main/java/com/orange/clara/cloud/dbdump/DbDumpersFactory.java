@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.dbdump;
 
+import com.orange.clara.cloud.model.DatabaseRef;
 import com.orange.clara.cloud.model.DatabaseType;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -45,5 +46,11 @@ public class DbDumpersFactory {
 
     public DatabaseDumper getDatabaseDumper(DatabaseType databaseType) {
         return this.dbDumpers.get(databaseType);
+    }
+
+    public DatabaseDumper getDatabaseDumper(DatabaseRef databaseRef) {
+        DatabaseDumper databaseDumper = this.dbDumpers.get(databaseRef.getType());
+        databaseDumper.setDatabaseRef(databaseRef);
+        return databaseDumper;
     }
 }

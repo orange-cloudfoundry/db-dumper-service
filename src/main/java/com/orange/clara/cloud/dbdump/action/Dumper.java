@@ -25,12 +25,11 @@ import java.util.List;
  */
 public class Dumper extends AbstractDbAction {
 
-    public String action(DatabaseRef databaseRef) throws IOException, InterruptedException {
+    public String dump(DatabaseRef databaseRef) throws IOException, InterruptedException {
         String fileName = this.getFileName(databaseRef);
         File dumpFileOutput = this.createNewDumpFile(databaseRef, fileName);
 
-        DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef.getType());
-        databaseDumper.setDatabaseRef(databaseRef);
+        DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef);
 
         Process p = this.runCommandLine(databaseDumper.getDumpCommandLine());
 

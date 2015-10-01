@@ -31,16 +31,14 @@ public class MysqlDatabaseDumper extends AbstractDatabaseDumper implements Datab
     }
 
     @Override
-    public String[] getRestoreCommandLine(String outputPath) {
+    public String[] getRestoreCommandLine() {
         return new String[]{
                 this.binaryRestore.getAbsolutePath(),
                 "--host=" + this.databaseRef.getHost(),
                 "--port=" + this.databaseRef.getPort(),
                 "--user=" + this.databaseRef.getUser(),
                 "--password=" + this.databaseRef.getPassword(),
-                this.databaseRef.getDatabaseName(),
-                "-e",
-                "\"source " + outputPath + ";\""
+                this.databaseRef.getDatabaseName()
         };
     }
 }

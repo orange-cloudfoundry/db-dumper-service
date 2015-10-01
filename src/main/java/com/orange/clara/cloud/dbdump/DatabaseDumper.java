@@ -18,6 +18,6 @@ public interface DatabaseDumper {
 
     String[] getDumpCommandLine();
 
-    String[] getRestoreCommandLine(String outputPath);
+    String[] getRestoreCommandLine();
 
 }
