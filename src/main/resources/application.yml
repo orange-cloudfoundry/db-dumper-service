@@ -5,7 +5,3 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-security:
-  user:
-    name: admin
-    password: toto

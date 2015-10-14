@@ -2,3 +2,5 @@
 *.iml
 /orange-manifest.yml
 /deploy
+/register
+/unregister

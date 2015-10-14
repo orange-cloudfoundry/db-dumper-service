@@ -68,6 +68,61 @@ databaseChangeLog:
                   type: varchar(255)
                   constraints:
                     nullable: false
+        - createTable:
+            tableName: db_dumper_service_instance
+            columns:
+              - column:
+                  name: service_instance_id
+                  type: varchar(255)
+                  autoIncrement: false
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: plan_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: organization_guid
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: space_guid
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dashboard_url
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: database_ref_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: db_dumper_service_instance_binding
+            columns:
+              - column:
+                  name: id
+                  type: varchar(255)
+                  autoIncrement: false
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: db_dumper_service_instance_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: app_guid
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
         - addForeignKeyConstraint:
             baseColumnNames: database_ref_id
             baseTableName: database_dump_file
@@ -78,7 +133,27 @@ databaseChangeLog:
             onUpdate: RESTRICT
             referencedColumnNames: name
             referencedTableName: database_ref
+        - addForeignKeyConstraint:
+            baseColumnNames: database_ref_id
+            baseTableName: db_dumper_service_instance
+            constraintName: fk_db_si_database_ref
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+            referencedColumnNames: name
+            referencedTableName: database_ref
+        - addForeignKeyConstraint:
+            baseColumnNames: db_dumper_service_instance_id
+            baseTableName: db_dumper_service_instance_binding
+            constraintName: fk_db_sib_db_si
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+            referencedColumnNames: service_instance_id
+            referencedTableName: db_dumper_service_instance
         - addUniqueConstraint:
-            columnNames: created_at
+            columnNames: created_at, database_ref_id
             constraintName: unique_database_dump_file_created_at
             tableName: database_dump_file
