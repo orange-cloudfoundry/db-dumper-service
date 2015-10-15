@@ -4,10 +4,10 @@
       layout:decorator="layout">
 <body>
 <div layout:fragment="content">
-    <h2>Database dump files</h2>
+    <h5>Database dump files</h5>
 
     <div th:if="${databaseRefs == null or databaseRefs.isEmpty()}">
-        <h3>There is no databases reference inside service-db-dumper</h3>
+        <h6>There is no databases reference inside service-db-dumper</h6>
     </div>
     <div th:if="${databaseRefs != null and databaseRefs.isEmpty() == false}">
         <div th:each="databaseRef : ${databaseRefs}">
