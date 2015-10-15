@@ -2,11 +2,27 @@ package com.orange.clara.cloud.servicedbdumper.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Copyright (C) 2015 Orange
@@ -18,9 +34,8 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
-@Configuration
-@EnableWebMvcSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+public class SecurityConfig {
 
     @Value("${broker.username:user}")
     private String brokerUsername;
@@ -29,18 +44,69 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles("USER");
+        auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles("ADMIN");
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .httpBasic();
-        ;
+    @Configuration
+    @Order(1)
+    public static class ServiceBrokerSecurity extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .antMatcher("/v2/**")
+                    .authorizeRequests()
+                    .anyRequest()
+                    .hasRole("ADMIN")
+                    .and()
+                    .httpBasic();
+        }
+    }
+
+    @Configuration
+    @EnableOAuth2Sso
+    public static class InterfaceSecurity extends WebSecurityConfigurerAdapter {
+        private Filter csrfHeaderFilter() {
+            return new OncePerRequestFilter() {
+                @Override
+                protected void doFilterInternal(HttpServletRequest request,
+                                                HttpServletResponse response, FilterChain filterChain)
+                        throws ServletException, IOException {
+                    CsrfToken csrf = (CsrfToken) request.getAttribute(CsrfToken.class
+                            .getName());
+                    if (csrf != null) {
+                        Cookie cookie = WebUtils.getCookie(request, "XSRF-TOKEN");
+                        String token = csrf.getToken();
+                        if (cookie == null || token != null
+                                && !token.equals(cookie.getValue())) {
+                            cookie = new Cookie("XSRF-TOKEN", token);
+                            cookie.setPath("/");
+                            response.addCookie(cookie);
+                        }
+                    }
+                    filterChain.doFilter(request, response);
+                }
+            };
+        }
+
+        private CsrfTokenRepository csrfTokenRepository() {
+            HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();
+            repository.setHeaderName("X-XSRF-TOKEN");
+            return repository;
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .authorizeRequests()
+                    .anyRequest()
+                    .authenticated()
+                    .and()
+                    .csrf()
+                    .csrfTokenRepository(csrfTokenRepository()).and()
+                    .addFilterAfter(csrfHeaderFilter(), CsrfFilter.class);
+        }
+
+
     }
 }

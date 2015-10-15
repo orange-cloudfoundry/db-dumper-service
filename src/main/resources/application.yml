@@ -1,7 +1,23 @@
 
 ---
 spring:
-  profiles: development
   jpa:
     hibernate:
       ddl-auto: none
+security:
+  user:
+    password: none
+  oauth2:
+    client:
+      clientId: your-client-id-uaa
+      clientSecret: your-client-secret-uaa
+      accessTokenUri: http://cf.uaa.url/oauth/token
+      userAuthorizationUri: http://cf.uaa.url/oauth/authorize
+      clientAuthenticationScheme: header
+      scope:
+      - openid
+      - cloud_controller.read
+      - cloud_controller.write
+    resource:
+      userInfoUri: http://cf.uaa.url/userinfo
+      preferTokenInfo: false
