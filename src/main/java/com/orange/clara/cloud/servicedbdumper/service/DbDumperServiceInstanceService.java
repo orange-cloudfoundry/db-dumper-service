@@ -47,7 +47,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private final static String ACTION_PARAMETER = "action";
     private final static String CREATED_AT_PARAMETER = "created_at";
     private final static String TARGET_URL_PARAMETER = "target_url";
-    private final static String DASHBOARD_ROUTE = "/dashboard";
+    private final static String DASHBOARD_ROUTE = "/manage";
 
 
     @Autowired

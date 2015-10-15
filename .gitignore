@@ -1,6 +1,7 @@
 /target
 *.iml
 /orange-manifest.yml
+application-orange.yml
 /deploy
 /register
 /unregister

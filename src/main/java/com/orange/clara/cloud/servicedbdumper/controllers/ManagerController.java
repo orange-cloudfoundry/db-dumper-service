@@ -1,9 +1,5 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.domain.Blob;
@@ -23,8 +19,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.List;
 
 /**
  * Copyright (C) 2015 Orange
@@ -47,12 +41,6 @@ public class ManagerController {
     @Autowired
     @Qualifier(value = "bucketName")
     private String bucketName;
-
-    @Autowired
-    private DatabaseDumpFileRepo databaseDumpFileRepo;
-
-    @Autowired
-    private DatabaseRefRepo databaseRefRepo;
 
     @RequestMapping("/raw/{databaseName}/{fileName:.*}")
     public String show(@PathVariable String databaseName, @PathVariable String fileName) throws IOException {
@@ -89,27 +77,5 @@ public class ManagerController {
 
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
-    }
-
-    @RequestMapping("/list/{databaseName}")
-    public String list(@PathVariable String databaseName) throws IOException {
-        String content = "";
-        DatabaseRef databaseRef = null;
-        if (!this.databaseRefRepo.exists(databaseName)) {
-            return "Database " + databaseName + " doesn't exist.";
-        }
-        databaseRef = this.databaseRefRepo.findOne(databaseName);
-        List<DatabaseDumpFile> databaseDumpFiles = this.databaseDumpFileRepo.findByDatabaseRefOrderByCreatedAtDesc(databaseRef);
-        if (databaseDumpFiles == null) {
-            return "No dump files for database " + databaseName + ".";
-        }
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
-        String filename;
-        for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
-            filename = databaseRef.getName() + "/" + databaseDumpFile.getFileName();
-            content += "file from date: " + format.format(databaseDumpFile.getCreatedAt());
-            content += " <a href=\"/manage/raw/" + filename + "\">show</a> <a href=\"/manage/download/" + filename + "\">download</a>";
-        }
-        return content;
     }
 }

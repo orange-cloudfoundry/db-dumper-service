@@ -7,4 +7,6 @@ path: ./target/service-db-dumper-1.0-SNAPSHOT.war
 host: service-db-dumper
 env:
   spring_profiles_active: development,cloud
+  broker_username: myUs3r
+  broker_password: myPasssw0rd
 buildpack: java_buildpack

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorator="layout">
+<body>
+<div layout:fragment="content">
+    <h2>Database dump files</h2>
+
+    <div th:if="${databaseRefs == null or databaseRefs.isEmpty()}">
+        <h3>There is no databases reference inside service-db-dumper</h3>
+    </div>
+    <div th:if="${databaseRefs != null and databaseRefs.isEmpty() == false}">
+        <div th:each="databaseRef : ${databaseRefs}">
+            <div th:if="${databaseRef.databaseDumpFiles.isEmpty() == false}">
+                <ul class="collection with-header">
+                    <li class="collection-header"><h4 th:text="${databaseRef.name}">No name</h4></li>
+                    <li class="collection-item" th:each="databaseDumpFile : ${databaseRef.databaseDumpFiles}">
+                        Created At: <span th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy')}"></span>
+                        <a class="btn red"
+                           th:href="@{/manage/raw/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
+                                class="material-icons">description</i> Show</a>
+                        <a class="btn red"
+                           th:href="@{/manage/download/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
+                                class="material-icons">import_export</i>
+                            Download</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
