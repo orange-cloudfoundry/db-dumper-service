@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorator="layout">
+<head>
+    <link href="/css/prism.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <h5>Show your dump from <span th:text="${databaseName}"></span>: <span th:text="${fileName}"></span></h5>
+    <hr/>
+    <a class="btn waves-effect waves-light red"
+       th:href="@{/manage/raw/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseName},databaseDumpFileName=${fileName})}">Raw</a>
+    <br/>
+    <pre class="language-php line-numbers"><code th:text="${sql}"></code></pre>
+</div>
+<div layout:fragment="scripts">
+    <script src="/js/prism.js"></script>
+</div>
+</body>
+</html>
