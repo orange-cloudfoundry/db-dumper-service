@@ -8,6 +8,8 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.domain.Blob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,18 +17,21 @@ import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 01/10/2015
  */
 public class Restorer extends AbstractDbAction {
 
-    public String restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget, Date date) throws RestoreException {
-        DatabaseDumpFile dumpFile = null;
+    private Logger logger = LoggerFactory.getLogger(Restorer.class);
+
+    public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget, Date date) throws RestoreException {
+        logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName());
+        DatabaseDumpFile dumpFile;
         if (date == null) {
             dumpFile = this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
         } else {
@@ -50,12 +55,11 @@ public class Restorer extends AbstractDbAction {
             outputStream.close();
             p.waitFor();
         } catch (Exception e) {
-            throw new RestoreException("An error occured: " + e.getMessage(), e);
+            throw new RestoreException("An error occurred: " + e.getMessage(), e);
         }
-        return "restored";
     }
 
-    public String restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws RestoreException {
-        return this.restore(databaseRefSource, databaseRefTarget, null);
+    public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws RestoreException {
+        this.restore(databaseRefSource, databaseRefTarget, null);
     }
 }

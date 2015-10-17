@@ -5,6 +5,8 @@ import com.orange.clara.cloud.servicedbdumper.dbdump.s3.UploadS3Stream;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import org.jclouds.blobstore.BlobStoreContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -14,16 +16,18 @@ import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
 public abstract class AbstractDbAction {
     public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
+
+    protected Logger logger = LoggerFactory.getLogger(AbstractDbAction.class);
 
     @Autowired
     @Qualifier(value = "dbDumpersFactory")
@@ -53,6 +57,7 @@ public abstract class AbstractDbAction {
     }
 
     protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
+        logger.debug("Running command line: " + String.join(" ", commandLine));
         ProcessBuilder pb = new ProcessBuilder(commandLine);
         pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
         return pb.start();

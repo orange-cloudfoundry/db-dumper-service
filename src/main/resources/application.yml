@@ -1,4 +1,4 @@
-
+logging.level.com.orange.clara.cloud.servicedbdumper: INFO
 ---
 spring:
   jpa:
