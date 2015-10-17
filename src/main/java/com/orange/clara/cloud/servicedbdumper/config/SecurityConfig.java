@@ -27,11 +27,11 @@ import java.io.IOException;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 03/06/2015
  */

@@ -5,6 +5,12 @@
  *
  * Made By MaterializeCSS.com
  */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
 
 .icon-block {
     padding: 0 15px;
@@ -17,4 +23,20 @@
 .brand-logo img {
     height: 54px;
     float: left;
+}
+
+#wrapper {
+    min-height: 100%;
+    position: relative;
+}
+
+.container {
+    padding-bottom: 75px;
+}
+
+footer {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
