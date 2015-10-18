@@ -16,10 +16,10 @@
                     <li class="collection-header"><h4 th:text="${databaseRef.name}">No name</h4></li>
                     <li class="collection-item" th:each="databaseDumpFile : ${databaseRef.databaseDumpFiles}">
                         Created At: <span th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy')}"></span>
-                        <a class="btn waves-effect waves-light red"
+                        <a class="btn waves-effect waves-light orange"
                            th:href="@{/manage/show/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
                                 class="material-icons">description</i> Show</a>
-                        <a class="btn waves-effect waves-light red"
+                        <a class="btn waves-effect waves-light orange"
                            th:href="@{/manage/download/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
                                 class="material-icons">import_export</i>
                             Download</a>
