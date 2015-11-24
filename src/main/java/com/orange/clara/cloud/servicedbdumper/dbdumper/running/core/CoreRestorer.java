@@ -1,6 +1,5 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
-import com.google.common.io.ByteStreams;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
@@ -8,14 +7,10 @@ import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.domain.Blob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 
 /**
@@ -49,16 +44,14 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " finished.");
     }
 
+    @Override
+    public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws RestoreException {
+        this.restore(databaseRefSource, databaseRefTarget, null);
+    }
+
     protected void runRestore(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException {
         Process p = this.runCommandLine(databaseDumper.getRestoreCommandLine());
-        OutputStream outputStream = p.getOutputStream();
-        BlobStore blobStore = this.blobStoreContext.getBlobStore();
-        Blob blob = blobStore.getBlob(this.bucketName, fileName);
-        InputStream inputStream = blob.getPayload().openStream();
-        ByteStreams.copy(inputStream, outputStream);
-        outputStream.flush();
-        inputStream.close();
-        outputStream.close();
+        this.filer.retrieve(p.getOutputStream(), fileName);
         p.waitFor();
     }
 
@@ -78,10 +71,5 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
             return this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
         }
         return this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRefSource, date);
-    }
-
-    @Override
-    public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws RestoreException {
-        this.restore(databaseRefSource, databaseRefTarget, null);
     }
 }

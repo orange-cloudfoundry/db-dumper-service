@@ -5,8 +5,6 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.domain.Blob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +43,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
     private void runDump(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException {
         Process p = this.runCommandLine(databaseDumper.getDumpCommandLine());
-        BlobStore blobStore = this.blobStoreContext.getBlobStore();
-        Blob blob = blobStore.blobBuilder(fileName).build();
-        logger.info("Uploading dump file '" + fileName + "'  on S3 storage.");
-        this.uploadS3Stream.upload(p.getInputStream(), blob);
-        p.getInputStream().close();
+        this.filer.store(p.getInputStream(), fileName);
     }
 
     private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName) {

@@ -7,6 +7,8 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3StreamImpl;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.filer.S3Filer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,6 +26,11 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile("core")
 public class DbCoreDumperConfig {
+
+    @Bean
+    public Filer filer() {
+        return new S3Filer();
+    }
 
     @Bean
     public DbDumpersFactory dbDumpersFactory() {

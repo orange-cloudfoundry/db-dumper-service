@@ -1,10 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
-import org.jclouds.blobstore.BlobStoreContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,19 +33,12 @@ public abstract class AbstractCoreDbAction {
     protected DbDumpersFactory dbDumpersFactory;
 
     @Autowired
-    @Qualifier(value = "bucketName")
-    protected String bucketName;
-
-    @Autowired
-    @Qualifier(value = "uploadS3Stream")
-    protected UploadS3Stream uploadS3Stream;
+    @Qualifier(value = "filer")
+    protected Filer filer;
 
     @Autowired
     protected DatabaseDumpFileRepo databaseDumpFileRepo;
 
-    @Autowired
-    @Qualifier(value = "blobStoreContext")
-    protected BlobStoreContext blobStoreContext;
 
     public static BufferedReader getOutput(Process p) {
         return new BufferedReader(new InputStreamReader(p.getInputStream()));

@@ -1,8 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
-import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.blobstore.domain.Blob;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.InputStreamResource;
@@ -35,25 +33,19 @@ import java.io.InputStreamReader;
 public class ManagerController {
 
     @Autowired
-    @Qualifier(value = "blobStoreContext")
-    private BlobStoreContext blobStoreContext;
-
-    @Autowired
-    @Qualifier(value = "bucketName")
-    private String bucketName;
+    @Qualifier(value = "filer")
+    private Filer filer;
 
     @RequestMapping("/raw/{databaseName}/{fileName:.*}")
     public String show(@PathVariable String databaseName, @PathVariable String fileName) throws IOException {
         fileName = databaseName + "/" + fileName;
-        BlobStore blobStore = blobStoreContext.getBlobStore();
-        Blob blob = blobStore.getBlob(this.bucketName, fileName);
-        InputStream inputStream = blob.getPayload().openStream();
+        InputStream inputStream = this.filer.retrieveWithStream(fileName);
 
         String content = "";
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             content += line;
-            content += "<br/>";
+            content += "\n";
         }
         br.close();
 
@@ -64,16 +56,14 @@ public class ManagerController {
     public ResponseEntity<InputStreamResource> download(@PathVariable String databaseName, @PathVariable String fileName)
             throws IOException {
         fileName = databaseName + "/" + fileName;
-        BlobStore blobStore = blobStoreContext.getBlobStore();
-        Blob blob = blobStore.getBlob(this.bucketName, fileName);
 
         HttpHeaders respHeaders = new HttpHeaders();
 
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        respHeaders.setContentLength(blob.getPayload().getContentMetadata().getContentLength());
+        respHeaders.setContentLength(this.filer.getContentLength(fileName));
         respHeaders.setContentDispositionFormData("attachment", fileName);
 
-        InputStream inputStream = blob.getPayload().openStream();
+        InputStream inputStream = this.filer.retrieveWithStream(fileName);
 
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);

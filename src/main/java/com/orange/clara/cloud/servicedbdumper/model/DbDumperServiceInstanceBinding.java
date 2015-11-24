@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.util.Map;
 
 /**
  * Copyright (C) 2015 Orange
@@ -25,6 +26,8 @@ public class DbDumperServiceInstanceBinding {
     @JoinColumn(name = "db_dumper_service_instance_id")
     private DbDumperServiceInstance dbDumperServiceInstance;
 
+    private Map<String, Object> credentials;
+
     private String appGuid;
 
     public DbDumperServiceInstanceBinding() {
@@ -34,6 +37,14 @@ public class DbDumperServiceInstanceBinding {
         this.id = id;
         this.dbDumperServiceInstance = dbDumperServiceInstance;
         this.appGuid = appGuid;
+    }
+
+    public Map<String, Object> getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(Map<String, Object> credentials) {
+        this.credentials = credentials;
     }
 
     public String getId() {

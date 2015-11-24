@@ -1,11 +1,11 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.blobstore.domain.Blob;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -32,29 +32,27 @@ import java.util.List;
 @Controller
 @RequestMapping(value = "/manage")
 public class InterfaceController {
-    @Autowired
-    @Qualifier(value = "blobStoreContext")
-    private BlobStoreContext blobStoreContext;
 
     @Autowired
-    @Qualifier(value = "bucketName")
-    private String bucketName;
+    @Qualifier(value = "filer")
+    private Filer filer;
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
 
+    @Autowired
+    private DbDumperServiceInstanceRepository instanceRepository;
+
     @RequestMapping("/show/{databaseName}/{fileName:.*}")
     public String show(@PathVariable String databaseName, @PathVariable String fileName, Model model) throws IOException {
         fileName = databaseName + "/" + fileName;
-        BlobStore blobStore = blobStoreContext.getBlobStore();
-        Blob blob = blobStore.getBlob(this.bucketName, fileName);
-        InputStream inputStream = blob.getPayload().openStream();
+        InputStream inputStream = this.filer.retrieveWithStream(fileName);
 
         String content = "";
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             content += line;
-            content += "\n";
+            content += "<br/>";
         }
         br.close();
         model.addAttribute("databaseName", databaseName);
@@ -66,6 +64,17 @@ public class InterfaceController {
     @RequestMapping("/list")
     public String list(Model model) throws IOException {
         List<DatabaseRef> databaseRefs = Lists.newArrayList(this.databaseRefRepo.findAll());
+        model.addAttribute("databaseRefs", databaseRefs);
+        return "listfiles";
+    }
+
+    @RequestMapping("/list/{instanceId}")
+    public String listFromInstance(@PathVariable String instanceId, Model model) throws IOException {
+        DbDumperServiceInstance serviceInstance = instanceRepository.findOne(instanceId);
+        List<DatabaseRef> databaseRefs = Lists.newArrayList();
+        if (serviceInstance != null) {
+            databaseRefs.add(serviceInstance.getDatabaseRef());
+        }
         model.addAttribute("databaseRefs", databaseRefs);
         return "listfiles";
     }
