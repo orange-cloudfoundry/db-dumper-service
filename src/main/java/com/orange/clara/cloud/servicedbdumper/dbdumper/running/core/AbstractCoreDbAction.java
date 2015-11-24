@@ -1,7 +1,7 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump.action;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdump.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdump.s3.UploadS3Stream;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import org.jclouds.blobstore.BlobStoreContext;
@@ -16,18 +16,18 @@ import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
- * <p>
+ * <p/>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p>
+ * <p/>
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
-public abstract class AbstractDbAction {
+public abstract class AbstractCoreDbAction {
     public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
 
-    protected Logger logger = LoggerFactory.getLogger(AbstractDbAction.class);
+    protected Logger logger = LoggerFactory.getLogger(AbstractCoreDbAction.class);
 
     @Autowired
     @Qualifier(value = "dbDumpersFactory")
@@ -81,7 +81,7 @@ public abstract class AbstractDbAction {
         return dumpFileOutput;
     }
 
-    protected String getFileName(DatabaseRef databaseRef) {
+    protected String createFileName(DatabaseRef databaseRef) {
         Date d = new Date();
         SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
         return databaseRef.getName() + "/" + form.format(d) + ".sql";

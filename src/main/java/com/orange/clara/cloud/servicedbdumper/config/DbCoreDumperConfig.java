@@ -1,12 +1,15 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
-import com.orange.clara.cloud.servicedbdumper.dbdump.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdump.action.Dumper;
-import com.orange.clara.cloud.servicedbdumper.dbdump.action.Restorer;
-import com.orange.clara.cloud.servicedbdumper.dbdump.s3.UploadS3Stream;
-import com.orange.clara.cloud.servicedbdumper.dbdump.s3.UploadS3StreamImpl;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3StreamImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Copyright (C) 2015 Orange
@@ -19,7 +22,8 @@ import org.springframework.context.annotation.Configuration;
  * Date: 03/06/2015
  */
 @Configuration
-public class DbDumperConfig {
+@Profile("core")
+public class DbCoreDumperConfig {
 
     @Bean
     public DbDumpersFactory dbDumpersFactory() {
@@ -28,12 +32,12 @@ public class DbDumperConfig {
 
     @Bean
     public Dumper dumper() {
-        return new Dumper();
+        return new CoreDumper();
     }
 
     @Bean
     public Restorer restorer() {
-        return new Restorer();
+        return new CoreRestorer();
     }
 
     @Bean

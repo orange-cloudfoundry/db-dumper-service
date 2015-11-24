@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump.action;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * Author: Arthur Halet
  * Date: 14/09/2015
  */
-public class AbstractDbActionTest {
+public class AbstractCoreDbActionTest {
 
     @Test
     public void runs_commandline_and_returns_output() throws Exception {
@@ -26,7 +26,7 @@ public class AbstractDbActionTest {
         String[] commandLine = {"java", "-version"};
 
         //when
-        AbstractDbAction cmdLineRunner = new AbstractDbAction() {
+        AbstractCoreDbAction cmdLineRunner = new AbstractCoreDbAction() {
         };
 
         //then

@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump;
+package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import java.io.File;
 

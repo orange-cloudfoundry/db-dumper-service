@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump.s3;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.s3;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;

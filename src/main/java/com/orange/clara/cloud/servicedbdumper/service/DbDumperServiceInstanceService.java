@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
-import com.orange.clara.cloud.servicedbdumper.dbdump.action.Dumper;
-import com.orange.clara.cloud.servicedbdumper.dbdump.action.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
@@ -75,7 +75,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 request.getPlanId(),
                 request.getOrganizationGuid(),
                 request.getSpaceGuid(),
-                "http://" + appUri + DASHBOARD_ROUTE);
+                "https://" + appUri + DASHBOARD_ROUTE);
         this.createDump(request.getParameters(), dbDumperServiceInstance);
         repository.save(dbDumperServiceInstance);
         return new ServiceInstance(request);
@@ -132,7 +132,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         try {
             dumper.dump(databaseRef);
         } catch (Exception e) {
-            throw new ServiceBrokerException("An error occurred during dump: " + e.getMessage(), e);
+            throw new ServiceBrokerException(e.getMessage(), e);
         }
 
     }
@@ -151,11 +151,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
         String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
         String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER);
-        String createdAtString = null;
-        try {
-            createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER);
-        } catch (ServiceBrokerException e) {
-        }
+        String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER);
 
         UUID dbSrcName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
         UUID dbTargetName = UUID.nameUUIDFromBytes(targetUrl.getBytes());

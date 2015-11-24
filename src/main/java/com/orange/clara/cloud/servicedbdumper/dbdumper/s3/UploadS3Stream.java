@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump.s3;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.s3;
 
 import org.jclouds.blobstore.domain.Blob;
 

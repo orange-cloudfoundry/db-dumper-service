@@ -1,8 +1,6 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump.action;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Copyright (C) 2015 Orange
@@ -14,7 +12,7 @@ import static org.junit.Assert.*;
  * Author: Arthur Halet
  * Date: 17/10/15
  */
-public class RestorerTest {
+public class LocalRestorerTest {
 
     @Test
     public void restore_() throws Exception {

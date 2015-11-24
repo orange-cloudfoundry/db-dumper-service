@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump;
+package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import java.io.File;
 
@@ -12,20 +12,21 @@ import java.io.File;
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
-public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements DatabaseDumper {
-    public MongodbDatabaseDumper(File binaryDump, File binaryRestore) {
+public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements DatabaseDumper {
+    public PostgresqlDatabaseDumper(File binaryDump, File binaryRestore) {
         super(binaryDump, binaryRestore);
     }
+
 
     @Override
     public String[] getDumpCommandLine() {
         return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s",
                 this.binaryDump.getAbsolutePath(),
-                this.databaseRef.getHost(),
-                this.databaseRef.getPort(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
+                this.databaseRef.getHost(),
+                this.databaseRef.getPort(),
                 this.databaseRef.getDatabaseName()
         ).split(" ");
     }
@@ -33,12 +34,12 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     @Override
     public String[] getRestoreCommandLine() {
         return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f",
                 this.binaryRestore.getAbsolutePath(),
-                this.databaseRef.getHost(),
-                this.databaseRef.getPort(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
+                this.databaseRef.getHost(),
+                this.databaseRef.getPort(),
                 this.databaseRef.getDatabaseName()
         ).split(" ");
     }

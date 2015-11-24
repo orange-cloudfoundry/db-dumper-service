@@ -1,12 +1,14 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump.action;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdump.DatabaseDumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseDumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import org.slf4j.LoggerFactory;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.domain.Blob;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -15,33 +17,42 @@ import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
- * <p>
+ * <p/>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p>
+ * <p/>
  * Author: Arthur Halet
  * Date: 09/09/2015
  */
-public class Dumper extends AbstractDbAction {
+public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
-    private Logger logger = LoggerFactory.getLogger(Dumper.class);
+    private Logger logger = LoggerFactory.getLogger(CoreDumper.class);
 
-    public void dump(DatabaseRef databaseRef) throws IOException, InterruptedException {
-        String fileName = this.getFileName(databaseRef);
+    @Override
+    public void dump(DatabaseRef databaseRef) throws DumpException {
+        String fileName = this.createFileName(databaseRef);
+        try {
+            DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef);
+            logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
+            this.runDump(databaseDumper, fileName);
+            this.createDatabaseDumpFile(databaseRef, fileName);
+        } catch (Exception e) {
+            throw new DumpException("An error occurred: " + e.getMessage(), e);
+        }
+        logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary finished.");
+    }
 
-        DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef);
-
-        logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary.");
-
+    private void runDump(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException {
         Process p = this.runCommandLine(databaseDumper.getDumpCommandLine());
-
         BlobStore blobStore = this.blobStoreContext.getBlobStore();
         Blob blob = blobStore.blobBuilder(fileName).build();
         logger.info("Uploading dump file '" + fileName + "'  on S3 storage.");
         this.uploadS3Stream.upload(p.getInputStream(), blob);
         p.getInputStream().close();
+    }
 
+    private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName) {
         SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
         Date today = new Date();
         try {
@@ -52,5 +63,4 @@ public class Dumper extends AbstractDbAction {
             this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, databaseRef));
         }
     }
-
 }

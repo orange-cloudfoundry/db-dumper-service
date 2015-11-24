@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump;
+package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.junit.Before;
@@ -18,7 +18,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
-public class DatabaseDumperTest {
+public class DatabaseLocalDumperTest {
 
     private final String password = "jojo";
     private final String user = "toto";

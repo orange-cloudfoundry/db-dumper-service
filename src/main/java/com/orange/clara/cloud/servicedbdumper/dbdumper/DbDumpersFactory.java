@@ -1,5 +1,6 @@
-package com.orange.clara.cloud.servicedbdumper.dbdump;
+package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
+import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,8 +49,11 @@ public class DbDumpersFactory {
         return this.dbDumpers.get(databaseType);
     }
 
-    public DatabaseDumper getDatabaseDumper(DatabaseRef databaseRef) {
+    public DatabaseDumper getDatabaseDumper(DatabaseRef databaseRef) throws CannotFindDatabaseDumperException {
         DatabaseDumper databaseDumper = this.dbDumpers.get(databaseRef.getType());
+        if (databaseDumper == null) {
+            throw new CannotFindDatabaseDumperException(databaseRef);
+        }
         databaseDumper.setDatabaseRef(databaseRef);
         return databaseDumper;
     }
