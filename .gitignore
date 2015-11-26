@@ -2,3 +2,4 @@
 *.iml
 /orange-manifest.yml
 application-orange.yml
+/bin/target
