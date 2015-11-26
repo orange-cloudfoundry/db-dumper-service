@@ -23,19 +23,17 @@ public class DatabaseRef {
     protected String password;
     protected String host;
     protected String databaseName;
-
     @Enumerated(EnumType.STRING)
     protected DatabaseType type;
-
     @OneToMany(mappedBy = "databaseRef")
     protected List<DatabaseDumpFile> databaseDumpFiles;
-
     protected Integer port;
-
+    private Boolean deleted;
     @OneToMany(mappedBy = "databaseRef")
     private List<DbDumperServiceInstance> dbDumperServiceInstances;
 
     public DatabaseRef() {
+        this.deleted = false;
         this.databaseDumpFiles = new ArrayList<>();
         this.dbDumperServiceInstances = new ArrayList<>();
     }
@@ -120,6 +118,18 @@ public class DatabaseRef {
 
     public void setType(DatabaseType type) {
         this.type = type;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Boolean isDeleted() {
+        return deleted;
     }
 
     public List<DatabaseDumpFile> getDatabaseDumpFiles() {

@@ -5,6 +5,7 @@ import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.InputStreamResource;
@@ -17,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,6 +40,9 @@ import java.io.InputStreamReader;
 public class ManagerController {
 
     @Autowired
+    private DatabaseRefRepo databaseRefRepo;
+
+    @Autowired
     @Qualifier(value = "filer")
     private Filer filer;
 
@@ -50,7 +55,9 @@ public class ManagerController {
     private Deleter deleter;
 
     @RequestMapping("/raw/{databaseName}/{fileName:.*}")
-    public String show(@PathVariable String databaseName, @PathVariable String fileName) throws IOException {
+    @ResponseBody
+    public String raw(@PathVariable String databaseName, @PathVariable String fileName) throws IOException {
+        this.checkDatabase(databaseName);
         fileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(fileName);
 
@@ -65,16 +72,27 @@ public class ManagerController {
         return content;
     }
 
+    private void checkDatabase(String databaseName) {
+        DatabaseRef databaseRef = this.databaseRefRepo.findOne(databaseName);
+        if (databaseRef == null) {
+            throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
+        }
+        if (databaseRef.isDeleted()) {
+            throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", databaseName));
+        }
+    }
+
     @RequestMapping("/show/{databaseName}/{fileName:.*}")
     public String show(@PathVariable String databaseName, @PathVariable String fileName, Model model) throws IOException {
-        fileName = databaseName + "/" + fileName;
-        InputStream inputStream = this.filer.retrieveWithStream(fileName);
+        this.checkDatabase(databaseName);
+        String finalFileName = databaseName + "/" + fileName;
+        InputStream inputStream = this.filer.retrieveWithStream(finalFileName);
 
         String content = "";
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             content += line;
-            content += "<br/>";
+            content += "\n";
         }
         br.close();
         model.addAttribute("databaseName", databaseName);
@@ -89,15 +107,17 @@ public class ManagerController {
         if (databaseDumpFile == null) {
             throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
         }
+        this.checkDatabase(databaseDumpFile.getDatabaseRef().getName());
         DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
         this.deleter.delete(databaseDumpFile);
-        return String.format("redirect:/list/database/%s", databaseRef.getDatabaseName());
+        return String.format("redirect:/manage/list/database/%s", databaseRef.getName());
     }
 
 
     @RequestMapping(value = "/download/{databaseName}/{fileName:.*}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> download(@PathVariable String databaseName, @PathVariable String fileName)
             throws IOException {
+        this.checkDatabase(databaseName);
         fileName = databaseName + "/" + fileName;
 
         HttpHeaders respHeaders = new HttpHeaders();

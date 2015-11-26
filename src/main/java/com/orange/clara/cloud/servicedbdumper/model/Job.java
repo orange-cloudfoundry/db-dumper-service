@@ -21,14 +21,16 @@ public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
     @ManyToOne
-    @JoinColumn(name = "db_dumper_service_instance_id")
-    private DbDumperServiceInstance dbDumperServiceInstance;
+    @JoinColumn(name = "database_ref_id")
+    private DatabaseRef databaseRef;
+
     private Date updatedAt;
 
-    public Job(JobState jobState, DbDumperServiceInstance dbDumperServiceInstance) {
+    public Job(JobState jobState, DatabaseRef databaseRef) {
         this.jobState = jobState;
-        this.dbDumperServiceInstance = dbDumperServiceInstance;
+        this.databaseRef = databaseRef;
         this.updatedAt = Calendar.getInstance().getTime();
     }
 
@@ -40,12 +42,12 @@ public class Job {
         this.id = id;
     }
 
-    public DbDumperServiceInstance getDbDumperServiceInstance() {
-        return dbDumperServiceInstance;
+    public DatabaseRef getDatabaseRef() {
+        return databaseRef;
     }
 
-    public void setDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
-        this.dbDumperServiceInstance = dbDumperServiceInstance;
+    public void setDatabaseRef(DatabaseRef databaseRef) {
+        this.databaseRef = databaseRef;
     }
 
     public JobState getJobState() {

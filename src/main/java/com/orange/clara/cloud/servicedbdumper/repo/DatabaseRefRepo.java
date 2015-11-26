@@ -15,4 +15,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  */
 public interface DatabaseRefRepo extends
         PagingAndSortingRepository<DatabaseRef, String> {
+    DatabaseRef findFirstByDatabaseName(String databaseName);
 }

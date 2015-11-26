@@ -23,7 +23,6 @@ public class DbDumperServiceInstance {
     private String spaceGuid;
     private String dashboardUrl;
 
-    private Boolean deleted;
 
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
@@ -33,7 +32,6 @@ public class DbDumperServiceInstance {
     private List<DbDumperServiceInstanceBinding> dbDumperServiceInstanceBindings;
 
     public DbDumperServiceInstance() {
-        this.deleted = false;
         this.dbDumperServiceInstanceBindings = new ArrayList<>();
     }
 
@@ -103,18 +101,6 @@ public class DbDumperServiceInstance {
 
     public void setDashboardUrl(String dashboardUrl) {
         this.dashboardUrl = dashboardUrl;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public Boolean isDeleted() {
-        return deleted;
     }
 
     public DatabaseRef getDatabaseRef() {

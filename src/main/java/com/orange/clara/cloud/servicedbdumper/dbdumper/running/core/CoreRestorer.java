@@ -56,7 +56,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
     }
 
     protected DatabaseDumper findAndCheckDatabaseDumper(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws CannotFindDatabaseDumperException, RestoreException {
-        if (databaseRefSource.getType().equals(databaseRefTarget.getType())) {
+        if (!databaseRefSource.getType().equals(databaseRefTarget.getType())) {
             throw new RestoreException("Database " + databaseRefTarget.getName() + " should be a " + databaseRefSource.getType() + " database");
         }
         return dbDumpersFactory.getDatabaseDumper(databaseRefTarget);

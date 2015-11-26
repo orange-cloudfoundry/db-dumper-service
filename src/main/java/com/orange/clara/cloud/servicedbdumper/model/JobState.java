@@ -11,5 +11,5 @@ package com.orange.clara.cloud.servicedbdumper.model;
  * Date: 25/11/2015
  */
 public enum JobState {
-    CREATE_DUMP, DELETE_DUMPS, DELETE_INSTANCE, RUNNING, ERRORED
+    CREATE_DUMP, DELETE_DUMPS, DELETE_DATABASE_REF, RUNNING, ERRORED
 }

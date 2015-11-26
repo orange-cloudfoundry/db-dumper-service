@@ -38,15 +38,26 @@ public class InterfaceController {
     @RequestMapping("/list")
     public String list(Model model) throws IOException {
         List<DatabaseRef> databaseRefs = Lists.newArrayList(this.databaseRefRepo.findAll());
-        model.addAttribute("databaseRefs", databaseRefs);
+        model.addAttribute("databaseRefs", this.filteringDatabaseRef(databaseRefs));
         return "listfiles";
+    }
+
+    private List<DatabaseRef> filteringDatabaseRef(List<DatabaseRef> databaseRefs) {
+        List<DatabaseRef> databaseRefsFinal = Lists.newArrayList();
+        for (DatabaseRef databaseRef : databaseRefs) {
+            if (databaseRef.isDeleted()) {
+                continue;
+            }
+            databaseRefsFinal.add(databaseRef);
+        }
+        return databaseRefsFinal;
     }
 
     @RequestMapping("/list/{instanceId}")
     public String listFromInstance(@PathVariable String instanceId, Model model) throws IOException {
         DbDumperServiceInstance serviceInstance = instanceRepository.findOne(instanceId);
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
-        if (serviceInstance != null) {
+        if (serviceInstance != null && !serviceInstance.getDatabaseRef().isDeleted()) {
             databaseRefs.add(serviceInstance.getDatabaseRef());
         }
         model.addAttribute("databaseRefs", databaseRefs);
@@ -60,7 +71,9 @@ public class InterfaceController {
             throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
         }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
-        databaseRefs.add(databaseRef);
+        if (!databaseRef.isDeleted()) {
+            databaseRefs.add(databaseRef);
+        }
         model.addAttribute("databaseRefs", databaseRefs);
         return "listfiles";
     }

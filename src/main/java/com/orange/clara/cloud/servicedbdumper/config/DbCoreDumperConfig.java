@@ -1,9 +1,11 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Credentials;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreCredentials;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDeleter;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
@@ -47,6 +49,11 @@ public class DbCoreDumperConfig {
     @Bean
     public Restorer restorer() {
         return new CoreRestorer();
+    }
+
+    @Bean
+    public Credentials credentials() {
+        return new CoreCredentials();
     }
 
     @Bean

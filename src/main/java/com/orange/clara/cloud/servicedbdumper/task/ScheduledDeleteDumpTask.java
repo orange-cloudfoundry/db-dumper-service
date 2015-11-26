@@ -1,8 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobState;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,9 @@ public class ScheduledDeleteDumpTask {
     @Qualifier("deleter")
     private Deleter deleter;
 
+    @Autowired
+    private DatabaseRefRepo databaseRefRepo;
+
     @Scheduled(fixedRate = 5000)
     public void deleteDump() {
         logger.info("Running delete all dump scheduled task ...");
@@ -48,8 +53,12 @@ public class ScheduledDeleteDumpTask {
             }
             job.setJobState(JobState.RUNNING);
             jobRepo.save(job);
-            this.deleter.deleteAll(job.getDbDumperServiceInstance().getDatabaseRef());
-            jobRepo.save(new Job(JobState.DELETE_INSTANCE, job.getDbDumperServiceInstance()));
+            DatabaseRef databaseRef = job.getDatabaseRef();
+            this.deleter.deleteAll(databaseRef);
+            if (databaseRef.isDeleted()) {
+                this.databaseRefRepo.delete(databaseRef);
+            }
+            jobRepo.save(new Job(JobState.DELETE_DATABASE_REF, job.getDatabaseRef()));
             jobRepo.delete(job);
 
         }

@@ -8,6 +8,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.UpdateAction;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -56,6 +57,9 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Autowired
     private DbDumperServiceInstanceRepo repository;
 
+    @Autowired
+    private DbDumperServiceInstanceBindingRepo serviceInstanceBindingRepo;
+
     @Value("${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
 
@@ -68,20 +72,15 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Override
     public ServiceInstance createServiceInstance(CreateServiceInstanceRequest request) throws ServiceInstanceExistsException, ServiceBrokerException {
         DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
-        if (dbDumperServiceInstance != null && !dbDumperServiceInstance.isDeleted()) {
+        if (dbDumperServiceInstance != null) {
             throw new ServiceInstanceExistsException(new ServiceInstance(request));
-        }
-        if (dbDumperServiceInstance != null && dbDumperServiceInstance.isDeleted()) {
-            dbDumperServiceInstance.setDeleted(false);
-            repository.save(dbDumperServiceInstance);
-            return new ServiceInstance(request);
         }
         dbDumperServiceInstance = new DbDumperServiceInstance(
                 request.getServiceInstanceId(),
                 request.getPlanId(),
                 request.getOrganizationGuid(),
                 request.getSpaceGuid(),
-                "https://" + appUri + DASHBOARD_ROUTE);
+                appUri + DASHBOARD_ROUTE);
         this.createDump(request.getParameters(), dbDumperServiceInstance);
         repository.save(dbDumperServiceInstance);
         return new ServiceInstance(request);
@@ -100,10 +99,16 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     public ServiceInstance deleteServiceInstance(DeleteServiceInstanceRequest request) throws ServiceBrokerException {
         DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
         if (dbDumperServiceInstance == null) {
-            throw new ServiceBrokerException("ServiceInstance with the given ID doesn't exists: ServiceInstance.id = " + dbDumperServiceInstance.getServiceInstanceId());
+            return new ServiceInstance(request);
         }
-        dbDumperServiceInstance.setDeleted(true);
-        repository.save(dbDumperServiceInstance);
+        DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
+        databaseRef.removeDbDumperServiceInstance(dbDumperServiceInstance);
+        if (databaseRef.getDbDumperServiceInstances().size() == 0) {
+            databaseRef.setDeleted(true);
+        }
+        this.databaseRefRepo.save(databaseRef);
+        this.serviceInstanceBindingRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
+        repository.delete(dbDumperServiceInstance);
         return new ServiceInstance(request);
     }
 
@@ -140,6 +145,10 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
         UUID dbRefName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
         DatabaseRef databaseRef = this.getDatabaseRefFromUrl(srcUrl, dbRefName.toString());
+        if (databaseRef.isDeleted()) {
+            databaseRef.setDeleted(false);
+            databaseRefRepo.save(databaseRef);
+        }
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
         try {
             dumper.dump(databaseRef);
@@ -150,20 +159,25 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     private String getParameter(Map<String, Object> parameters, String parameter) throws ServiceBrokerException {
-        if (parameters == null) {
+        String param = this.getParameter(parameters, parameter, null);
+        if (param == null) {
             throw new ServiceBrokerException("You need to set " + parameter + " parameter.");
+        }
+        return param;
+    }
+
+    private String getParameter(Map<String, Object> parameters, String parameter, String defaultValue) throws ServiceBrokerException {
+        if (parameters == null) {
+            return defaultValue;
         }
         Object paramObject = parameters.get(parameter);
-        if (paramObject == null || paramObject.toString().isEmpty()) {
-            throw new ServiceBrokerException("You need to set " + parameter + " parameter.");
-        }
         return paramObject.toString();
     }
 
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
         String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
         String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER);
-        String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER);
+        String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
 
         UUID dbSrcName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
         UUID dbTargetName = UUID.nameUUIDFromBytes(targetUrl.getBytes());

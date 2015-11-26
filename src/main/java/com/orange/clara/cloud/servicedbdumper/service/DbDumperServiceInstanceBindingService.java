@@ -1,7 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
-import com.google.common.collect.Maps;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Credentials;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
@@ -13,10 +12,10 @@ import org.cloudfoundry.community.servicebroker.model.DeleteServiceInstanceBindi
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceBindingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.util.Map;
 
 /**
@@ -32,11 +31,6 @@ import java.util.Map;
 @Service
 public class DbDumperServiceInstanceBindingService implements ServiceInstanceBindingService {
 
-    private final static String DASHBOARD_URL = "/manage";
-    private final static String DOWNLOAD_URL = "/list/%s/%s";
-    private final static String RAW_URL = "/list/%s/%s";
-    private final static String LIST_BY_INSTANCE_URL = "/list/%s";
-
     @Value("${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
     @Autowired
@@ -47,6 +41,10 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
 
     @Autowired
     private DatabaseDumpFileRepo databaseDumpFileRepo;
+
+    @Autowired
+    @Qualifier(value = "credentials")
+    private Credentials credentials;
 
     @Override
     public ServiceInstanceBinding createServiceInstanceBinding(CreateServiceInstanceBindingRequest request) throws ServiceInstanceBindingExistsException, ServiceBrokerException {
@@ -69,7 +67,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                 request.getAppGuid()
         );
 
-        Map<String, String> credentials = this.getCredentials(serviceInstanceBinding);
+        Map<String, String> credentials = this.credentials.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
         serviceInstanceBinding.setCredentials(credentials);
         repositoryInstanceBinding.save(serviceInstanceBinding);
         Map<String, Object> credentialsObject = (Map) credentials;
@@ -77,7 +75,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                 request.getBindingId(),
                 request.getServiceInstanceId(),
                 credentialsObject,
-                "",
+                null,
                 request.getAppGuid()
         );
     }
@@ -85,7 +83,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
     @Override
     public ServiceInstanceBinding deleteServiceInstanceBinding(DeleteServiceInstanceBindingRequest request) throws ServiceBrokerException {
         DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding = repositoryInstanceBinding.findOne(request.getBindingId());
-        if (repositoryInstance.findOne(request.getBindingId()) == null) {
+        if (dbDumperServiceInstanceBinding == null) {
             throw new ServiceBrokerException("Cannot find binding instance: " + request.getBindingId());
         }
         Map<String, Object> credentials = (Map) dbDumperServiceInstanceBinding.getCredentials();
@@ -94,67 +92,10 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                 dbDumperServiceInstanceBinding.getId(),
                 dbDumperServiceInstanceBinding.getDbDumperServiceInstance().getServiceInstanceId(),
                 credentials,
-                "",
+                null,
                 dbDumperServiceInstanceBinding.getAppGuid()
         );
         repositoryInstanceBinding.delete(dbDumperServiceInstanceBinding);
         return serviceInstanceBinding;
     }
-
-    public Map<String, String> getCredentials(DbDumperServiceInstanceBinding serviceInstanceBinding) {
-        Map<String, String> credentials = Maps.newHashMap();
-        DatabaseDumpFile latestDatabaseDumpFile = null;
-        String fileName = "";
-        if (serviceInstanceBinding.getDbDumperServiceInstance() == null || serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef() == null) {
-            return credentials;
-        }
-
-        latestDatabaseDumpFile = this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef());
-
-        if (latestDatabaseDumpFile != null) {
-            fileName = latestDatabaseDumpFile.getFileName();
-        }
-        credentials.put("latest_file",
-                String.format(
-                        "http://" + this.appUri + DOWNLOAD_URL,
-                        serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef().getDatabaseName(),
-                        fileName
-                )
-        );
-        credentials.put("latest_raw_file",
-                String.format(
-                        "http://" + this.appUri + RAW_URL,
-                        serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef().getDatabaseName(),
-                        fileName
-                )
-        );
-        credentials.put("list_url",
-                String.format(
-                        "http://" + this.appUri + LIST_BY_INSTANCE_URL,
-                        serviceInstanceBinding.getDbDumperServiceInstance().getServiceInstanceId()
-                )
-        );
-        credentials.put("dashboard_url", "http://" + this.appUri + DASHBOARD_URL);
-
-        SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
-        for (DatabaseDumpFile databaseDumpFile : serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef().getDatabaseDumpFiles()) {
-
-            credentials.put(form.format(databaseDumpFile.getCreatedAt()) + "_file",
-                    String.format(
-                            "http://" + this.appUri + DOWNLOAD_URL,
-                            serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef().getDatabaseName(),
-                            databaseDumpFile.getFileName()
-                    )
-            );
-            credentials.put(form.format(databaseDumpFile.getCreatedAt()) + "_raw_file",
-                    String.format(
-                            "http://" + this.appUri + RAW_URL,
-                            serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef().getDatabaseName(),
-                            databaseDumpFile.getFileName()
-                    )
-            );
-        }
-        return credentials;
-    }
-
 }

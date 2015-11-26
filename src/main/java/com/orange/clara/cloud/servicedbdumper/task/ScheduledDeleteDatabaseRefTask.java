@@ -1,7 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobState;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
@@ -20,27 +22,35 @@ import org.springframework.stereotype.Component;
  * Date: 25/11/2015
  */
 @Component
-public class ScheduledDeleteInstanceTask {
+public class ScheduledDeleteDatabaseRefTask {
 
     @Autowired
     private JobRepo jobRepo;
 
+    @Autowired
     private DbDumperServiceInstanceBindingRepo serviceInstanceBindingRepository;
+
+    @Autowired
     private DbDumperServiceInstanceRepo serviceInstanceRepo;
+
+    @Autowired
+    private DatabaseRefRepo databaseRefRepo;
 
     @Scheduled(fixedRate = 5000)
     public void deleteInstance() {
-        for (Job job : jobRepo.findByJobState(JobState.DELETE_INSTANCE)) {
+        for (Job job : jobRepo.findByJobState(JobState.DELETE_DATABASE_REF)) {
             job.setJobState(JobState.RUNNING);
             jobRepo.save(job);
-
-            if (job.getDbDumperServiceInstance().getDatabaseRef().getDatabaseDumpFiles().size() > 0) {
-                jobRepo.save(new Job(JobState.DELETE_DUMPS, job.getDbDumperServiceInstance()));
+            DatabaseRef databaseRef = job.getDatabaseRef();
+            if (!databaseRef.isDeleted()) {
+                continue;
+            }
+            if (databaseRef.getDatabaseDumpFiles().size() > 0) {
+                jobRepo.save(new Job(JobState.DELETE_DUMPS, databaseRef));
                 jobRepo.delete(job);
                 continue;
             }
-            serviceInstanceBindingRepository.deleteByDbDumperServiceInstance(job.getDbDumperServiceInstance());
-            serviceInstanceRepo.delete(job.getDbDumperServiceInstance());
+            databaseRefRepo.delete(databaseRef);
             jobRepo.delete(job);
         }
     }

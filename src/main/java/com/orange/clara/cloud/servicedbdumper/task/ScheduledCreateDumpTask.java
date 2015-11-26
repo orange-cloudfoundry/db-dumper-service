@@ -39,9 +39,9 @@ public class ScheduledCreateDumpTask {
             job.setJobState(JobState.RUNNING);
             jobRepo.save(job);
             try {
-                this.dumper.dump(job.getDbDumperServiceInstance().getDatabaseRef());
+                this.dumper.dump(job.getDatabaseRef());
             } catch (DumpException e) {
-                logger.error(String.format("Cannot create dump for '%s': %s", job.getDbDumperServiceInstance().getServiceInstanceId(), e.getMessage()));
+                logger.error(String.format("Cannot create dump for '%s': %s", job.getDatabaseRef().getName(), e.getMessage()));
                 job.setJobState(JobState.ERRORED);
                 jobRepo.save(job);
                 continue;
