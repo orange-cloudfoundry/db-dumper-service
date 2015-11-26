@@ -13,7 +13,7 @@
        th:href="@{/manage/raw/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseName},databaseDumpFileName=${fileName})}">
         Raw</a>
     <br/>
-    <pre class="language-php line-numbers"><code th:text="${sql}"></code></pre>
+    <pre class="language-sql line-numbers"><code th:text="${sql}"></code></pre>
 </div>
 <div layout:fragment="scripts">
     <script src="/js/prism.js"></script>

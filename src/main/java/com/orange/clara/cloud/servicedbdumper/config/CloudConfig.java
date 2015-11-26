@@ -26,7 +26,7 @@ import static org.jclouds.Constants.PROPERTY_TRUST_ALL_CERTS;
  * Date: 03/06/2015
  */
 @Configuration
-@Profile(value = "cloud")
+@Profile({"cloud", "core"})
 @ServiceScan
 public class CloudConfig extends AbstractCloudConfig {
     @Autowired

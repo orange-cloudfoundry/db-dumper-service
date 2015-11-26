@@ -8,7 +8,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.UpdateAction;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepository;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceExistsException;
@@ -54,7 +54,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Qualifier(value = "restorer")
     private Restorer restorer;
     @Autowired
-    private DbDumperServiceInstanceRepository repository;
+    private DbDumperServiceInstanceRepo repository;
 
     @Value("${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
@@ -67,10 +67,16 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
     @Override
     public ServiceInstance createServiceInstance(CreateServiceInstanceRequest request) throws ServiceInstanceExistsException, ServiceBrokerException {
-        if (repository.findOne(request.getServiceInstanceId()) != null) {
+        DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
+        if (dbDumperServiceInstance != null && !dbDumperServiceInstance.isDeleted()) {
             throw new ServiceInstanceExistsException(new ServiceInstance(request));
         }
-        DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance(
+        if (dbDumperServiceInstance != null && dbDumperServiceInstance.isDeleted()) {
+            dbDumperServiceInstance.setDeleted(false);
+            repository.save(dbDumperServiceInstance);
+            return new ServiceInstance(request);
+        }
+        dbDumperServiceInstance = new DbDumperServiceInstance(
                 request.getServiceInstanceId(),
                 request.getPlanId(),
                 request.getOrganizationGuid(),
@@ -91,8 +97,14 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public ServiceInstance deleteServiceInstance(DeleteServiceInstanceRequest deleteServiceInstanceRequest) throws ServiceBrokerException {
-        return new ServiceInstance(deleteServiceInstanceRequest);
+    public ServiceInstance deleteServiceInstance(DeleteServiceInstanceRequest request) throws ServiceBrokerException {
+        DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
+        if (dbDumperServiceInstance == null) {
+            throw new ServiceBrokerException("ServiceInstance with the given ID doesn't exists: ServiceInstance.id = " + dbDumperServiceInstance.getServiceInstanceId());
+        }
+        dbDumperServiceInstance.setDeleted(true);
+        repository.save(dbDumperServiceInstance);
+        return new ServiceInstance(request);
     }
 
     @Override
@@ -117,7 +129,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             } catch (RestoreCannotFindFile e) {
                 throw new ServiceBrokerException(e.getMessage());
             } catch (RestoreException e) {
-                throw new ServiceBrokerException("An error occured during restore: " + e.getMessage(), e);
+                throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
             }
         }
         return serviceInstance;

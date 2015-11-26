@@ -1,22 +1,17 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.google.common.collect.Lists;
-import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepository;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
 /**
@@ -34,32 +29,11 @@ import java.util.List;
 public class InterfaceController {
 
     @Autowired
-    @Qualifier(value = "filer")
-    private Filer filer;
-
-    @Autowired
     private DatabaseRefRepo databaseRefRepo;
 
     @Autowired
-    private DbDumperServiceInstanceRepository instanceRepository;
+    private DbDumperServiceInstanceRepo instanceRepository;
 
-    @RequestMapping("/show/{databaseName}/{fileName:.*}")
-    public String show(@PathVariable String databaseName, @PathVariable String fileName, Model model) throws IOException {
-        fileName = databaseName + "/" + fileName;
-        InputStream inputStream = this.filer.retrieveWithStream(fileName);
-
-        String content = "";
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            content += line;
-            content += "<br/>";
-        }
-        br.close();
-        model.addAttribute("databaseName", databaseName);
-        model.addAttribute("fileName", fileName);
-        model.addAttribute("sql", content);
-        return "show";
-    }
 
     @RequestMapping("/list")
     public String list(Model model) throws IOException {
@@ -75,6 +49,18 @@ public class InterfaceController {
         if (serviceInstance != null) {
             databaseRefs.add(serviceInstance.getDatabaseRef());
         }
+        model.addAttribute("databaseRefs", databaseRefs);
+        return "listfiles";
+    }
+
+    @RequestMapping("/list/database/{databaseName}")
+    public String listFromDatabase(@PathVariable String databaseName, Model model) throws IOException {
+        DatabaseRef databaseRef = this.databaseRefRepo.findOne(databaseName);
+        if (databaseRef == null) {
+            throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
+        }
+        List<DatabaseRef> databaseRefs = Lists.newArrayList();
+        databaseRefs.add(databaseRef);
         model.addAttribute("databaseRefs", databaseRefs);
         return "listfiles";
     }

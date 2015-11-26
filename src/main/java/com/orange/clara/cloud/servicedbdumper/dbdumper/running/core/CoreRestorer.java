@@ -62,10 +62,6 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         return dbDumpersFactory.getDatabaseDumper(databaseRefTarget);
     }
 
-    private String getFileName(DatabaseDumpFile databaseDumpFile) {
-        return databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
-    }
-
     private DatabaseDumpFile findDumpFile(DatabaseRef databaseRefSource, Date date) {
         if (date == null) {
             return this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);

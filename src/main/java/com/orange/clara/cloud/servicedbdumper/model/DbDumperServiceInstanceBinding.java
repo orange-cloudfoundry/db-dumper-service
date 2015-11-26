@@ -1,9 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.util.Map;
 
 /**
@@ -26,7 +23,8 @@ public class DbDumperServiceInstanceBinding {
     @JoinColumn(name = "db_dumper_service_instance_id")
     private DbDumperServiceInstance dbDumperServiceInstance;
 
-    private Map<String, Object> credentials;
+    @ElementCollection
+    private Map<String, String> credentials;
 
     private String appGuid;
 
@@ -39,11 +37,11 @@ public class DbDumperServiceInstanceBinding {
         this.appGuid = appGuid;
     }
 
-    public Map<String, Object> getCredentials() {
+    public Map<String, String> getCredentials() {
         return credentials;
     }
 
-    public void setCredentials(Map<String, Object> credentials) {
+    public void setCredentials(Map<String, String> credentials) {
         this.credentials = credentials;
     }
 

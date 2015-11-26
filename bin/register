@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+BASEDIR=$(dirname $0)
+$BASEDIR/target
+cf create-service-broker service-db-dumper-do-not-use myUs3r myPasssw0rd https://service-db-dumper.cf.redacted-domain
+cf enable-service-access service-db-dumper -o brokers-sandboxes

@@ -23,6 +23,10 @@
                            th:href="@{/manage/download/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
                                 class="material-icons">import_export</i>
                             Download</a>
+                        <a class="btn waves-effect waves-light orange"
+                           th:href="@{/manage/delete/{databaseDumpFileId}(databaseDumpFileId=${databaseDumpFile.id})}"><i
+                                class="material-icons">delete</i>
+                            Delete</a>
                     </li>
                 </ul>
             </div>

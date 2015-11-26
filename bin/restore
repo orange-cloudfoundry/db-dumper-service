@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+BASEDIR=$(dirname $0)
+$BASEDIR/target
+cf update-service service-db-dumper -c '{"src_url":"mysql://eFSzrf4jBc7PmNqu:YOU1JxAfhTapIVuW@192.168.30.150:3306/cf_aac5ebfd_53d4_4962_81b3_383ee204ee97", "target_url": "mysql://eFSzrf4jBc7PmNqu:YOU1JxAfhTapIVuW@192.168.30.150:3306/cf_aac5ebfd_53d4_4962_81b3_383ee204ee97", "created_at": "", "action": "restore"}'

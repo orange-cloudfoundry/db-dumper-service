@@ -29,11 +29,11 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
     @Override
     public void dump(DatabaseRef databaseRef) throws DumpException {
-        String fileName = this.createFileName(databaseRef);
+        String fileName = this.generateFileName();
         try {
             DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef);
             logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
-            this.runDump(databaseDumper, fileName);
+            this.runDump(databaseDumper, databaseRef.getName() + "/" + fileName);
             this.createDatabaseDumpFile(databaseRef, fileName);
         } catch (Exception e) {
             throw new DumpException("An error occurred: " + e.getMessage(), e);

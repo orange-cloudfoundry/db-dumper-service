@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+BASEDIR=$(dirname $0)
+PREVIOUS=$(dirname BASEDIR)
+$BASEDIR/target
+cf push -f $PREVIOUS/orange-manifest.yml

@@ -44,7 +44,8 @@ public class CatalogConfig {
                                 new Plan("experimental",
                                         "experimental",
                                         "This is a default service-db-dumper plan.  All services are created equally.",
-                                        getPlanMetadata())),
+                                        getPlanMetadata(),
+                                        true)), //TODO: change it cause set to free
                         Arrays.asList("service-db-dumper", "dump", "restore"),
                         getServiceDefinitionMetadata(),
                         null,

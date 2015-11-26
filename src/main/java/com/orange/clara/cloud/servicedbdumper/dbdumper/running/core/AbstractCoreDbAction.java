@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import org.slf4j.Logger;
@@ -73,9 +74,13 @@ public abstract class AbstractCoreDbAction {
         return dumpFileOutput;
     }
 
-    protected String createFileName(DatabaseRef databaseRef) {
+    protected String getFileName(DatabaseDumpFile databaseDumpFile) {
+        return databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+    }
+
+    protected String generateFileName() {
         Date d = new Date();
         SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
-        return databaseRef.getName() + "/" + form.format(d) + ".sql";
+        return form.format(d) + ".sql";
     }
 }

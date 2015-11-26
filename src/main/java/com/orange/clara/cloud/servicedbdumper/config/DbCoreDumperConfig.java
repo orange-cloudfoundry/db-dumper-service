@@ -1,8 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDeleter;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
@@ -24,7 +26,7 @@ import org.springframework.context.annotation.Profile;
  * Date: 03/06/2015
  */
 @Configuration
-@Profile("core")
+@Profile({"core", "local"})
 public class DbCoreDumperConfig {
 
     @Bean
@@ -45,6 +47,11 @@ public class DbCoreDumperConfig {
     @Bean
     public Restorer restorer() {
         return new CoreRestorer();
+    }
+
+    @Bean
+    public Deleter deleter() {
+        return new CoreDeleter();
     }
 
     @Bean

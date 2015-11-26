@@ -103,6 +103,12 @@ databaseChangeLog:
                   type: varchar(255)
                   constraints:
                     nullable: false
+              - column:
+                  name: deleted
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
         - createTable:
             tableName: db_dumper_service_instance_binding
             columns:
@@ -123,6 +129,72 @@ databaseChangeLog:
                   type: varchar(255)
                   constraints:
                     nullable: false
+        - createTable:
+            tableName: db_dumper_service_instance_binding_credentials
+            columns:
+              - column:
+                  name: db_dumper_service_instance_binding_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: credentials
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: credentials_key
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: job
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: db_dumper_service_instance_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: job_state
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseColumnNames: db_dumper_service_instance_id
+            baseTableName: job
+            constraintName: fk_job_service_instance_binding
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+            referencedColumnNames: service_instance_id
+            referencedTableName: db_dumper_service_instance
+        - addForeignKeyConstraint:
+            baseColumnNames: db_dumper_service_instance_binding_id
+            baseTableName: db_dumper_service_instance_binding_credentials
+            constraintName: fk_credentials_service_instance_binding
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+            referencedColumnNames: id
+            referencedTableName: db_dumper_service_instance_binding
+        - addPrimaryKey:
+            columnNames: credentials, credentials_key
+            constraintName: pk_service_instance_binding_credentials
+            tableName: db_dumper_service_instance_binding_credentials
         - addForeignKeyConstraint:
             baseColumnNames: database_ref_id
             baseTableName: database_dump_file
@@ -149,7 +221,7 @@ databaseChangeLog:
             constraintName: fk_db_sib_db_si
             deferrable: false
             initiallyDeferred: false
-            onDelete: CASCADE
+            onDelete: RESTRICT
             onUpdate: RESTRICT
             referencedColumnNames: service_instance_id
             referencedTableName: db_dumper_service_instance

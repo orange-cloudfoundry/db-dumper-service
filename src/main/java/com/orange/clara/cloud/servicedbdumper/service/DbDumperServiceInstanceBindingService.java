@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepository;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepository;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceBindingExistsException;
 import org.cloudfoundry.community.servicebroker.model.CreateServiceInstanceBindingRequest;
@@ -40,10 +40,10 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
     @Value("${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
     @Autowired
-    private DbDumperServiceInstanceBindingRepository repositoryInstanceBinding;
+    private DbDumperServiceInstanceBindingRepo repositoryInstanceBinding;
 
     @Autowired
-    private DbDumperServiceInstanceRepository repositoryInstance;
+    private DbDumperServiceInstanceRepo repositoryInstance;
 
     @Autowired
     private DatabaseDumpFileRepo databaseDumpFileRepo;
@@ -60,7 +60,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                             request.getAppGuid()
                     ));
         }
-        if (repositoryInstance.findOne(request.getServiceInstanceId()) != null) {
+        if (repositoryInstance.findOne(request.getServiceInstanceId()) == null) {
             throw new ServiceBrokerException("Cannot find instance: " + request.getServiceInstanceId());
         }
         DbDumperServiceInstanceBinding serviceInstanceBinding = new DbDumperServiceInstanceBinding(
@@ -69,13 +69,14 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                 request.getAppGuid()
         );
 
-        Map<String, Object> credentials = this.getCredentials(serviceInstanceBinding);
+        Map<String, String> credentials = this.getCredentials(serviceInstanceBinding);
         serviceInstanceBinding.setCredentials(credentials);
         repositoryInstanceBinding.save(serviceInstanceBinding);
+        Map<String, Object> credentialsObject = (Map) credentials;
         return new ServiceInstanceBinding(
                 request.getBindingId(),
                 request.getServiceInstanceId(),
-                credentials,
+                credentialsObject,
                 "",
                 request.getAppGuid()
         );
@@ -84,13 +85,15 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
     @Override
     public ServiceInstanceBinding deleteServiceInstanceBinding(DeleteServiceInstanceBindingRequest request) throws ServiceBrokerException {
         DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding = repositoryInstanceBinding.findOne(request.getBindingId());
-        if (repositoryInstance.findOne(request.getBindingId()) != null) {
+        if (repositoryInstance.findOne(request.getBindingId()) == null) {
             throw new ServiceBrokerException("Cannot find binding instance: " + request.getBindingId());
         }
+        Map<String, Object> credentials = (Map) dbDumperServiceInstanceBinding.getCredentials();
+
         ServiceInstanceBinding serviceInstanceBinding = new ServiceInstanceBinding(
                 dbDumperServiceInstanceBinding.getId(),
                 dbDumperServiceInstanceBinding.getDbDumperServiceInstance().getServiceInstanceId(),
-                dbDumperServiceInstanceBinding.getCredentials(),
+                credentials,
                 "",
                 dbDumperServiceInstanceBinding.getAppGuid()
         );
@@ -98,8 +101,8 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         return serviceInstanceBinding;
     }
 
-    public Map<String, Object> getCredentials(DbDumperServiceInstanceBinding serviceInstanceBinding) {
-        Map<String, Object> credentials = Maps.newHashMap();
+    public Map<String, String> getCredentials(DbDumperServiceInstanceBinding serviceInstanceBinding) {
+        Map<String, String> credentials = Maps.newHashMap();
         DatabaseDumpFile latestDatabaseDumpFile = null;
         String fileName = "";
         if (serviceInstanceBinding.getDbDumperServiceInstance() == null || serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef() == null) {

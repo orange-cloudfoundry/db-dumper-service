@@ -158,11 +158,11 @@ public class DatabaseRef {
         this.databaseDumpFiles.remove(databaseDumpFile);
     }
 
-    public List<DbDumperServiceInstance> getDbDumperServiceInstance() {
+    public List<DbDumperServiceInstance> getDbDumperServiceInstances() {
         return dbDumperServiceInstances;
     }
 
-    public void setDbDumperServiceInstance(List<DbDumperServiceInstance> dbDumperServiceInstanceBindings) {
+    public void setDbDumperServiceInstances(List<DbDumperServiceInstance> dbDumperServiceInstanceBindings) {
         this.dbDumperServiceInstances = dbDumperServiceInstanceBindings;
     }
 
