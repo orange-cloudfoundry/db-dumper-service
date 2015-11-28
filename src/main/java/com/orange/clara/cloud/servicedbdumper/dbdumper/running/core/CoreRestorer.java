@@ -9,6 +9,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Date;
@@ -28,6 +29,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
     private Logger logger = LoggerFactory.getLogger(CoreRestorer.class);
 
     @Override
+    @Transactional
     public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget, Date date) throws RestoreException {
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " ...");
         DatabaseDumpFile dumpFile = this.findDumpFile(databaseRefSource, date);

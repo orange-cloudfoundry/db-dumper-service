@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,18 +30,16 @@ public abstract class AbstractCoreDbAction {
     public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
 
     protected Logger logger = LoggerFactory.getLogger(AbstractCoreDbAction.class);
-
     @Autowired
     @Qualifier(value = "dbDumpersFactory")
     protected DbDumpersFactory dbDumpersFactory;
-
     @Autowired
     @Qualifier(value = "filer")
     protected Filer filer;
-
     @Autowired
     protected DatabaseDumpFileRepo databaseDumpFileRepo;
-
+    @PersistenceContext
+    protected EntityManager em;
 
     public static BufferedReader getOutput(Process p) {
         return new BufferedReader(new InputStreamReader(p.getInputStream()));

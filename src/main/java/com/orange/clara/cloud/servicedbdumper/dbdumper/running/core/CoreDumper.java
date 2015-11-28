@@ -7,6 +7,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -28,6 +29,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
     private Logger logger = LoggerFactory.getLogger(CoreDumper.class);
 
     @Override
+    @Transactional
     public void dump(DatabaseRef databaseRef) throws DumpException {
         String fileName = this.generateFileName();
         try {

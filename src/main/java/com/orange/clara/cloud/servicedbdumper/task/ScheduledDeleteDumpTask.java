@@ -1,11 +1,11 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
-import com.orange.clara.cloud.servicedbdumper.model.JobState;
+import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
+import com.orange.clara.cloud.servicedbdumper.model.JobType;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
+import com.orange.clara.cloud.servicedbdumper.task.asynctask.DeleteDumpTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 
 /**
@@ -36,31 +37,24 @@ public class ScheduledDeleteDumpTask {
     private JobRepo jobRepo;
 
     @Autowired
-    @Qualifier("deleter")
-    private Deleter deleter;
-
-    @Autowired
     private DatabaseRefRepo databaseRefRepo;
 
-    @Scheduled(fixedRate = 5000)
+    @Autowired
+    @Qualifier(value = "deleteDumpTask")
+    private DeleteDumpTask deleteDumpTask;
+
+    @Scheduled(fixedDelay = 5000)
     public void deleteDump() {
         logger.info("Running delete all dump scheduled task ...");
-        LocalDateTime localDateTime;
-        for (Job job : jobRepo.findByJobState(JobState.DELETE_DUMPS)) {
-            localDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant()).plusDays(this.dumpDeleteExpirationDays);
-            if (LocalDateTime.from(Calendar.getInstance().toInstant()).isBefore(localDateTime)) {
+        LocalDateTime whenRemoveDateTime;
+        for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DUMPS, JobEvent.START)) {
+            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
                 continue;
             }
-            job.setJobState(JobState.RUNNING);
+            job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
-            DatabaseRef databaseRef = job.getDatabaseRef();
-            this.deleter.deleteAll(databaseRef);
-            if (databaseRef.isDeleted()) {
-                this.databaseRefRepo.delete(databaseRef);
-            }
-            jobRepo.save(new Job(JobState.DELETE_DATABASE_REF, job.getDatabaseRef()));
-            jobRepo.delete(job);
-
+            this.deleteDumpTask.runDeleteDump(job.getId());
         }
     }
 }

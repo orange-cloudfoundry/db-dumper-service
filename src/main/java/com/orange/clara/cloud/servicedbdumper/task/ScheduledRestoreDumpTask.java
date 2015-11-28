@@ -4,7 +4,7 @@ import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
-import com.orange.clara.cloud.servicedbdumper.task.asynctask.CreateDumpTask;
+import com.orange.clara.cloud.servicedbdumper.task.asynctask.RestoreDumpTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +23,23 @@ import org.springframework.stereotype.Component;
  * Date: 25/11/2015
  */
 @Component
-public class ScheduledCreateDumpTask {
-    private Logger logger = LoggerFactory.getLogger(ScheduledCreateDumpTask.class);
+public class ScheduledRestoreDumpTask {
+    private Logger logger = LoggerFactory.getLogger(ScheduledRestoreDumpTask.class);
 
     @Autowired
     private JobRepo jobRepo;
 
     @Autowired
-    @Qualifier(value = "createDumpTask")
-    private CreateDumpTask createDumpTask;
+    @Qualifier(value = "restoreDumpTask")
+    private RestoreDumpTask restoreDumpTask;
 
     @Scheduled(fixedDelay = 5000)
-    public void createDump() {
-        logger.info("Running create dump scheduled task ...");
-        for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.CREATE_DUMP, JobEvent.START)) {
+    public void restoreDump() {
+        logger.info("Running restore dump scheduled task ...");
+        for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.RESTORE_DUMP, JobEvent.START)) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
-            this.createDumpTask.runCreateDump(job.getId());
+            this.restoreDumpTask.runRestoreDump(job.getId());
         }
     }
 }
