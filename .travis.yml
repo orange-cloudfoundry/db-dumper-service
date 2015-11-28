@@ -1,0 +1,23 @@
+language: java
+jdk:
+- oraclejdk8
+after_success:
+- bin/install-binaries
+- mvn clean install
+- mkdir -p deploy/target
+- cp target/service-db-dumper-1.0-SNAPSHOT.war deploy/target
+- cp manifest.yml deploy/
+- cd deploy
+- zip -r service-db-dumper ./*
+- mv service-db-dumper.zip ../
+deploy:
+  provider: releases
+  api_key:
+    secure: fJR4Xwd/hBlVfY2VBREajIDeyp40pPb2pXfbQ35/u2z2E6p6C2OtXyckKss9mYQR/HhMIAPJsgXuIoI4ju7yMe2kNLdpK+47g3HAb6UdfImulVXELHu67KHjZ/y64ut20KeYpUyHlIogdn4bGwEmoThI0gfrUfpRWS4tBLPpIi59VoKFERvz9JbtH/9Jb4hhdvRPrcSldHFcUB/naPo4ND0nrV/MRBJaJVzYoLvUmywolprXwNdZArEjCnPx0veZmMLQeXaxK26N3n2ZlxsrFP/wD+96r3cqpiWB1F2YApq7BuwjcIJJf75ZaQPQ4ZfdLuOPa7JP0RHgaqJUDxCfFiLp8RAvPgVnbXMmL0EIf8SnyGBt/9cfFIYkHD09R8/aU/3DT4oQHMNzOJ1orn6r1GvdTgGidSkuzonWKvf6hmFF7zsc/OvlxBV2Mxxoxa9qoG/He/92y1O4foiDt5xTuvtLXoUPRoDyEl3IZkCWHtzK07MIAYLupc32PDSiDnPOl7tjQCc15l0rObNTDzuDb7SzFCzJ1T5f8df5PFJySP7BIBRm4gDzPs4lt8KVe4IP2iRjLMQZ8/Vxe2kWcz+OXMhHg63PqoaYnzdmCrjupYh44wZMJU2s+Amu/HR/DIko/gjur05XrtC+xR6n7uXRMT1iCYW896daxXSwdgRlv5M=
+  file: service-db-dumper.zip
+  on:
+    repo: ArthurHlt/service-db-dumper
+    tags: true
+    all_branches: true
+env:
+  - secure: amxMUTh0mWtM/KEOZN4E2uN0cmgprCAJKYrHJdVE3tb5yboOS8nAGug/wfs919a6lSnPTDIxr9yVeWoTwJhoibGoeG4muU9VLTXYp4ob7QFbB0XghxHM0yGmbZ+2yqh+9JgnoADxnxFeOaich2wQ3gm4FKvmKQExKGMQ4LxF9p3nrf33i+BwyVbkd49zfALgMjst+BMvS1ltGvPC9WLxBdDd0cviSnVRJ/kwpLPsBD/uA2StNxrvHu6zSm9Pk6fUTW27Ie6Vk44WtABKUvwJyPltUKRELaCzgHytIcMdV6D4uVCVefmIWfphK6KI4SomK1k6VmFHsPUV646sucDNdjp+BZGrKx4hkgDPewvSu5qzJcS7B9FvSVsQaUtHC8gnpLOTT4y5yfoJdOdPbyUjiN0PMeTCV4l3ygjKgiWmoUro3IHfrcl9zBqCu3JWasDuLnwlRqLlDjS+FuTWlk5L25/phPKzV6sWazlRaEZUAuIjXGIkzAKW1j7ddOW1/D691dReevQiRsUcWZBcNXne6vJCOFAR+ofd3+mHGnrf+JFHHMk7c//62/uUR10oMFRXzjZU097U0k7BJPqZ9fcduFo7ZIYuKQ7BI/mL28rabC9468vwfqgYRdFgo0FRUkkHGXm78s7Fnd3Ud3ZjqT7x+0kCwHK9wcFts9bWTZMG4nY=
