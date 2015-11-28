@@ -37,13 +37,13 @@ if [[ "$OS" == "windows" ]]; then
     FILENAME="${FILENAME}.exe"
 fi
 LINK="https://github.com/${OWNER}/${NAME}/releases/download/v${VERSION}/${FILENAME}"
-FILEOUTPUT="${FILENAME}"
+FILEOUTPUT="${WD}/${FILENAME}"
 
 RESPONSE=200
 if hash curl 2>/dev/null; then
-    RESPONSE=$(curl --write-out %{http_code} -L -o "${TMPDIR}/${FILENAME}" "$LINK")
+    RESPONSE=$(curl --write-out %{http_code} -L -o "${FILEOUTPUT}" "$LINK")
 else
-    wget -o "${TMPDIR}/${FILENAME}" "$LINK"
+    wget -o "${FILEOUTPUT}" "$LINK"
     RESPONSE=$?
 fi
 
