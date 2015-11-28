@@ -3,4 +3,5 @@
 /orange-manifest.yml
 application-orange.yml
 /bin/target
+/.github-blob-sender
 /github-blob-sender
