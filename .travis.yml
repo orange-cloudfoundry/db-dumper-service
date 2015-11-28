@@ -9,7 +9,6 @@ after_success:
 - cp manifest.yml deploy/
 - cd deploy
 - zip -r service-db-dumper ./*
-- mv service-db-dumper.zip ../
 deploy:
   provider: releases
   api_key:
