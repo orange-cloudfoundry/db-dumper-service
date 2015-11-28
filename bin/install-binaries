@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
 WD=`pwd`
 BASEDIR=$(dirname $0)
+MYTMPDIR=${TMPDIR-/tmp}
 GBS="github-blob-sender"
 if ! type "github-blob-sender" > /dev/null; then
     "${BASEDIR}/download-gbs"
     GBS="${WD}/github-blob-sender"
 fi
 echo "Restoring all binaries..."
-$GBS restore-all "${TMPDIR}"
+$GBS restore-all "${MYTMPDIR}"
 
 echo "Installing mongodb dump and restore binaries.."
-unzip -o "${TMPDIR}/mongodb-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
-rm "${TMPDIR}/mongodb-dr-binaries.zip"
+unzip -o "${MYTMPDIR}/mongodb-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
+rm "${MYTMPDIR}/mongodb-dr-binaries.zip"
 
 echo "Installing mysql dump and restore binaries..."
-unzip -o "${TMPDIR}/mysql-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
-rm "${TMPDIR}/mysql-dr-binaries.zip"
+unzip -o "${MYTMPDIR}/mysql-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
+rm "${MYTMPDIR}/mysql-dr-binaries.zip"
 
 echo "Installing postgresql dump and restore binaries..."
-unzip -o "${TMPDIR}/postgres-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
-rm "${TMPDIR}/postgres-dr-binaries.zip"
+unzip -o "${MYTMPDIR}/postgres-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
+rm "${MYTMPDIR}/postgres-dr-binaries.zip"
 
 echo "Binaries are installed."
