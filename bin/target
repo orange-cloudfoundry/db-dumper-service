@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
 cf config --locale en_US
-API=https://your-cf-api
-org=your-cf-org
-space=your-cf-space
-user=your-cf-user
-password=your-cf-password
 
 current_api=`cf target | grep API | awk '{print $3}'`
 current_org=`cf target | grep Org | awk '{print $2}'`
