@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# this script is for downloading github-blob-sender required to getting dump and restore binaries
+WD=`pwd`
+VERSION="1.0.0"
+NAME="github-blob-sender"
+OS=""
+OWNER="ArthurHlt"
+echo "Installing ${NAME}..."
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    OS="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="darwin"
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+    OS="windows"
+elif [[ "$OSTYPE" == "msys" ]]; then
+    OS="windows"
+elif [[ "$OSTYPE" == "win32" ]]; then
+    OS="windows"
+else
+    echo "Os not supported by install script"
+    exit 1
+fi
+
+ARCHNUM=`getconf LONG_BIT`
+ARCH=""
+CPUINFO=`uname -m`
+if [[ "$ARCHNUM" == "32" ]]; then
+    ARCH="386"
+else
+    ARCH="amd64"
+fi
+if [[ "$CPUINFO" == "arm"* ]]; then
+    ARCH="arm"
+fi
+FILENAME="${NAME}_${OS}_${ARCH}"
+if [[ "$OS" == "windows" ]]; then
+    FILENAME="${FILENAME}.exe"
+fi
+LINK="https://github.com/${OWNER}/${NAME}/releases/download/v${VERSION}/${FILENAME}"
+FILEOUTPUT="${WD}/${FILENAME}"
+
+RESPONSE=200
+if hash curl 2>/dev/null; then
+    RESPONSE=$(curl --write-out %{http_code} -L -o "${FILEOUTPUT}" "$LINK")
+else
+    wget -o "${FILEOUTPUT}" "$LINK"
+    RESPONSE=$?
+fi
+
+if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+    echo "File ${LINK} not found, so it can't be downloaded."
+    rm "$FILEOUTPUT"
+    exit 1
+fi
+
+chmod +x "$FILEOUTPUT"
+mv "$FILEOUTPUT" "${WD}/${NAME}"
+echo "${NAME} has been installed."
