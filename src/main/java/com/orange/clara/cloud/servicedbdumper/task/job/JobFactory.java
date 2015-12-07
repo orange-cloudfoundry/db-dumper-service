@@ -1,15 +1,18 @@
 package com.orange.clara.cloud.servicedbdumper.task.job;
 
-import com.orange.clara.cloud.servicedbdumper.exception.JobAlreadyExist;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.Job;
-import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
-import com.orange.clara.cloud.servicedbdumper.model.JobType;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Copyright (C) 2015 Orange
@@ -22,52 +25,81 @@ import java.util.Date;
  * Date: 27/11/2015
  */
 public class JobFactory {
+
+    @Value("${job.errored.delete.expiration.days:2}")
+    private Integer jobErroredDeleteExpirationDays;
+
+    private Logger logger = LoggerFactory.getLogger(JobFactory.class);
     @Autowired
     private JobRepo jobRepo;
 
     @Transactional
-    public void createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date updatedAt) throws JobAlreadyExist {
-        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.START, databaseRefSrc, databaseRefTarget).size() > 0) {
-            throw new JobAlreadyExist(new Job(jobType, databaseRefSrc));
+    public void createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
+        Job job = new Job(jobType, databaseRefSrc, databaseRefTarget, dumpDate, dbDumperServiceInstance);
+        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.START, databaseRefSrc, databaseRefTarget).size() > 0
+                || this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.RUNNING, databaseRefSrc, databaseRefTarget).size() > 0) {
+            job.setJobEvent(JobEvent.SCHEDULED);
+            this.logger.info(
+                    String.format("Job type: %s for database source '%s' and database target '%s' has been scheduled.",
+                            jobType.toString(),
+                            databaseRefSrc.getDatabaseName(),
+                            databaseRefTarget.getDatabaseName()
+                    )
+            );
         }
-        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.RUNNING, databaseRefSrc, databaseRefTarget).size() > 0) {
-            throw new JobAlreadyExist(new Job(jobType, databaseRefSrc));
-        }
-        this.jobRepo.save(new Job(jobType, databaseRefSrc, databaseRefTarget, updatedAt));
+        this.jobRepo.save(job);
     }
 
     @Transactional
-    public void createJobWithDatabaseRefSrc(JobType jobType, DatabaseRef databaseRefSrc) throws JobAlreadyExist {
-        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.START, databaseRefSrc).size() > 0) {
-            throw new JobAlreadyExist(new Job(jobType, databaseRefSrc));
+    public void createJobWithDatabaseRefSrc(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+        Job job = new Job(jobType, databaseRefSrc, dbDumperServiceInstance);
+        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.START, databaseRefSrc).size() > 0
+                || this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.RUNNING, databaseRefSrc).size() > 0) {
+            job.setJobEvent(JobEvent.SCHEDULED);
+            this.logger.info(
+                    String.format("Job type: %s for database source '%s' has been scheduled.",
+                            jobType.toString(),
+                            databaseRefSrc.getDatabaseName()
+                    )
+            );
         }
-        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.RUNNING, databaseRefSrc).size() > 0) {
-            throw new JobAlreadyExist(new Job(jobType, databaseRefSrc));
-        }
-        this.jobRepo.save(new Job(jobType, databaseRefSrc));
+        this.jobRepo.save(job);
     }
 
 
-    public void createJobCreateDump(DatabaseRef databaseRefSrc) throws JobAlreadyExist {
-        this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, databaseRefSrc);
+    public void createJobCreateDump(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, databaseRefSrc, dbDumperServiceInstance);
     }
 
-    public void createJobDeleteDumps(DatabaseRef databaseRefSrc) throws JobAlreadyExist {
-        this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, databaseRefSrc);
+    public void createJobDeleteDumps(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, databaseRefSrc, dbDumperServiceInstance);
     }
 
-    public void createJobDeleteDatabaseRef(DatabaseRef databaseRefSrc) throws JobAlreadyExist {
-        this.createJobWithDatabaseRefSrc(JobType.DELETE_DATABASE_REF, databaseRefSrc);
+    public void createJobDeleteDatabaseRef(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJobWithDatabaseRefSrc(JobType.DELETE_DATABASE_REF, databaseRefSrc, dbDumperServiceInstance);
     }
 
-    public void createJobRestoreDump(DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date createdAt) throws JobAlreadyExist {
-        this.createJob(JobType.RESTORE_DUMP, databaseRefSrc, databaseRefTarget, createdAt);
+    public void createJobRestoreDump(DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date createdAt, DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJob(JobType.RESTORE_DUMP, databaseRefSrc, databaseRefTarget, createdAt, dbDumperServiceInstance);
     }
 
     @Transactional
     public void purgeJob() {
-        this.jobRepo.deleteByJobEvent(JobEvent.ERRORED);
+        this.purgeErroredJobs();
         this.purgeFinishedJob();
+    }
+
+    @Transactional
+    public void purgeErroredJobs() {
+        LocalDateTime whenRemoveDateTime;
+        List<Job> jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.ERRORED);
+        for (Job job : jobs) {
+            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.jobErroredDeleteExpirationDays);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
+                continue;
+            }
+            this.jobRepo.delete(job);
+        }
     }
 
     @Transactional

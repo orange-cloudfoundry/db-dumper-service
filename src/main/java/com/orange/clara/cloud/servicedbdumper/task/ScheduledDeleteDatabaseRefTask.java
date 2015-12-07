@@ -1,6 +1,5 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
-import com.orange.clara.cloud.servicedbdumper.exception.JobAlreadyExist;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
@@ -53,6 +52,7 @@ public class ScheduledDeleteDatabaseRefTask {
     @Scheduled(fixedDelay = 5000)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteDatabaseRef() {
+        logger.info("Running: delete database reference scheduled task ...");
         for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DATABASE_REF, JobEvent.START)) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
@@ -61,11 +61,7 @@ public class ScheduledDeleteDatabaseRefTask {
                 continue;
             }
             if (databaseRef.getDatabaseDumpFiles().size() > 0) {
-                try {
-                    this.jobFactory.createJobDeleteDumps(databaseRef);
-                } catch (JobAlreadyExist e) {
-                    logger.info(e.getMessage());
-                }
+                this.jobFactory.createJobDeleteDumps(databaseRef, null);
 
                 job.setJobEvent(JobEvent.FINISHED);
                 jobRepo.save(job);
@@ -84,5 +80,6 @@ public class ScheduledDeleteDatabaseRefTask {
             job.setJobEvent(JobEvent.FINISHED);
             jobRepo.save(job);
         }
+        logger.info("Finished: delete database reference scheduled task ...");
     }
 }

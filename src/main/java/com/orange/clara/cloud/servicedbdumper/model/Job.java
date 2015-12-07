@@ -28,6 +28,10 @@ public class Job {
     @JoinColumn(name = "database_ref_target_id")
     private DatabaseRef databaseRefTarget;
 
+    @ManyToOne
+    @JoinColumn(name = "service_instance_id")
+    private DbDumperServiceInstance dbDumperServiceInstance;
+
     @Enumerated(EnumType.STRING)
     private JobEvent jobEvent;
 
@@ -36,25 +40,28 @@ public class Job {
 
     private Date updatedAt;
 
+    private Date dumpDate;
+
     public Job() {
         this.updatedAt = Calendar.getInstance().getTime();
         this.jobEvent = JobEvent.START;
     }
 
-    public Job(JobType jobType, DatabaseRef databaseRefSrc) {
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
         this();
+        this.dbDumperServiceInstance = dbDumperServiceInstance;
         this.jobType = jobType;
         this.databaseRefSrc = databaseRefSrc;
     }
 
-    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget) {
-        this(jobType, databaseRefSrc);
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, DbDumperServiceInstance dbDumperServiceInstance) {
+        this(jobType, databaseRefSrc, dbDumperServiceInstance);
         this.databaseRefTarget = databaseRefTarget;
     }
 
-    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date updatedAt) {
-        this(jobType, databaseRefSrc, databaseRefTarget);
-        this.updatedAt = updatedAt;
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
+        this(jobType, databaseRefSrc, databaseRefTarget, dbDumperServiceInstance);
+        this.dumpDate = dumpDate;
     }
 
     public Integer getId() {
@@ -70,6 +77,7 @@ public class Job {
     }
 
     public void setDatabaseRefSrc(DatabaseRef databaseRefSrc) {
+        this.updatedAt = Calendar.getInstance().getTime();
         this.databaseRefSrc = databaseRefSrc;
     }
 
@@ -78,6 +86,7 @@ public class Job {
     }
 
     public void setDatabaseRefTarget(DatabaseRef databaseRefTarget) {
+        this.updatedAt = Calendar.getInstance().getTime();
         this.databaseRefTarget = databaseRefTarget;
     }
 
@@ -86,6 +95,7 @@ public class Job {
     }
 
     public void setJobType(JobType jobType) {
+        this.updatedAt = Calendar.getInstance().getTime();
         this.jobType = jobType;
     }
 
@@ -102,6 +112,41 @@ public class Job {
     }
 
     public void setJobEvent(JobEvent jobEvent) {
+        this.updatedAt = Calendar.getInstance().getTime();
         this.jobEvent = jobEvent;
+    }
+
+    public Date getDumpDate() {
+        return dumpDate;
+    }
+
+    public void setDumpDate(Date dumpDate) {
+        this.updatedAt = Calendar.getInstance().getTime();
+        this.dumpDate = dumpDate;
+    }
+
+    public DbDumperServiceInstance getDbDumperServiceInstance() {
+        return dbDumperServiceInstance;
+    }
+
+    public void setDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+        this.updatedAt = Calendar.getInstance().getTime();
+        this.dbDumperServiceInstance = dbDumperServiceInstance;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Job job = (Job) o;
+
+        return !(id != null ? !id.equals(job.id) : job.id != null);
+
     }
 }

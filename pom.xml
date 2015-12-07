@@ -77,10 +77,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cloud-connectors</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.cloudfoundry</groupId>
             <artifactId>spring-boot-cf-service-broker</artifactId>
             <version>2.6.0</version>
+        </dependency>-->
+        <dependency>
+            <groupId>com.github.cloudfoundry-community</groupId>
+            <artifactId>spring-boot-cf-service-broker</artifactId>
+            <version>a20936d75a</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

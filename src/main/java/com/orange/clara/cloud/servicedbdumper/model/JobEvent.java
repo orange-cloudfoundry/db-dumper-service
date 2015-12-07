@@ -11,5 +11,5 @@ package com.orange.clara.cloud.servicedbdumper.model;
  * Date: 27/11/2015
  */
 public enum JobEvent {
-    START, PAUSED, FINISHED, RUNNING, ERRORED
+    START, PAUSED, FINISHED, RUNNING, ERRORED, SCHEDULED
 }

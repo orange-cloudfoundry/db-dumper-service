@@ -168,6 +168,11 @@ databaseChangeLog:
                   constraints:
                     nullable: true
               - column:
+                  name: service_instance_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
                   name: job_type
                   type: varchar(255)
                   constraints:
@@ -182,6 +187,21 @@ databaseChangeLog:
                   type: datetime
                   constraints:
                     nullable: false
+              - column:
+                  name: dump_date
+                  type: datetime
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseColumnNames: service_instance_id
+            baseTableName: job
+            constraintName: fk_job_service_instance
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+            referencedColumnNames: service_instance_id
+            referencedTableName: db_dumper_service_instance
         - addForeignKeyConstraint:
             baseColumnNames: database_ref_src_id
             baseTableName: job

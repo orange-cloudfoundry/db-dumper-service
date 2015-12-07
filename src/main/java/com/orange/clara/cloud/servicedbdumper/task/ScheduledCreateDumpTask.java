@@ -35,11 +35,12 @@ public class ScheduledCreateDumpTask {
 
     @Scheduled(fixedDelay = 5000)
     public void createDump() {
-        logger.info("Running create dump scheduled task ...");
+        logger.info("Running: create dump scheduled task ...");
         for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.CREATE_DUMP, JobEvent.START)) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
             this.createDumpTask.runCreateDump(job.getId());
         }
+        logger.info("Finished: create dump scheduled task .");
     }
 }

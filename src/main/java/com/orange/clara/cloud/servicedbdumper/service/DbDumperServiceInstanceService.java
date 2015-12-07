@@ -1,25 +1,21 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
+import com.google.common.collect.Sets;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
-import com.orange.clara.cloud.servicedbdumper.exception.JobAlreadyExist;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
-import com.orange.clara.cloud.servicedbdumper.model.UpdateAction;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceExistsException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceUpdateNotSupportedException;
-import org.cloudfoundry.community.servicebroker.model.CreateServiceInstanceRequest;
-import org.cloudfoundry.community.servicebroker.model.DeleteServiceInstanceRequest;
-import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
-import org.cloudfoundry.community.servicebroker.model.UpdateServiceInstanceRequest;
+import org.cloudfoundry.community.servicebroker.model.*;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +27,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Copyright (C) 2015 Orange
@@ -71,6 +65,9 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private JobFactory jobFactory;
 
     @Autowired
+    private JobRepo jobRepo;
+
+    @Autowired
     @Qualifier(value = "dumper")
     private Dumper dumper;
     @Autowired
@@ -88,22 +85,39 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 request.getOrganizationGuid(),
                 request.getSpaceGuid(),
                 appUri + DASHBOARD_ROUTE);
-        try {
-            this.createDump(request.getParameters(), dbDumperServiceInstance);
-        } catch (JobAlreadyExist jobAlreadyExist) {
-            logger.info(jobAlreadyExist.getMessage());
-        }
-        repository.save(dbDumperServiceInstance);
-        return new ServiceInstance(request);
+        this.createDump(request.getParameters(), dbDumperServiceInstance);
+        return new ServiceInstance(request).withAsync(true);
     }
 
     @Override
     public ServiceInstance getServiceInstance(String s) {
         DbDumperServiceInstance instance = repository.findOne(s);
-        if (instance != null) {
-            return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s));
+        if (instance == null) {
+            return null;
         }
-        return null;
+        ServiceInstanceLastOperation serviceInstanceLastOperation = null;
+
+        JobEvent[] jobEvents = new JobEvent[]{JobEvent.ERRORED};
+        Set<JobEvent> jobEventSet = Sets.newHashSet(jobEvents);
+        List<Job> jobsErrored = this.jobRepo.findByDbDumperServiceInstanceInJobEventSet(instance, jobEventSet);
+        if (jobsErrored.size() > 0) {
+            serviceInstanceLastOperation = new ServiceInstanceLastOperation("Error", OperationState.FAILED);
+            return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
+        }
+        jobEvents = new JobEvent[]{JobEvent.RUNNING, JobEvent.SCHEDULED, JobEvent.START};
+        jobEventSet = Sets.newHashSet(jobEvents);
+        List<Job> jobsRunning = this.jobRepo.findByDbDumperServiceInstanceInJobEventSet(instance, jobEventSet);
+
+        if (jobsRunning.size() == 0) {
+            serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
+            return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
+        }
+        String description = "";
+        for (Job jobRunning : jobsRunning) {
+            description += String.format("Job of type '%s' for instance '%s' is '%s'\n", jobRunning.getJobType(), instance.getServiceInstanceId(), jobRunning.getJobEvent());
+        }
+        serviceInstanceLastOperation = new ServiceInstanceLastOperation(description, OperationState.IN_PROGRESS);
+        return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
     }
 
     @Override
@@ -119,13 +133,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
         this.databaseRefRepo.save(databaseRef);
         this.serviceInstanceBindingRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
+        this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
         repository.delete(dbDumperServiceInstance);
-        try {
-            this.jobFactory.createJobDeleteDatabaseRef(databaseRef);
-        } catch (JobAlreadyExist jobAlreadyExist) {
-            logger.info(String.format("Deleting database ref '%s' already scheduled or running ", databaseRef.getName()));
-        }
-        return new ServiceInstance(request);
+        this.jobFactory.createJobDeleteDatabaseRef(databaseRef, dbDumperServiceInstance);
+
+        return new ServiceInstance(request).withAsync(false);
     }
 
     @Override
@@ -142,25 +154,22 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         } catch (Exception e) {
             throw new ServiceBrokerException("Action doesn't exist. you need to set this parameter: " + ACTION_PARAMETER + " valid value are: " + UpdateAction.showValues());
         }
-        try {
-            if (action.equals(UpdateAction.DUMP)) {
-                this.createDump(request.getParameters(), instance);
-            } else if (action.equals(UpdateAction.RESTORE)) {
-                try {
-                    this.restoreDump(request.getParameters(), instance);
-                } catch (RestoreCannotFindFile e) {
-                    throw new ServiceBrokerException(e.getMessage());
-                } catch (RestoreException e) {
-                    throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
-                }
+        if (action.equals(UpdateAction.DUMP)) {
+            this.createDump(request.getParameters(), instance);
+        } else if (action.equals(UpdateAction.RESTORE)) {
+            try {
+                this.restoreDump(request.getParameters(), instance);
+            } catch (RestoreCannotFindFile e) {
+                throw new ServiceBrokerException(e.getMessage());
+            } catch (RestoreException e) {
+                throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
             }
-        } catch (JobAlreadyExist e) {
-            throw new ServiceBrokerException("Same operation is already scheduled or running");
         }
+        serviceInstance.withAsync(true);
         return serviceInstance;
     }
 
-    private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, JobAlreadyExist {
+    private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
 
         String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
         UUID dbRefName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
@@ -170,7 +179,8 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             databaseRefRepo.save(databaseRef);
         }
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
-        this.jobFactory.createJobCreateDump(databaseRef);
+        repository.save(dbDumperServiceInstance);
+        this.jobFactory.createJobCreateDump(databaseRef, dbDumperServiceInstance);
     }
 
     private String getParameter(Map<String, Object> parameters, String parameter) throws ServiceBrokerException {
@@ -189,7 +199,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         return paramObject.toString();
     }
 
-    private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException, JobAlreadyExist {
+    private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
         String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
         String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER);
         String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
@@ -207,7 +217,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 today = form.parse(form.format(new Date()));
             } catch (ParseException e) { // should have no error
             }
-            this.jobFactory.createJobRestoreDump(databaseRefSource, databaseRefTarget, today);
+            this.jobFactory.createJobRestoreDump(databaseRefSource, databaseRefTarget, today, dbDumperServiceInstance);
 
             return;
         }
@@ -218,7 +228,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         } catch (ParseException e) {
             throw new ServiceBrokerException("When use " + CREATED_AT_PARAMETER + " parameter you should pass a date in this form: yyyy-MM-dd");
         }
-        this.jobFactory.createJobRestoreDump(databaseRefSource, databaseRefTarget, createdAt);
+        this.jobFactory.createJobRestoreDump(databaseRefSource, databaseRefTarget, createdAt, dbDumperServiceInstance);
 
     }
 

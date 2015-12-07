@@ -45,7 +45,7 @@ public class ScheduledDeleteDumpTask {
 
     @Scheduled(fixedDelay = 5000)
     public void deleteDump() {
-        logger.info("Running delete all dump scheduled task ...");
+        logger.info("Running: delete all dump scheduled task ...");
         LocalDateTime whenRemoveDateTime;
         for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DUMPS, JobEvent.START)) {
             whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
@@ -56,5 +56,6 @@ public class ScheduledDeleteDumpTask {
             jobRepo.save(job);
             this.deleteDumpTask.runDeleteDump(job.getId());
         }
+        logger.info("Finished: delete all dump scheduled task.");
     }
 }

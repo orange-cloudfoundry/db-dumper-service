@@ -1,7 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
-import com.orange.clara.cloud.servicedbdumper.exception.JobAlreadyExist;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
@@ -52,11 +51,7 @@ public class DeleteDumpTask {
         Job job = this.jobRepo.findOne(jobId);
         DatabaseRef databaseRef = job.getDatabaseRefSrc();
         this.deleter.deleteAll(databaseRef);
-        try {
-            this.jobFactory.createJobDeleteDatabaseRef(job.getDatabaseRefSrc());
-        } catch (JobAlreadyExist e) {
-            logger.info(e.getMessage());
-        }
+        this.jobFactory.createJobDeleteDatabaseRef(job.getDatabaseRefSrc(), null);
 
         job.setJobEvent(JobEvent.FINISHED);
         jobRepo.save(job);
