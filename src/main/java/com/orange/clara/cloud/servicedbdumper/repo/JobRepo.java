@@ -1,7 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.repo;
 
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
-import com.orange.clara.cloud.servicedbdumper.model.JobState;
+import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
+import com.orange.clara.cloud.servicedbdumper.model.JobType;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
@@ -17,5 +19,13 @@ import java.util.List;
  * Date: 25/11/2015
  */
 public interface JobRepo extends PagingAndSortingRepository<Job, Integer> {
-    List<Job> findByJobState(JobState jobState);
+    List<Job> findByJobTypeAndJobEvent(JobType jobType, JobEvent jobEvent);
+
+    List<Job> findByJobEvent(JobEvent jobEvent);
+
+    List<Job> findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(JobType jobType, JobEvent jobEvent, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget);
+
+    List<Job> findByJobTypeAndJobEventAndDatabaseRefSrc(JobType jobType, JobEvent jobEvent, DatabaseRef databaseRefSrc);
+
+    Long deleteByJobEvent(JobEvent jobEvent);
 }

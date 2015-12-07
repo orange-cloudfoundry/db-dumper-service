@@ -153,16 +153,27 @@ databaseChangeLog:
               - column:
                   name: id
                   type: int
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: database_ref_id
+                  name: database_ref_src_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: database_ref_target_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: job_type
                   type: varchar(255)
                   constraints:
                     nullable: false
               - column:
-                  name: job_state
+                  name: job_event
                   type: varchar(255)
                   constraints:
                     nullable: false
@@ -172,9 +183,19 @@ databaseChangeLog:
                   constraints:
                     nullable: false
         - addForeignKeyConstraint:
-            baseColumnNames: database_ref_id
+            baseColumnNames: database_ref_src_id
             baseTableName: job
-            constraintName: fk_job_database_ref
+            constraintName: fk_job_database_ref_src
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+            referencedColumnNames: name
+            referencedTableName: database_ref
+        - addForeignKeyConstraint:
+            baseColumnNames: database_ref_target_id
+            baseTableName: job
+            constraintName: fk_job_database_ref_target
             deferrable: false
             initiallyDeferred: false
             onDelete: RESTRICT

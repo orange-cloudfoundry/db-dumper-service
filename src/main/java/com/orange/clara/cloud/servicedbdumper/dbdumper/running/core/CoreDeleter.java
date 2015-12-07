@@ -8,6 +8,10 @@ import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Copyright (C) 2015 Orange
@@ -29,21 +33,27 @@ public class CoreDeleter extends AbstractCoreDbAction implements Deleter {
     private Logger logger = LoggerFactory.getLogger(CoreDeleter.class);
 
     @Override
+    @Transactional
     public void deleteAll(DatabaseRef databaseRef) {
-        String fileName = "";
-        for (DatabaseDumpFile databaseDumpFile : databaseRef.getDatabaseDumpFiles()) {
+        List<DatabaseDumpFile> databaseDumpFileList = new ArrayList<>(databaseRef.getDatabaseDumpFiles());
+        for (DatabaseDumpFile databaseDumpFile : databaseDumpFileList) {
             this.delete(databaseDumpFile);
         }
     }
 
     @Override
+    @Transactional
     public void delete(DatabaseDumpFile databaseDumpFile) {
         String fileName = this.getFileName(databaseDumpFile);
         DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
-        logger.info(String.format("Deleting file '%s' from s3", fileName));
         this.filer.delete(fileName);
+        logger.info(String.format("Delete file '%s' from s3", fileName));
+
         databaseRef.removeDatabaseDumpFile(databaseDumpFile);
+        logger.info(String.format("Delete file '%s' from database_ref '%s'", fileName, databaseRef.getDatabaseName()));
+
         databaseRefRepo.save(databaseRef);
         this.databaseDumpFileRepo.delete(databaseDumpFile);
+        logger.info(String.format("Delete file '%s' from database", fileName));
     }
 }

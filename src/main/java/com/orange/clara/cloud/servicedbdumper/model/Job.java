@@ -16,22 +16,45 @@ import java.util.Date;
  */
 @Entity
 public class Job {
-    @Enumerated(EnumType.STRING)
-    protected JobState jobState;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "database_ref_id")
-    private DatabaseRef databaseRef;
+    @JoinColumn(name = "database_ref_src_id")
+    private DatabaseRef databaseRefSrc;
+
+    @ManyToOne
+    @JoinColumn(name = "database_ref_target_id")
+    private DatabaseRef databaseRefTarget;
+
+    @Enumerated(EnumType.STRING)
+    private JobEvent jobEvent;
+
+    @Enumerated(EnumType.STRING)
+    private JobType jobType;
 
     private Date updatedAt;
 
-    public Job(JobState jobState, DatabaseRef databaseRef) {
-        this.jobState = jobState;
-        this.databaseRef = databaseRef;
+    public Job() {
         this.updatedAt = Calendar.getInstance().getTime();
+        this.jobEvent = JobEvent.START;
+    }
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc) {
+        this();
+        this.jobType = jobType;
+        this.databaseRefSrc = databaseRefSrc;
+    }
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget) {
+        this(jobType, databaseRefSrc);
+        this.databaseRefTarget = databaseRefTarget;
+    }
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date updatedAt) {
+        this(jobType, databaseRefSrc, databaseRefTarget);
+        this.updatedAt = updatedAt;
     }
 
     public Integer getId() {
@@ -42,20 +65,28 @@ public class Job {
         this.id = id;
     }
 
-    public DatabaseRef getDatabaseRef() {
-        return databaseRef;
+    public DatabaseRef getDatabaseRefSrc() {
+        return databaseRefSrc;
     }
 
-    public void setDatabaseRef(DatabaseRef databaseRef) {
-        this.databaseRef = databaseRef;
+    public void setDatabaseRefSrc(DatabaseRef databaseRefSrc) {
+        this.databaseRefSrc = databaseRefSrc;
     }
 
-    public JobState getJobState() {
-        return jobState;
+    public DatabaseRef getDatabaseRefTarget() {
+        return databaseRefTarget;
     }
 
-    public void setJobState(JobState jobState) {
-        this.jobState = jobState;
+    public void setDatabaseRefTarget(DatabaseRef databaseRefTarget) {
+        this.databaseRefTarget = databaseRefTarget;
+    }
+
+    public JobType getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(JobType jobType) {
+        this.jobType = jobType;
     }
 
     public Date getUpdatedAt() {
@@ -64,5 +95,13 @@ public class Job {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public JobEvent getJobEvent() {
+        return jobEvent;
+    }
+
+    public void setJobEvent(JobEvent jobEvent) {
+        this.jobEvent = jobEvent;
     }
 }

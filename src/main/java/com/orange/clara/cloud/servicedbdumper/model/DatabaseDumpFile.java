@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.model;
 
 import javax.persistence.*;
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -31,6 +32,7 @@ public class DatabaseDumpFile {
     private DatabaseRef databaseRef;
 
     public DatabaseDumpFile() {
+        this.createdAt = Calendar.getInstance().getTime();
     }
 
     public DatabaseDumpFile(String fileName, DatabaseRef databaseRef) {
@@ -64,12 +66,12 @@ public class DatabaseDumpFile {
         return this.fileName;
     }
 
-    public void setFileName(File file) {
-        this.fileName = file.getName();
-    }
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void setFileName(File file) {
+        this.fileName = file.getName();
     }
 
     public File getFile() {
@@ -90,13 +92,8 @@ public class DatabaseDumpFile {
     }
 
     @Override
-    public String toString() {
-        return "DatabaseDumpFile{" +
-                "id=" + id +
-                ", fileName='" + fileName + '\'' +
-                ", createdAt=" + createdAt +
-                ", databaseRef=" + databaseRef +
-                '}';
+    public int hashCode() {
+        return id;
     }
 
     @Override
@@ -111,7 +108,12 @@ public class DatabaseDumpFile {
     }
 
     @Override
-    public int hashCode() {
-        return id;
+    public String toString() {
+        return "DatabaseDumpFile{" +
+                "id=" + id +
+                ", fileName='" + fileName + '\'' +
+                ", createdAt=" + createdAt +
+                ", databaseRef=" + databaseRef +
+                '}';
     }
 }
