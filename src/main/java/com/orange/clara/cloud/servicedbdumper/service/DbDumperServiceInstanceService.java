@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.text.ParseException;
@@ -121,11 +122,13 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
+    @Transactional
     public ServiceInstance deleteServiceInstance(DeleteServiceInstanceRequest request) throws ServiceBrokerException {
         DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
         if (dbDumperServiceInstance == null) {
             return new ServiceInstance(request);
         }
+        this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
         DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
         databaseRef.removeDbDumperServiceInstance(dbDumperServiceInstance);
         if (databaseRef.getDbDumperServiceInstances().size() == 0) {
@@ -133,7 +136,6 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
         this.databaseRefRepo.save(databaseRef);
         this.serviceInstanceBindingRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
-        this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
         repository.delete(dbDumperServiceInstance);
         this.jobFactory.createJobDeleteDatabaseRef(databaseRef, dbDumperServiceInstance);
 

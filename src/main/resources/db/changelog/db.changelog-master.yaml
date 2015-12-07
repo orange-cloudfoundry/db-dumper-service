@@ -198,8 +198,8 @@ databaseChangeLog:
             constraintName: fk_job_service_instance
             deferrable: false
             initiallyDeferred: false
-            onDelete: RESTRICT
-            onUpdate: RESTRICT
+            onDelete: "SET NULL"
+            onUpdate: "SET NULL"
             referencedColumnNames: service_instance_id
             referencedTableName: db_dumper_service_instance
         - addForeignKeyConstraint:
@@ -208,8 +208,8 @@ databaseChangeLog:
             constraintName: fk_job_database_ref_src
             deferrable: false
             initiallyDeferred: false
-            onDelete: RESTRICT
-            onUpdate: RESTRICT
+            onDelete: "SET NULL"
+            onUpdate: "SET NULL"
             referencedColumnNames: name
             referencedTableName: database_ref
         - addForeignKeyConstraint:
@@ -218,8 +218,8 @@ databaseChangeLog:
             constraintName: fk_job_database_ref_target
             deferrable: false
             initiallyDeferred: false
-            onDelete: RESTRICT
-            onUpdate: RESTRICT
+            onDelete: "SET NULL"
+            onUpdate: "SET NULL"
             referencedColumnNames: name
             referencedTableName: database_ref
         - addForeignKeyConstraint:
