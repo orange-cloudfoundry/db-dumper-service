@@ -2,6 +2,6 @@
 *.iml
 /orange-manifest.yml
 application-orange.yml
-/bin/target
+/bin/user
 /.github-blob-sender
 /github-blob-sender

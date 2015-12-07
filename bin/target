@@ -2,13 +2,34 @@
 
 cf config --locale en_US
 
+#### place inside in a file called bin/user and fill blanks
+API=
+org=
+space=
+user=
+password=
+####
+
+BASEDIR=$(dirname $0)
+source $BASEDIR/user
+
 current_api=`cf target | grep API | awk '{print $3}'`
-current_org=`cf target | grep Org | awk '{print $2}'`
-current_space=`cf target | grep Space | awk '{print $2}'`
 if [ "$current_api" != "$API" ]
 then
     cf login --skip-ssl-validation -a "$API" -u "$user" -p "$password" -o "$org" -s "$space"
 fi
+
+cf apps &> /dev/null
+rc=$?;
+echo $rc
+if [ $rc != 0 ]
+then
+    cf login --skip-ssl-validation -a "$API" -u "$user" -p "$password" -o "$org" -s "$space"
+fi
+
+current_org=`cf target | grep Org | awk '{print $2}'`
+current_space=`cf target | grep Space | awk '{print $2}'`
+
 if [ "$current_org" != "$org" ] || [ "$current_space" != "$space" ]
 then
     cf target -o "$org" -s "$space"
