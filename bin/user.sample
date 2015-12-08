@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+API=https://my.cf.api.com
+org=myOrg
+space=mySpace
+user=myUser
+password="myPassword"
+SERVICE_URL=https://service-db-dumper.my.domain
+AVAILABLE_ON_ORG=myOrg

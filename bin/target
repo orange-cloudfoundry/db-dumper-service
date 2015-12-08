@@ -2,12 +2,14 @@
 
 cf config --locale en_US
 
-#### place inside those values in a file called bin/user and fill the blanks
+#### place inside those values in a file called bin/user (or remove .sample in bin/user.sample) and fill the blanks
 API=
 org=
 space=
 user=
 password=
+SERVICE_URL=https://service-db-dumper.cf.redacted-domain # url of your service when created
+AVAILABLE_ON_ORG=brokers-sandboxes # for limiting to an org (remove -o $AVAILABLE_ON_ORG inside bin/register if you don't want limit it)
 ####
 
 BASEDIR=$(dirname $0)
