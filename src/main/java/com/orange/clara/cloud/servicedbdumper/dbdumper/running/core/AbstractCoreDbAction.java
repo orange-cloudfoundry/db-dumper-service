@@ -28,7 +28,6 @@ import java.util.Date;
  */
 public abstract class AbstractCoreDbAction {
     public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
-
     protected Logger logger = LoggerFactory.getLogger(AbstractCoreDbAction.class);
     @Autowired
     @Qualifier(value = "dbDumpersFactory")
@@ -40,6 +39,11 @@ public abstract class AbstractCoreDbAction {
     protected DatabaseDumpFileRepo databaseDumpFileRepo;
     @PersistenceContext
     protected EntityManager em;
+    protected InputStream errorProcess;
+    protected InputStream outputProcess;
+
+    private String outputFromProcess = "";
+    private String errorFromProcess = "";
 
     public static BufferedReader getOutput(Process p) {
         return new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -53,18 +57,70 @@ public abstract class AbstractCoreDbAction {
         logger.debug("Running command line: " + String.join(" ", commandLine));
         ProcessBuilder pb = new ProcessBuilder(commandLine);
         pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-        return pb.start();
+        Process process = pb.start();
+        this.errorProcess = process.getErrorStream();
+        this.outputProcess = process.getInputStream();
+        return process;
     }
 
-    protected String streamToString(InputStream in) throws IOException {
-        StringBuilder out = new StringBuilder();
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            out.append(line);
-            out.append("\n");
+    protected void logOutputFromProcess() {
+        if (!outputFromProcess.isEmpty()) {
+            this.logger.error("Output from process: " + outputFromProcess);
         }
-        br.close();
-        return out.toString();
+        if (!errorFromProcess.isEmpty()) {
+            this.logger.error("Error from process: " + errorFromProcess);
+        }
+    }
+
+    private void loadOutputsFromProcess() {
+        if (outputFromProcess.isEmpty()) {
+            try {
+                outputFromProcess = this.getOutputFromProcess();
+            } catch (IOException e) {
+            }
+        }
+        if (errorFromProcess.isEmpty()) {
+            try {
+                errorFromProcess = this.getErrorFromProcess();
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    protected String getErrorMessageFromProcess() {
+        this.loadOutputsFromProcess();
+        String message = "";
+        if (!outputFromProcess.isEmpty() || !errorFromProcess.isEmpty()) {
+            message += "\nDetails: ";
+        }
+        if (!outputFromProcess.isEmpty()) {
+            message += outputFromProcess + "\n\n";
+        }
+        if (!errorFromProcess.isEmpty()) {
+            message += errorFromProcess;
+        }
+        return message;
+    }
+
+    protected String getErrorFromProcess() throws IOException {
+        return this.getInputStreamToStringFromProcess(this.errorProcess);
+    }
+
+    protected String getOutputFromProcess() throws IOException {
+        return this.getInputStreamToStringFromProcess(this.outputProcess);
+    }
+
+    private String getInputStreamToStringFromProcess(InputStream inputStream) throws IOException {
+        String outputFromProcess = "";
+        String line = "";
+        if (inputStream == null) {
+            return outputFromProcess;
+        }
+        BufferedReader brOutput = new BufferedReader(new InputStreamReader(inputStream));
+        while ((line = brOutput.readLine()) != null) {
+            outputFromProcess += line + "\n";
+        }
+        return outputFromProcess;
     }
 
     protected File createNewDumpFile(DatabaseRef databaseRef, String fileName) throws IOException {

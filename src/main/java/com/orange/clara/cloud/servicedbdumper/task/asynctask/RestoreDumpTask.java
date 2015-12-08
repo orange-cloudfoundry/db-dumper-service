@@ -44,6 +44,7 @@ public class RestoreDumpTask {
         } catch (RestoreException e) {
             logger.error(String.format("Cannot restore dump for '%s' in '%s': %s", job.getDatabaseRefSrc().getDatabaseName(), job.getDatabaseRefTarget().getDatabaseName(), e.getMessage()));
             job.setJobEvent(JobEvent.ERRORED);
+            job.setErrorMessage(e.getMessage());
             jobRepo.save(job);
             return new AsyncResult<Boolean>(false);
         }

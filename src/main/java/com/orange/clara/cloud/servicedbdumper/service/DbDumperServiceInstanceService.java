@@ -1,11 +1,13 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
-import com.google.common.collect.Sets;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
-import com.orange.clara.cloud.servicedbdumper.model.*;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.model.Job;
+import com.orange.clara.cloud.servicedbdumper.model.UpdateAction;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
@@ -28,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Copyright (C) 2015 Orange
@@ -98,26 +102,21 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
         ServiceInstanceLastOperation serviceInstanceLastOperation = null;
 
-        JobEvent[] jobEvents = new JobEvent[]{JobEvent.ERRORED};
-        Set<JobEvent> jobEventSet = Sets.newHashSet(jobEvents);
-        List<Job> jobsErrored = this.jobRepo.findByDbDumperServiceInstanceInJobEventSet(instance, jobEventSet);
-        if (jobsErrored.size() > 0) {
-            serviceInstanceLastOperation = new ServiceInstanceLastOperation("Error", OperationState.FAILED);
-            return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
-        }
-        jobEvents = new JobEvent[]{JobEvent.RUNNING, JobEvent.SCHEDULED, JobEvent.START};
-        jobEventSet = Sets.newHashSet(jobEvents);
-        List<Job> jobsRunning = this.jobRepo.findByDbDumperServiceInstanceInJobEventSet(instance, jobEventSet);
+        Job lastJob = this.jobRepo.findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(instance);
 
-        if (jobsRunning.size() == 0) {
-            serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
-            return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
+        switch (lastJob.getJobEvent()) {
+            case ERRORED:
+                serviceInstanceLastOperation = new ServiceInstanceLastOperation("Error: " + lastJob.getErrorMessage(), OperationState.FAILED);
+                break;
+            case START:
+            case SCHEDULED:
+            case RUNNING:
+                String description = String.format("Job of type '%s' for instance '%s' is '%s'\n", lastJob.getJobType(), instance.getServiceInstanceId(), lastJob.getJobEvent());
+                serviceInstanceLastOperation = new ServiceInstanceLastOperation(description, OperationState.IN_PROGRESS);
+                break;
+            default:
+                serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
         }
-        String description = "";
-        for (Job jobRunning : jobsRunning) {
-            description += String.format("Job of type '%s' for instance '%s' is '%s'\n", jobRunning.getJobType(), instance.getServiceInstanceId(), jobRunning.getJobEvent());
-        }
-        serviceInstanceLastOperation = new ServiceInstanceLastOperation(description, OperationState.IN_PROGRESS);
         return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
     }
 
@@ -131,14 +130,13 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
         DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
         databaseRef.removeDbDumperServiceInstance(dbDumperServiceInstance);
-        if (databaseRef.getDbDumperServiceInstances().size() == 0) {
-            databaseRef.setDeleted(true);
-        }
         this.databaseRefRepo.save(databaseRef);
         this.serviceInstanceBindingRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
         repository.delete(dbDumperServiceInstance);
-        this.jobFactory.createJobDeleteDatabaseRef(databaseRef, dbDumperServiceInstance);
-
+        if (databaseRef.getDbDumperServiceInstances().size() == 0) {
+            databaseRef.setDeleted(true);
+        }
+        this.jobFactory.createJobDeleteDatabaseRef(databaseRef);
         return new ServiceInstance(request).withAsync(false);
     }
 

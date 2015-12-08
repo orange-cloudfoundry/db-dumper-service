@@ -42,6 +42,8 @@ public class Job {
 
     private Date dumpDate;
 
+    private String errorMessage;
+
     public Job() {
         this.updatedAt = Calendar.getInstance().getTime();
         this.jobEvent = JobEvent.START;
@@ -132,6 +134,15 @@ public class Job {
     public void setDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
         this.updatedAt = Calendar.getInstance().getTime();
         this.dbDumperServiceInstance = dbDumperServiceInstance;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.updatedAt = Calendar.getInstance().getTime();
+        this.errorMessage = errorMessage;
     }
 
     @Override

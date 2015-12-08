@@ -51,7 +51,7 @@ public class DeleteDumpTask {
         Job job = this.jobRepo.findOne(jobId);
         DatabaseRef databaseRef = job.getDatabaseRefSrc();
         this.deleter.deleteAll(databaseRef);
-        this.jobFactory.createJobDeleteDatabaseRef(job.getDatabaseRefSrc(), null);
+        this.jobFactory.createJobDeleteDatabaseRef(job.getDatabaseRefSrc());
 
         job.setJobEvent(JobEvent.FINISHED);
         jobRepo.save(job);

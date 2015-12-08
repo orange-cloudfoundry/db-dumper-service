@@ -73,6 +73,7 @@ public class ScheduledDeleteDatabaseRefTask {
                 databaseRefRepo.delete(databaseRef);
             } catch (Exception e) {
                 job.setJobEvent(JobEvent.ERRORED);
+                job.setErrorMessage(e.getMessage());
                 jobRepo.save(job);
                 continue;
             }

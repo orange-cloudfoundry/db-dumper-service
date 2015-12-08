@@ -44,6 +44,7 @@ public class CreateDumpTask {
         } catch (DumpException e) {
             logger.error(String.format("Cannot create dump for '%s': %s", job.getDatabaseRefSrc().getName(), e.getMessage()));
             job.setJobEvent(JobEvent.ERRORED);
+            job.setErrorMessage(e.getMessage());
             jobRepo.save(job);
             return new AsyncResult<Boolean>(false);
         }

@@ -28,6 +28,8 @@ public class JobFactory {
 
     @Value("${job.errored.delete.expiration.days:2}")
     private Integer jobErroredDeleteExpirationDays;
+    @Value("${job.finished.delete.expiration.minutes:8}")
+    private Integer jobFinishedDeleteExpirationMinutes;
 
     private Logger logger = LoggerFactory.getLogger(JobFactory.class);
     @Autowired
@@ -75,8 +77,8 @@ public class JobFactory {
         this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, databaseRefSrc, dbDumperServiceInstance);
     }
 
-    public void createJobDeleteDatabaseRef(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
-        this.createJobWithDatabaseRefSrc(JobType.DELETE_DATABASE_REF, databaseRefSrc, dbDumperServiceInstance);
+    public void createJobDeleteDatabaseRef(DatabaseRef databaseRefSrc) {
+        this.createJobWithDatabaseRefSrc(JobType.DELETE_DATABASE_REF, databaseRefSrc, null);
     }
 
     public void createJobRestoreDump(DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date createdAt, DbDumperServiceInstance dbDumperServiceInstance) {
@@ -104,6 +106,14 @@ public class JobFactory {
 
     @Transactional
     public void purgeFinishedJob() {
-        this.jobRepo.deleteByJobEvent(JobEvent.FINISHED);
+        LocalDateTime whenRemoveDateTime;
+        List<Job> jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.FINISHED);
+        for (Job job : jobs) {
+            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusMinutes(this.jobFinishedDeleteExpirationMinutes);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
+                continue;
+            }
+            this.jobRepo.delete(job);
+        }
     }
 }

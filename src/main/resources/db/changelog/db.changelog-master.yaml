@@ -163,6 +163,11 @@ databaseChangeLog:
                   constraints:
                     nullable: true
               - column:
+                  name: error_message
+                  type: varchar(800)
+                  constraints:
+                    nullable: true
+              - column:
                   name: database_ref_target_id
                   type: varchar(255)
                   constraints:

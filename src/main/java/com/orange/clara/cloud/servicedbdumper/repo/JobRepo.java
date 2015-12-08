@@ -29,8 +29,10 @@ public interface JobRepo extends PagingAndSortingRepository<Job, Integer> {
 
     List<Job> findByJobEventAndDbDumperServiceInstance(JobEvent jobEvent, DbDumperServiceInstance dbDumperServiceInstance);
 
-    @Query("select j from Job j where j.jobEvent in :jobEvents and j.dbDumperServiceInstance=:serviceInstance")
-    List<Job> findByDbDumperServiceInstanceInJobEventSet(@Param("serviceInstance") DbDumperServiceInstance dbDumperServiceInstance, @Param("jobEvents") Set<JobEvent> jobEvents);
+    Job findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(DbDumperServiceInstance dbDumperServiceInstance);
+
+    @Query("select j from Job j where j.jobEvent in :jobEvents and j.dbDumperServiceInstance=:serviceInstance order by j.updatedAt desc")
+    List<Job> findByDbDumperServiceInstanceInJobEventOrderByDate(@Param("serviceInstance") DbDumperServiceInstance dbDumperServiceInstance, @Param("jobEvents") Set<JobEvent> jobEvents);
 
     Long deleteByDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance);
 

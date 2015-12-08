@@ -26,6 +26,7 @@ import java.util.Date;
  */
 public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
 
+
     private Logger logger = LoggerFactory.getLogger(CoreRestorer.class);
 
     @Override
@@ -41,7 +42,9 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
             DatabaseDumper databaseDumper = findAndCheckDatabaseDumper(databaseRefSource, databaseRefTarget);
             this.runRestore(databaseDumper, fileName);
         } catch (Exception e) {
-            throw new RestoreException("An error occurred: " + e.getMessage(), e);
+            this.logOutputFromProcess();
+            e.printStackTrace();
+            throw new RestoreException("An error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
         }
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " finished.");
     }
@@ -51,7 +54,9 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         this.restore(databaseRefSource, databaseRefTarget, null);
     }
 
+
     protected void runRestore(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException {
+
         Process p = this.runCommandLine(databaseDumper.getRestoreCommandLine());
         this.filer.retrieve(p.getOutputStream(), fileName);
         p.waitFor();
