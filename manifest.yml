@@ -9,6 +9,8 @@ env:
   spring_profiles_active: development,cloud,core
   broker_username: myUs3r
   broker_password: myPasssw0rd
+  admin_username: my@dmin
+  admin_password: myPasssw0rd
   dump_delete_expiration_days: 5
   job_errored_delete_expiration_days: 2
   job_finished_delete_expiration_minutes: 8

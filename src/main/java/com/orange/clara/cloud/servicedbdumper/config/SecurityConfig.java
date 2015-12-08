@@ -45,9 +45,15 @@ public class SecurityConfig {
     @Value("${broker.password:password}")
     private String brokerPassword;
 
+    @Value("${admin.username:admin}")
+    private String adminUsername;
+    @Value("${admin.password:password}")
+    private String adminPassword;
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles("ADMIN");
+        auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles("API");
+        auth.inMemoryAuthentication().withUser(adminUsername).password(adminPassword).roles("ADMIN");
     }
 
     @PostConstruct
@@ -69,6 +75,24 @@ public class SecurityConfig {
         protected void configure(HttpSecurity http) throws Exception {
             http
                     .antMatcher("/v2/**")
+                    .authorizeRequests()
+                    .anyRequest()
+                    .hasRole("API")
+                    .and()
+                    .httpBasic()
+                    .and()
+                    .csrf().disable();
+        }
+    }
+
+    @Configuration
+    @Order(2)
+    public static class AdminSecurity extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .antMatcher("/admin/**")
                     .authorizeRequests()
                     .anyRequest()
                     .hasRole("ADMIN")

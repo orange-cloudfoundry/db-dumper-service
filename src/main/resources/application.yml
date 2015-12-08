@@ -1,5 +1,7 @@
 logging.level.com.orange.clara.cloud.servicedbdumper: INFO
 ---
+management:
+  contextPath: /admin
 spring:
   jpa:
     hibernate:
