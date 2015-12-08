@@ -11,4 +11,6 @@ env:
   broker_password: myPasssw0rd
   dump_delete_expiration_days: 5
   job_errored_delete_expiration_days: 2
+  job_finished_delete_expiration_minutes: 8
+  encryption_key: PleaseChangeIt_64568sdfs54gr86
 buildpack: java_buildpack

@@ -1,5 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
+import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
+
 import javax.persistence.*;
 import java.net.URI;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class DatabaseRef {
     @Id
     protected String name;
     protected String user;
+    @Convert(converter = CryptoConverter.class)
     protected String password;
     protected String host;
     protected String databaseName;
