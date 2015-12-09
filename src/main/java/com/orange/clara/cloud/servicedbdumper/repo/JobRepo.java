@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.repo;
 
 import com.orange.clara.cloud.servicedbdumper.model.*;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -39,4 +40,9 @@ public interface JobRepo extends PagingAndSortingRepository<Job, Integer> {
     Long deleteByDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance);
 
     Long deleteByJobEvent(JobEvent jobEvent);
+
+    @Modifying
+    @Query("UPDATE Job j SET j.jobEvent = :toJobEvent, j.errorMessage = :errorMessage where j.jobEvent in :jobEvents")
+    int updateJobFromJobEventSetToJobEventWithErrorMessage(@Param("toJobEvent") JobEvent toJobEvent, @Param("jobEvents") Set<JobEvent> jobEvents, @Param("errorMessage") String errorMessage);
+
 }

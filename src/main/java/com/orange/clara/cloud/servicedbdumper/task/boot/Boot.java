@@ -1,15 +1,11 @@
 package com.orange.clara.cloud.servicedbdumper.task.boot;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import org.springframework.beans.factory.annotation.Value;
+import com.orange.clara.cloud.servicedbdumper.task.boot.sequences.BootSequence;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 /**
  * Copyright (C) 2015 Orange
@@ -24,28 +20,14 @@ import java.security.NoSuchAlgorithmException;
 @Component
 public class Boot {
 
-    @Value("${encryption.key:MySuperSecretKey}")
-    private String encryptionKey;
+    @Autowired
+    private List<BootSequence> bootSequences;
 
-    @Value("classpath:properties/encryption_key.txt")
-    private File encryptionKeyFile;
-
-    public void fillEncryptionKeyFile() throws IOException, NoSuchAlgorithmException {
-        //force to have always a 32 bytes key (to use AES encryption with 256 bits key length)
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(encryptionKey.getBytes(Charsets.UTF_8));
-        byte[] key = md.digest();
-
-        Files.write(key, encryptionKeyFile);
-    }
 
     @PostConstruct
     public void boot() {
-        try {
-            this.fillEncryptionKeyFile();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        for (BootSequence bootSequence : bootSequences) {
+            bootSequence.runSequence();
         }
     }
-
 }

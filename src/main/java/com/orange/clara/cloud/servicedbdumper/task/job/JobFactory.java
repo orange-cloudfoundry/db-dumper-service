@@ -110,7 +110,8 @@ public class JobFactory {
         List<Job> jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.FINISHED);
         for (Job job : jobs) {
             whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusMinutes(this.jobFinishedDeleteExpirationMinutes);
-            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)
+                    && (job.getDatabaseRefSrc() != null || job.getDbDumperServiceInstance() != null || job.getDatabaseRefTarget() != null)) {
                 continue;
             }
             this.jobRepo.delete(job);
