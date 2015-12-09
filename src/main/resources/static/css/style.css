@@ -44,3 +44,11 @@ footer {
     bottom: 0;
     left: 0;
 }
+
+.job-info-tooltip {
+    cursor: pointer;
+}
+
+.collection-item .title {
+    font-weight: bold;
+}

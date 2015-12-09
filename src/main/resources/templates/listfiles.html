@@ -18,14 +18,14 @@
                         Created At: <span th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy')}"></span>
                         <a class="btn waves-effect waves-light orange"
                            th:href="@{/manage/show/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
-                                class="material-icons">description</i> Show</a>
+                                class="material-icons left">description</i> Show</a>
                         <a class="btn waves-effect waves-light orange"
                            th:href="@{/manage/download/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
-                                class="material-icons">import_export</i>
+                                class="material-icons left">import_export</i>
                             Download</a>
                         <a class="btn waves-effect waves-light orange"
                            th:href="@{/manage/delete/{databaseDumpFileId}(databaseDumpFileId=${databaseDumpFile.id})}"><i
-                                class="material-icons">delete</i>
+                                class="material-icons left">delete</i>
                             Delete</a>
                     </li>
                 </ul>

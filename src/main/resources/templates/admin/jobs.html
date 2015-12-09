@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+      layout:decorator="layout">
+<body>
+
+<div layout:fragment="content">
+    <h5>List of jobs</h5>
+
+    <div th:if="${jobs == null or jobs.isEmpty()}">
+        <h5>There is no jobs inside this service-db-dumper</h5>
+    </div>
+    <div th:if="${jobs != null and jobs.isEmpty() == false}">
+
+
+        <table id="jobs-table" dt:table="true"
+               class="highlight bordered responsive-table">
+            <thead>
+            <tr>
+                <th data-field="id">Id</th>
+                <th dt:filterable="true" data-field="type">Type</th>
+                <th data-field="lastUpdate">Last Update</th>
+                <th dt:filterable="true" data-field="jobEvent">Current event</th>
+                <th dt:sortable="false" data-field="control">Control</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td><span th:text="${job.id}"></span></td>
+                <td><span th:text="${job.jobType}"></span></td>
+                <td><span th:text="${job.updatedAt}"></span></td>
+                <td>
+                    <span th:text="${job.jobEvent}"></span>
+                    <span th:if="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED}">
+                        <i class="tiny material-icons tooltipped job-info-tooltip blue-text" data-position="bottom"
+                           data-delay="50"
+                           th:attr="data-tooltip=${job.errorMessage}">info_outline</i>
+                    </span>
+                </td>
+                <td>
+                    <a class="btn waves-effect btn-floating tooltipped waves-light blue"
+                       data-position="right"
+                       data-delay="50"
+                       data-tooltip="Show details"
+                       th:href="@{/admin/jobs/details/{jobId}(jobId=${job.id})}"><i
+                            class="material-icons">description</i></a>
+                    <a class="btn waves-effect btn-floating tooltipped waves-light orange"
+                       data-position="right"
+                       data-delay="50"
+                       data-tooltip="Put in error"
+                       th:href="@{/admin/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED})}"><i
+                            class="material-icons">info_outline</i></a>
+                    <a class="btn waves-effect tooltipped btn-floating waves-light red"
+                       th:classappend="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).RUNNING || job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).START} ? disabled : ''"
+                       data-position="right"
+                       data-delay="50"
+                       data-tooltip="Delete"
+                       th:href="@{/admin/jobs/delete/{jobId}(jobId=${job.id})}"><i
+                            class="material-icons">delete</i></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+
+</div>
+
+</body>
+</html>

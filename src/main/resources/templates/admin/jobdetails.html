@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorator="layout">
+<body>
+
+<div layout:fragment="content">
+    <div th:if="${job == null}">
+        <h5>Invalid job</h5>
+    </div>
+    <div th:if="${job != null}">
+        <h5>Details for job <span th:text="${job.id}"></span></h5>
+        <ul class="collection">
+            <li class="collection-item" th:if="${job.dbDumperServiceInstance != null}">
+                <span class="title">Service instance</span>
+
+                <p th:text="${job.dbDumperServiceInstance.serviceInstanceId}"></p>
+            </li>
+            <li class="collection-item" th:if="${job.databaseRefSrc != null}">
+                <span class="title">Database source name</span>
+
+                <p th:text="${job.databaseRefSrc.databaseName}"></p>
+            </li>
+            <li class="collection-item" th:if="${job.databaseRefTarget != null}">
+                <span class="title">Database target name</span>
+
+                <p th:text="${job.databaseRefTarget.databaseName}"></p>
+            </li>
+            <li class="collection-item">
+                <span class="title">Type</span>
+
+                <p th:text="${job.jobType}"></p>
+            </li>
+            <li class="collection-item">
+                <span class="title">Last Update</span>
+
+                <p th:text="${job.updatedAt}"></p>
+            </li>
+            <li class="collection-item">
+                <span class="title">Current event</span>
+
+                <p th:text="${job.jobEvent}"></p>
+            </li>
+            <li class="collection-item" th:if="${job.errorMessage != null}">
+                <span class="title">Error message</span>
+
+                <p th:text="${job.errorMessage}"></p>
+            </li>
+            <li class="collection-item" th:if="${job.databaseRefTarget != null}">
+                <span class="title">Database target name</span>
+
+                <p th:text="${job.databaseRefTarget.databaseName}"></p>
+            </li>
+            <li class="collection-item" th:if="${job.dumpDate != null}">
+                <span class="title">Dump date chosen</span>
+
+                <p th:text="${job.dumpDate}"></p>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+</div>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorator="layout">
+<body>
+
+<div layout:fragment="banner">
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            <br/><br/>
+
+            <h1 class="header center blue-grey-text darken-4 red-text text-darken-2">Error <span
+                    th:text="${status}"></span>.</h1>
+
+            <div class="row center">
+                <h5 class="header col s12 light red-text"><span th:text="${message}"></span></h5>
+            </div>
+            <div class="row center">
+                <a class="btn waves-effect waves-light orange"
+                   th:href="@{{previous}(previous=${#httpServletRequest.getHeader('referer')})}"><i
+                        class="material-icons left">keyboard_arrow_left</i> Go back</a>
+            </div>
+            <br/><br/>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
