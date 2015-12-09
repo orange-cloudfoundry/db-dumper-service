@@ -26,24 +26,31 @@ import static org.jclouds.Constants.PROPERTY_TRUST_ALL_CERTS;
  * Date: 03/06/2015
  */
 @Configuration
-@Profile({"cloud", "core"})
+@Profile({"cloud"})
 @ServiceScan
 public class CloudConfig extends AbstractCloudConfig {
-    @Autowired
-    private S3ContextBuilder s3ContextBuilder;
 
-    @Bean
-    public String bucketName() {
-        return this.s3ContextBuilder.getBucketName();
+    @Profile({"core"})
+    @Configuration
+    @ServiceScan
+    public static class CoreCloudConfig extends AbstractCloudConfig {
+        @Autowired
+        private S3ContextBuilder s3ContextBuilder;
+
+        @Bean
+        public String bucketName() {
+            return this.s3ContextBuilder.getBucketName();
+        }
+
+        @Bean
+        public BlobStoreContext blobStoreContext() {
+            Properties storeProviderInitProperties = new Properties();
+            storeProviderInitProperties.put(PROPERTY_TRUST_ALL_CERTS, true);
+            storeProviderInitProperties.put(PROPERTY_RELAX_HOSTNAME, true);
+            return this.s3ContextBuilder.getContextBuilder()
+                    .overrides(storeProviderInitProperties)
+                    .buildView(BlobStoreContext.class);
+        }
     }
 
-    @Bean
-    public BlobStoreContext blobStoreContext() {
-        Properties storeProviderInitProperties = new Properties();
-        storeProviderInitProperties.put(PROPERTY_TRUST_ALL_CERTS, true);
-        storeProviderInitProperties.put(PROPERTY_RELAX_HOSTNAME, true);
-        return this.s3ContextBuilder.getContextBuilder()
-                .overrides(storeProviderInitProperties)
-                .buildView(BlobStoreContext.class);
-    }
 }

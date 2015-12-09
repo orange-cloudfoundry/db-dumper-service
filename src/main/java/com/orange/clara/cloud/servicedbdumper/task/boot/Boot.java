@@ -22,15 +22,15 @@ import java.security.NoSuchAlgorithmException;
  * Date: 08/12/2015
  */
 @Component
-public class FillEncryptionKeyFile {
+public class Boot {
+
     @Value("${encryption.key:MySuperSecretKey}")
     private String encryptionKey;
 
     @Value("classpath:properties/encryption_key.txt")
     private File encryptionKeyFile;
 
-    @PostConstruct
-    public void fillIt() throws IOException, NoSuchAlgorithmException {
+    public void fillEncryptionKeyFile() throws IOException, NoSuchAlgorithmException {
         //force to have always a 32 bytes key (to use AES encryption with 256 bits key length)
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(encryptionKey.getBytes(Charsets.UTF_8));
@@ -38,4 +38,14 @@ public class FillEncryptionKeyFile {
 
         Files.write(key, encryptionKeyFile);
     }
+
+    @PostConstruct
+    public void boot() {
+        try {
+            this.fillEncryptionKeyFile();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
