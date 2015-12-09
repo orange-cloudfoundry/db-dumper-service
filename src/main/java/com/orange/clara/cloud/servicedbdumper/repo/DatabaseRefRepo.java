@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.repo;
 
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * Copyright (C) 2015 Orange
@@ -13,6 +14,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
+@Repository
 public interface DatabaseRefRepo extends
         PagingAndSortingRepository<DatabaseRef, String> {
     DatabaseRef findFirstByDatabaseName(String databaseName);

@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.repo;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
+@Repository
 public interface DatabaseDumpFileRepo extends
         PagingAndSortingRepository<DatabaseDumpFile, Integer> {
     DatabaseDumpFile findFirstByDatabaseRefOrderByCreatedAtDesc(DatabaseRef databaseRef);

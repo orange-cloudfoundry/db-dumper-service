@@ -4,6 +4,7 @@ import com.orange.clara.cloud.servicedbdumper.model.*;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import java.util.Set;
  * Author: Arthur Halet
  * Date: 25/11/2015
  */
+@Repository
 public interface JobRepo extends PagingAndSortingRepository<Job, Integer> {
     List<Job> findByJobTypeAndJobEvent(JobType jobType, JobEvent jobEvent);
 
