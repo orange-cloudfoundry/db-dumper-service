@@ -20,12 +20,20 @@
             <li class="collection-item" th:if="${job.databaseRefSrc != null}">
                 <span class="title">Database source name</span>
 
-                <p th:text="${job.databaseRefSrc.databaseName}"></p>
+                <p><span th:text="${job.databaseRefSrc.databaseName}"></span>
+                    <i class="tiny material-icons info-tooltip tooltipped blue-text" data-position="bottom"
+                       data-delay="50"
+                       th:attr="data-tooltip=${job.databaseRefSrc.getInUrlFormat()}">info_outline</i>
+                </p>
             </li>
             <li class="collection-item" th:if="${job.databaseRefTarget != null}">
                 <span class="title">Database target name</span>
 
-                <p th:text="${job.databaseRefTarget.databaseName}"></p>
+                <p><span th:text="${job.databaseRefTarget.databaseName}"></span>
+                    <i class="tiny material-icons tooltipped blue-text" data-position="bottom"
+                       data-delay="50"
+                       th:attr="data-tooltip=${job.databaseRefTarget.getInUrlFormat()}">info_outline</i>
+                </p>
             </li>
             <li class="collection-item">
                 <span class="title">Type</span>
@@ -46,11 +54,6 @@
                 <span class="title">Error message</span>
 
                 <p th:text="${job.errorMessage}"></p>
-            </li>
-            <li class="collection-item" th:if="${job.databaseRefTarget != null}">
-                <span class="title">Database target name</span>
-
-                <p th:text="${job.databaseRefTarget.databaseName}"></p>
             </li>
             <li class="collection-item" th:if="${job.dumpDate != null}">
                 <span class="title">Dump date chosen</span>

@@ -37,7 +37,7 @@
                 <td>
                     <span th:text="${job.jobEvent}"></span>
                     <span th:if="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED}">
-                        <i class="tiny material-icons tooltipped job-info-tooltip blue-text" data-position="bottom"
+                        <i class="tiny material-icons tooltipped info-tooltip blue-text" data-position="bottom"
                            data-delay="50"
                            th:attr="data-tooltip=${job.errorMessage}">info_outline</i>
                     </span>
@@ -59,12 +59,19 @@
                        th:href="@{/admin/control/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED})}"><i
                             class="material-icons">info_outline</i></a>
                     <a class="btn waves-effect btn-floating tooltipped waves-light green"
-                       th:if="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED}"
+                       th:if="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED || job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).PAUSED}"
                        data-position="right"
                        data-delay="50"
                        data-tooltip="Put in scheduled"
                        th:href="@{/admin/control/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).SCHEDULED})}"><i
                             class="material-icons">schedule</i></a>
+                    <a class="btn waves-effect btn-floating tooltipped waves-light orange"
+                       th:if="${job.jobEvent != T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).PAUSED}"
+                       data-position="right"
+                       data-delay="50"
+                       data-tooltip="Put in paused"
+                       th:href="@{/admin/control/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).PAUSED})}"><i
+                            class="material-icons">pause</i></a>
                     <a class="btn waves-effect tooltipped btn-floating waves-light red"
                        th:classappend="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).RUNNING || job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).START} ? disabled : ''"
                        data-position="right"

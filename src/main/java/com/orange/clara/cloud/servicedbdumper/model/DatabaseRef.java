@@ -179,6 +179,10 @@ public class DatabaseRef {
         this.dbDumperServiceInstances = dbDumperServiceInstanceBindings;
     }
 
+    public String getInUrlFormat() {
+        return this.type.toString().toLowerCase() + "://" + this.user + "@" + this.host + ":" + this.port;
+    }
+
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
