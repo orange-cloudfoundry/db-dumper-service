@@ -48,10 +48,16 @@ public class SecurityConfig {
     @Value("${admin.password:password}")
     private String adminPassword;
 
+    @Value("${spring.boot.admin.username}")
+    private String springBootAdminUsername;
+    @Value("${spring.boot.admin.password}")
+    private String springBootAdminPassword;
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles("API");
-        auth.inMemoryAuthentication().withUser(adminUsername).password(adminPassword).roles("ADMIN");
+        auth.inMemoryAuthentication().withUser(adminUsername).password(adminPassword).roles("ADMIN", "SPRING_BOOT_ADMIN");
+        auth.inMemoryAuthentication().withUser(springBootAdminUsername).password(springBootAdminPassword).roles("SPRING_BOOT_ADMIN");
     }
 
 
@@ -130,30 +136,18 @@ public class SecurityConfig {
     @Configuration
     @Order(5)
     public static class AdminMonitorSecurity extends WebSecurityConfigurerAdapter {
-        @Value("${spring.boot.admin.url}")
-        private String springBootAdminUrl;
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            if (springBootAdminUrl == null || springBootAdminUrl.isEmpty()) {
-                http
-                        .antMatcher("/admin/**")
-                        .authorizeRequests()
-                        .anyRequest()
-                        .hasRole("ADMIN")
-                        .and()
-                        .httpBasic()
-                        .and()
-                        .csrf().disable();
-            } else {
-                http
-                        .antMatcher("/admin/**")
-                        .authorizeRequests()
-                        .anyRequest()
-                        .permitAll()
-                        .and()
-                        .csrf().disable();
-            }
+            http
+                    .antMatcher("/admin/**")
+                    .authorizeRequests()
+                    .anyRequest()
+                    .hasRole("SPRING_BOOT_ADMIN")
+                    .and()
+                    .httpBasic()
+                    .and()
+                    .csrf().disable();
 
         }
     }

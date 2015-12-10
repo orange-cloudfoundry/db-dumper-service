@@ -11,7 +11,7 @@ spring:
     admin:
       client:
         service-url: http://${vcap.application.uris[0]:localhost:8080}
-        name: service-db-dumper-${vcap.application.instance_id}
+        name: service-db-dumper-${vcap.application.instance_id:1}
   jpa:
     hibernate:
       ddl-auto: none
