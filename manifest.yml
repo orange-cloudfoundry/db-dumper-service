@@ -12,6 +12,13 @@ env:
   admin_username: my@dmin
   admin_password: myPasssw0rd
   dump_delete_expiration_days: 5
+  CF_TARGET: https://your.uaa.url.com
+  security_oauth2_client_clientId: your-client-id-uaa
+  security_oauth2_client_clientSecret: your-client-secret-uaa
+  # uncomment if you want to plug to a spring-boot-admin app (see: https://github.com/codecentric/spring-boot-admin)
+  #spring_boot_admin_url: http://spring-boot-admin.your.url.com
+  #spring_boot_admin_username: spring-boot-admin-user
+  #spring_boot_admin_password: spring-boot-admin-password
   job_errored_delete_expiration_days: 2
   job_finished_delete_expiration_minutes: 8
   encryption_key: PleaseChangeIt_64568sdfs54gr86

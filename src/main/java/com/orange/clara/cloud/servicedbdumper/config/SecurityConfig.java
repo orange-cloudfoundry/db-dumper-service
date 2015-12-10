@@ -80,7 +80,7 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                    .antMatcher("/admin/**")
+                    .antMatcher("/admin/jobs/**")
                     .authorizeRequests()
                     .anyRequest()
                     .hasRole("ADMIN")
@@ -106,6 +106,55 @@ public class SecurityConfig {
                     .httpBasic()
                     .and()
                     .csrf().disable();
+        }
+    }
+
+    @Configuration
+    @Order(4)
+    public static class AdminWelcomeSecurity extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .antMatcher("/admin/control/**")
+                    .authorizeRequests()
+                    .anyRequest()
+                    .hasRole("ADMIN")
+                    .and()
+                    .httpBasic()
+                    .and()
+                    .csrf().disable();
+        }
+    }
+
+    @Configuration
+    @Order(5)
+    public static class AdminMonitorSecurity extends WebSecurityConfigurerAdapter {
+        @Value("${spring.boot.admin.url}")
+        private String springBootAdminUrl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            if (springBootAdminUrl == null || springBootAdminUrl.isEmpty()) {
+                http
+                        .antMatcher("/admin/**")
+                        .authorizeRequests()
+                        .anyRequest()
+                        .hasRole("ADMIN")
+                        .and()
+                        .httpBasic()
+                        .and()
+                        .csrf().disable();
+            } else {
+                http
+                        .antMatcher("/admin/**")
+                        .authorizeRequests()
+                        .anyRequest()
+                        .permitAll()
+                        .and()
+                        .csrf().disable();
+            }
+
         }
     }
 

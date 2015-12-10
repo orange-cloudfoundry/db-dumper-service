@@ -21,7 +21,7 @@ public class WelcomeController {
         return "welcome";
     }
 
-    @RequestMapping({"/manage/admin", "/admin/welcome"})
+    @RequestMapping({"/manage/admin", "/admin/control"})
     public String welcomeAdmin(Model model) {
         return "welcome";
     }

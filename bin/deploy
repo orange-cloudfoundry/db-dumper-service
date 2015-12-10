@@ -2,6 +2,7 @@
 BASEDIR=$(dirname $0)
 PREVIOUS=$(dirname BASEDIR)
 $BASEDIR/target
+source $BASEDIR/user
 #cf ds test -f
 #$BASEDIR/unregister
-cf push -f $PREVIOUS/orange-manifest.yml
+cf push -f $PREVIOUS/$manifest

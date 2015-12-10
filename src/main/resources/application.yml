@@ -1,8 +1,17 @@
 logging.level.com.orange.clara.cloud.servicedbdumper: INFO
+
 ---
+endpoints:
+  env:
+    keys-to-sanitize: jdbcurl,uri,DATABASE_URL,username,url,password,key_id,access_key,VCAP_SERVICES
 management:
   contextPath: /admin
 spring:
+  boot:
+    admin:
+      client:
+        service-url: http://${vcap.application.uris[0]:localhost:8080}
+        name: service-db-dumper-${vcap.application.instance_id}
   jpa:
     hibernate:
       ddl-auto: none
@@ -11,15 +20,13 @@ security:
     password: none
   oauth2:
     client:
-      clientId: your-client-id-uaa
-      clientSecret: your-client-secret-uaa
-      accessTokenUri: http://cf.uaa.url/oauth/token
-      userAuthorizationUri: http://cf.uaa.url/oauth/authorize
+      accessTokenUri: ${CF_TARGET}/oauth/token
+      userAuthorizationUri: ${CF_TARGET}/oauth/authorize
       clientAuthenticationScheme: header
       scope:
       - openid
       - cloud_controller.read
       - cloud_controller.write
     resource:
-      userInfoUri: http://cf.uaa.url/userinfo
+      userInfoUri: ${CF_TARGET}/userinfo
       preferTokenInfo: false

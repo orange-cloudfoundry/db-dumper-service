@@ -47,7 +47,7 @@
                        data-position="right"
                        data-delay="50"
                        data-tooltip="Show details"
-                       th:href="@{/admin/jobs/details/{jobId}(jobId=${job.id})}"><i
+                       th:href="@{/admin/control/jobs/details/{jobId}(jobId=${job.id})}"><i
                             class="material-icons">description</i></a>
 
 
@@ -56,21 +56,21 @@
                        data-position="right"
                        data-delay="50"
                        data-tooltip="Put in error"
-                       th:href="@{/admin/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED})}"><i
+                       th:href="@{/admin/control/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED})}"><i
                             class="material-icons">info_outline</i></a>
                     <a class="btn waves-effect btn-floating tooltipped waves-light green"
                        th:if="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).ERRORED}"
                        data-position="right"
                        data-delay="50"
                        data-tooltip="Put in scheduled"
-                       th:href="@{/admin/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).SCHEDULED})}"><i
+                       th:href="@{/admin/control/jobs/update/{jobId}/jobevent/{event}(jobId=${job.id},event=${T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).SCHEDULED})}"><i
                             class="material-icons">schedule</i></a>
                     <a class="btn waves-effect tooltipped btn-floating waves-light red"
                        th:classappend="${job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).RUNNING || job.jobEvent == T(com.orange.clara.cloud.servicedbdumper.model.JobEvent).START} ? disabled : ''"
                        data-position="right"
                        data-delay="50"
                        data-tooltip="Delete"
-                       th:href="@{/admin/jobs/delete/{jobId}(jobId=${job.id})}"><i
+                       th:href="@{/admin/control/jobs/delete/{jobId}(jobId=${job.id})}"><i
                             class="material-icons">delete</i></a>
                 </td>
             </tr>

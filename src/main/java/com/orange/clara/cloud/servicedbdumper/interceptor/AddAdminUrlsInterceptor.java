@@ -45,6 +45,7 @@ public class AddAdminUrlsInterceptor extends HandlerInterceptorAdapter {
                 continue;
             }
             String name = patternUrl.replace(DEFAULT_ADMIN_URL + "/", "");
+            name = name.replace("/", "-");
             MappedRequestInfo mappedRequestInfo = new MappedRequestInfo(name, patternUrl);
             if (mappedRequests.contains(mappedRequestInfo) || mappedRequestInfo.getName().equals("welcome")) {
                 continue;

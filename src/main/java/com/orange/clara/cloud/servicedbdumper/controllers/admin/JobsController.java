@@ -22,19 +22,19 @@ import java.io.IOException;
  * Date: 09/12/2015
  */
 @Controller
-@RequestMapping(value = "/admin")
+@RequestMapping(value = "/admin/control/jobs")
 public class JobsController {
 
     @Autowired
     private JobRepo jobRepo;
 
-    @RequestMapping("/jobs")
+    @RequestMapping("")
     public String showJobs(Model model) throws IOException {
         model.addAttribute("jobs", this.jobRepo.findAll());
         return "admin/jobs";
     }
 
-    @RequestMapping("/jobs/details/{jobId:[0-9]+}")
+    @RequestMapping("/details/{jobId:[0-9]+}")
     public String showJob(@PathVariable Integer jobId, Model model) throws IOException {
         model.addAttribute("job", this.jobRepo.findOne(jobId));
         return "admin/jobdetails";
@@ -50,14 +50,14 @@ public class JobsController {
         }
     }
 
-    @RequestMapping("/jobs/delete/{jobId:[0-9]+}")
+    @RequestMapping("/delete/{jobId:[0-9]+}")
     public String deleteJob(@PathVariable Integer jobId, Model model) throws IOException {
         checkJob(jobId, true);
         this.jobRepo.delete(jobId);
         return "redirect:/admin/jobs";
     }
 
-    @RequestMapping("/jobs/update/{jobId:[0-9]+}/jobevent/{event:[A-Z]+}")
+    @RequestMapping("/update/{jobId:[0-9]+}/jobevent/{event:[A-Z]+}")
     public String updateJobEventFromJob(@PathVariable Integer jobId, @PathVariable String event, Model model) throws IOException {
         checkJob(jobId, false);
         JobEvent jobEvent = JobEvent.valueOf(event);
@@ -67,6 +67,6 @@ public class JobsController {
             job.setErrorMessage("Put in error manually by admin.");
         }
         this.jobRepo.save(job);
-        return "redirect:/admin/jobs";
+        return "redirect:/admin/control/jobs";
     }
 }
