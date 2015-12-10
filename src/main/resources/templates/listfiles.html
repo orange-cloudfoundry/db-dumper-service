@@ -4,6 +4,10 @@
       layout:decorator="layout">
 <body>
 <div layout:fragment="content">
+    <!--@thymesVar id="databaseRefs" type="List<DatabaseRef>"-->
+    <!--@thymesVar id="databaseRef" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseRef"-->
+    <!--@thymesVar id="databaseDumpFiles" type="List<DatabaseDumpFile>"-->
+    <!--@thymesVar id="databaseDumpFile" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile"-->
     <h5>Database dump files</h5>
 
     <div th:if="${databaseRefs == null or databaseRefs.isEmpty()}">

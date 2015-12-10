@@ -1,8 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorator="layout">
 <body>
 <div layout:fragment="banner">
+    <ul id="adminDropdownWelcome" class="dropdown-content" sec:authorize="hasRole('ROLE_ADMIN')">
+        <li th:each="mappedRequest : ${mappedRequests}">
+            <a th:href="@{{request}(request=${mappedRequest.url})}"><span
+                    th:text="${mappedRequest.name}"></span></a>
+        </li>
+    </ul>
     <div class="section no-pad-bot" id="index-banner">
         <div class="container">
             <br/><br/>
@@ -12,9 +20,16 @@
             <div class="row center">
                 <h5 class="header col s12 light">A service broker to dump and restore database from Cloud Foundry</h5>
             </div>
+            <div class="row center" sec:authorize="hasRole('ROLE_ADMIN')">
+                <h5 class="header col s12 light">You are logged as an admin.</h5>
+            </div>
             <div class="row center">
                 <a href="/manage/list" id="download-button"
                    class="btn-large waves-effect waves-light orange">Show my dumps</a>
+                <a sec:authorize="hasRole('ROLE_ADMIN')"
+                   class="dropdown-button btn-large waves-effect waves-light orange" href="#!"
+                   data-activates="adminDropdownWelcome">Admin<i
+                        class="material-icons right">arrow_drop_down</i></a>
             </div>
             <br/><br/>
 

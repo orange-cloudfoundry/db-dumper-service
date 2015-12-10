@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackages = "com.orange.clara.cloud.servicedbdumper")
 public class BrokerConfig {
+
     @Bean
     public BrokerApiVersion brokerApiVersion() {
         return new BrokerApiVersion();

@@ -92,7 +92,25 @@ public class SecurityConfig {
     }
 
     @Configuration
-    @Profile(value = "cloud")
+    @Order(3)
+    public static class AdminManagerSecurity extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .antMatcher("/manage/admin")
+                    .authorizeRequests()
+                    .anyRequest()
+                    .hasRole("ADMIN")
+                    .and()
+                    .httpBasic()
+                    .and()
+                    .csrf().disable();
+        }
+    }
+
+    @Configuration
+    @Profile(value = "uaa")
     @EnableOAuth2Sso
     public static class InterfaceSecurity extends WebSecurityConfigurerAdapter {
         private Filter csrfHeaderFilter() {

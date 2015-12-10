@@ -77,9 +77,4 @@ public class InterfaceController {
         model.addAttribute("databaseRefs", databaseRefs);
         return "listfiles";
     }
-
-    @RequestMapping("")
-    public String welcome(Model model) {
-        return "welcome";
-    }
 }

@@ -1,15 +1,34 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      layout:decorator="layout">
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <title>Service-db-dumper dashboard</title>
+    <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+    <!-- CSS  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
 <body>
-
-<div layout:fragment="banner">
+<div id="wrapper">
+    <!--@thymesVar id="status" type="java.lang.Integer"-->
+    <!--@thymesVar id="message" type="java.lang.String"-->
     <div class="section no-pad-bot" id="index-banner">
         <div class="container">
             <br/><br/>
 
-            <h1 class="header center blue-grey-text darken-4 red-text text-darken-2">Error <span
+            <div class="row center">
+                <img src="/images/logo.png" alt="logo"/>
+            </div>
+
+            <br/><br/>
+
+            <h1 class="header center blue-grey-text darken-4 red-text text-darken-2">Error
+            <span
                     th:text="${status}"></span>.</h1>
 
             <div class="row center">
@@ -25,6 +44,8 @@
         </div>
     </div>
 </div>
-
+<script src="/js/jquery-2.1.4.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+<script src="/js/init.js"></script>
 </body>
 </html>

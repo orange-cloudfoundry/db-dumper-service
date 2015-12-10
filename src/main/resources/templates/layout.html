@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en">
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+        lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
@@ -13,16 +17,41 @@
 </head>
 <body>
 <div id="wrapper">
+    <ul id="adminDropdown" class="dropdown-content" sec:authorize="hasRole('ROLE_ADMIN')">
+        <li th:each="mappedRequest : ${mappedRequests}">
+            <a th:href="@{{request}(request=${mappedRequest.url})}"><span
+                    th:text="${mappedRequest.name}"></span></a>
+        </li>
+    </ul>
     <nav class="white " role="navigation">
         <div class="nav-wrapper container "><a id="logo-container" href="/manage" class="brand-logo">
             <img src="/images/logo.png"/> Service-db-dumper
         </a>
             <ul class="right hide-on-med-and-down">
                 <li><a href="/manage/list">Show My Dumps</a></li>
+                <li sec:authorize="hasRole('ROLE_ADMIN')">
+                    <a class="dropdown-button" href="#!" data-activates="adminDropdown">Admin<i
+                            class="material-icons right">arrow_drop_down</i></a>
+                </li>
             </ul>
 
             <ul id="nav-mobile" class="side-nav">
                 <li><a href="/manage/list">Show My Dumps</a></li>
+                <li sec:authorize="hasRole('ROLE_ADMIN')" class="no-padding">
+                    <ul class="collapsible collapsible-accordion" data-collapsible="accordion">
+                        <li>
+                            <div class="collapsible-header waves-effect waves-teal">Admin</div>
+                            <div class="collapsible-body">
+                                <ul>
+                                    <li th:each="mappedRequest : ${mappedRequests}">
+                                        <a th:href="@{{request}(request=${mappedRequest.url})}"><span
+                                                th:text="${mappedRequest.name}"></span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
             </ul>
             <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
         </div>
