@@ -1,28 +1,100 @@
 #!/usr/bin/env bash
 WD=`pwd`
-BASEDIR=$(dirname $0)
-: "${TMPDIR:=${TMP:-$(CDPATH=/var:/; cd -P tmp)}}"
-cd -- "${TMPDIR:?NO TEMP DIRECTORY FOUND!}" || exit
-cd -
-
-GBS="github-blob-sender"
-if ! type "github-blob-sender" > /dev/null; then
-    "${BASEDIR}/download-gbs"
-    GBS="${WD}/github-blob-sender"
-fi
 echo "Restoring all binaries..."
-$GBS restore-all "${TMPDIR}"
-
-echo "Installing mongodb dump and restore binaries.."
-unzip -o "${TMPDIR}/mongodb-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
-rm "${TMPDIR}/mongodb-dr-binaries.zip"
-
+echo ""
+#####################################################################################
+#mysql
+#####################################################################################
+fileurl="http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.10-linux-glibc2.5-x86_64.tar.gz"
+filepath="mysql-5.7.10-linux-glibc2.5-x86_64.tar.gz"
+finalfile="mysql-5.7.10-linux-glibc2.5-x86_64"
 echo "Installing mysql dump and restore binaries..."
-unzip -o "${TMPDIR}/mysql-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
-rm "${TMPDIR}/mysql-dr-binaries.zip"
+if hash curl 2>/dev/null; then
+    RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
+else
+    wget -o "${filepath}" "$fileurl"
+    RESPONSE=$?
+fi
+if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+    echo "File ${fileurl} not found, so it can't be downloaded."
+    rm "$filepath"
+    exit 1
+fi
+mkdir -p "${WD}/src/main/resources/binaries/mysql/bin"
+tar -zxvf "$filepath"
+cp "$finalfile/bin/mysql" "${WD}/src/main/resources/binaries/mysql/bin"
+cp "$finalfile/bin/mysqldump" "${WD}/src/main/resources/binaries/mysql/bin"
+rm -Rf "$finalfile"
+rm "$filepath"
+echo "Done installing mysql binaries."
 
+#####################################################################################
+#mongodb
+#####################################################################################
+fileurl="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.0.8.tgz"
+filepath="mongodb-linux-x86_64-3.0.8.tgz"
+finalfile="mongodb-linux-x86_64-3.0.8"
+echo "Installing mongodb dump and restore binaries..."
+if hash curl 2>/dev/null; then
+    RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
+else
+    wget -o "${filepath}" "$fileurl"
+    RESPONSE=$?
+fi
+if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+    echo "File ${fileurl} not found, so it can't be downloaded."
+    rm "$filepath"
+    exit 1
+fi
+mkdir -p "${WD}/src/main/resources/binaries/mongodb/bin"
+tar -zxvf "$filepath"
+cp "$finalfile/bin/mongodump" "${WD}/src/main/resources/binaries/mongodb/bin"
+cp "$finalfile/bin/mongorestore" "${WD}/src/main/resources/binaries/mongodb/bin"
+rm -Rf "$finalfile"
+rm "$filepath"
+echo "Done installing mongodb binaries."
+
+#####################################################################################
+#postgresql
+#####################################################################################
+ARCHNUM=`getconf LONG_BIT`
+if [[ "$ARCHNUM" != "64" ]]; then
+    echo "you must be on linux 64"
+    exit 1
+fi
+fileurl="https://ftp.postgresql.org/pub/source/v9.4.5/postgresql-9.4.5.tar.gz"
+filepath="postgresql-9.4.5.tar.gz"
+finalfile="postgresql-9.4.5"
 echo "Installing postgresql dump and restore binaries..."
-unzip -o "${TMPDIR}/postgres-dr-binaries.zip" -d "${WD}/src/main/resources/binaries"
-rm "${TMPDIR}/postgres-dr-binaries.zip"
+if hash curl 2>/dev/null; then
+    RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
+else
+    wget -o "${filepath}" "$fileurl"
+    RESPONSE=$?
+fi
+if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+    echo "File ${fileurl} not found, so it can't be downloaded."
+    rm "$filepath"
+    exit 1
+fi
+mkdir -p "${WD}/src/main/resources/binaries/postgresql/bin"
+mkdir -p "${WD}/src/main/resources/binaries/postgresql/lib"
+tar -zxvf "$filepath"
+cd "$finalfile"
+./configure --without-readline
+make
+sudo make install
+cd -
+cd /usr/local/pgsql
 
+sudo cp "lib/*" "${WD}/src/main/resources/binaries/postgresql/lib"
+sudo cp "bin/pg_dump" "${WD}/src/main/resources/binaries/postgresql/bin"
+sudo cp "bin/pg_restore" "${WD}/src/main/resources/binaries/postgresql/bin"
+sudo cp "bin/psql" "${WD}/src/main/resources/binaries/postgresql/bin"
+sudo cp "bin/pg_dumpall" "${WD}/src/main/resources/binaries/postgresql/bin"
+rm -Rf "$finalfile"
+rm "$filepath"
+cd -
+echo "Done installing postgresql binaries."
+echo ""
 echo "Binaries are installed."
