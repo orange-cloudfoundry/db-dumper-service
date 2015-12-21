@@ -17,6 +17,6 @@ deploy:
     secure: m7A/ABnF/KKOl+k+LOriurY0gc9yruqWqHO41apW4no44sMdpZ8F6raTtxu/8XWHKbV0c0etGXGRvtMaYJtrEtNP7k4Qa8KaV7jBUJtoC6nwLBV7DQ5MQPYWVItz1AKdIJdIzhApWa7zBZaIM5REXzSAstuLVKO3o+Y9QfwBtm+s6ooayrPqixThesR5yq1wtDc7m0hR3C/Z/FWX0wYVnRGobxbAXk/SITQsyMyejjMsJZt5no8BEx0124tI/uNMZC+nHla47YYuF84k4X6ZyWcuOPOIM+1YbmEzLCAtGWwk9TCLKqczCx+EGksxxouUEnj/iKmj/WSaPRSHU2t9YzWdbVKLkaDuNKRPKcFZjgJ7hwZqr9hcBhQannweZBTmXu3MOAoz5BpSq9vKiccbhJ+VBv8zh086RIUEdOrKaxfd+GrO+q/gQyhh2cwqkjtIsSIM+tnh9E2IEzKKdStFpOtAbstOx6taRdizmKoSIwNXu5urP6qtHsXM09v7T+pLybTeavexllf5Y0mHIlbUQIO6YAJYwV0ITDPJ81hVvl22rbFFCl5ZOSCX5BK7oZ4dUSO78GS9AUeMEU/KMFL73I1736syWiwculn6NeDxyAWHQUh9yiZpfanrP4veqtGxffmFXfowo7WZtX2FGbdn4KTxrHgShzVIE5v5PwGJqZw=
   file: service-db-dumper.zip
   on:
-    repo: ArthurHlt/service-db-dumper
+    repo: Orange-OpenSource/service-db-dumper
     tags: true
     all_branches: true
