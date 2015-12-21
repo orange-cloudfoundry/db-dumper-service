@@ -3,7 +3,7 @@
 name: service-db-dumper
 memory: 1G
 instances: 1
-path: ./target/service-db-dumper-1.0-SNAPSHOT.war
+path: ./target/service-db-dumper-1.0.0.war
 host: service-db-dumper
 env:
   spring_profiles_active: development,cloud,core,uaa
