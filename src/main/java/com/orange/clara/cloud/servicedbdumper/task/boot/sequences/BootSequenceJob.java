@@ -24,7 +24,7 @@ import java.util.Set;
 @Order(2)
 public class BootSequenceJob implements BootSequence {
 
-    private final static String ERROR_MESSAGE = "Job was running when service-db-dumper was stopped";
+    private final static String ERROR_MESSAGE = "Job was running when db-dumper-service was stopped";
     @Autowired
     private JobRepo jobRepo;
 

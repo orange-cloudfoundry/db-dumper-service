@@ -1,4 +1,4 @@
-# service-db-dumper
+# db-dumper-service
 
 A Cloud Foundry service broker to dump and restore database on demand
 

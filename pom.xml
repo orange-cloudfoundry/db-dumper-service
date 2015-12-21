@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.orange.clara.cloud</groupId>
-    <artifactId>service-db-dumper</artifactId>
+    <artifactId>db-dumper-service</artifactId>
     <version>1.0.0</version>
     <packaging>war</packaging>
 

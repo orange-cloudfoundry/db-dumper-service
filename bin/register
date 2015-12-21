@@ -3,5 +3,5 @@
 BASEDIR=$(dirname $0)
 $BASEDIR/target
 source $BASEDIR/user
-cf create-service-broker service-db-dumper-do-not-use myUs3r myPasssw0rd $SERVICE_URL
-cf enable-service-access service-db-dumper -o $AVAILABLE_ON_ORG
+cf create-service-broker db-dumper-service-do-not-use myUs3r myPasssw0rd $SERVICE_URL
+cf enable-service-access db-dumper-service -o $AVAILABLE_ON_ORG

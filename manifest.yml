@@ -1,10 +1,10 @@
 ---
 #Generated manifest
-name: service-db-dumper
+name: db-dumper-service
 memory: 1G
 instances: 1
-path: ./target/service-db-dumper-1.0.0.war
-host: service-db-dumper
+path: ./target/db-dumper-service-1.0.0.war
+host: db-dumper-service
 env:
   spring_profiles_active: development,cloud,core,uaa
   broker_username: myUs3r

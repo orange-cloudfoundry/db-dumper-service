@@ -5,6 +5,6 @@ org=myOrg
 space=mySpace
 user=myUser
 password="myPassword"
-SERVICE_URL=https://service-db-dumper.my.domain
+SERVICE_URL=https://db-dumper-service.my.domain
 AVAILABLE_ON_ORG=myOrg
 manifest=manifest.yml

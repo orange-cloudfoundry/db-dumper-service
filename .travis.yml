@@ -6,18 +6,16 @@ after_success:
 - bin/install-binaries
 - mvn clean install -DskipTests=true
 - mkdir -p deploy/target
-- cp target/service-db-dumper-1.0.0.war deploy/target
+- cp target/db-dumper-service-1.0.0.war deploy/target
 - cp manifest.yml deploy/
 - cd deploy
-- zip -r service-db-dumper ./*
-env:
-- secure: Xl/1hGiYo05YnI2IoDSEG+rbEdN0hy1fqIVnv/5JfrBELBFeQJSSjbwRUiEh9HVk0cnBxA5egoGIjRp6M10a1JUV1jT/Ih6zpaoUddO99v94RjofoGIHj49k08rDXDmaLgUSQtXu/7+WUVyRcv9VlVxeRfye8D1WXTyU064sF3Uuu1zj1/Khn0ZXAdKkJijobbGIxF07FXrXBE5pFTPSmKdpMUhIZJSxaBb57l/lQw3OX5mz23QTzRha2it4ij3mSEYu5O1sLd0U4kEfyZU/IIa637krEUR5zKB0IIIYHYrFA6uy/BuOwq1+6SuJN2HY/QmuY14ejGcGZq6JQPlzv3xZgm0lfgVUafZw+MGb6SFEkWTYlS3Ctcv+tfz5rL7LzakPX7fLpvTf8XCg6w1EJN0MBd9/rsR9Q+hSDLqTpSzSyMA60sTO8UWuenoCiX75SGFyq24rZAzhYD4hmxzRZVjofRlRvVRmRZ1slDvoDEYzaAAqTgcV9VLenuo37iHkKbq0S8qB5MT1Kx8jvERhFo9/MZX2zw/1aTOVAcVKl9Pb6u+ZeiJJzhaKvmMSUOAFjsQ24FxOsTEc9Jc4qbkBmYwR0VZdhDmbBkhrR+meExMBqK7RQQO0WOwyfpLWtYOtMwUALA+uuVE4aOkA/oP0WpK+NDMcF54Ami6byX/ARlM=
+- zip -r db-dumper-service ./*
 deploy:
   provider: releases
   api_key:
-    secure: m7A/ABnF/KKOl+k+LOriurY0gc9yruqWqHO41apW4no44sMdpZ8F6raTtxu/8XWHKbV0c0etGXGRvtMaYJtrEtNP7k4Qa8KaV7jBUJtoC6nwLBV7DQ5MQPYWVItz1AKdIJdIzhApWa7zBZaIM5REXzSAstuLVKO3o+Y9QfwBtm+s6ooayrPqixThesR5yq1wtDc7m0hR3C/Z/FWX0wYVnRGobxbAXk/SITQsyMyejjMsJZt5no8BEx0124tI/uNMZC+nHla47YYuF84k4X6ZyWcuOPOIM+1YbmEzLCAtGWwk9TCLKqczCx+EGksxxouUEnj/iKmj/WSaPRSHU2t9YzWdbVKLkaDuNKRPKcFZjgJ7hwZqr9hcBhQannweZBTmXu3MOAoz5BpSq9vKiccbhJ+VBv8zh086RIUEdOrKaxfd+GrO+q/gQyhh2cwqkjtIsSIM+tnh9E2IEzKKdStFpOtAbstOx6taRdizmKoSIwNXu5urP6qtHsXM09v7T+pLybTeavexllf5Y0mHIlbUQIO6YAJYwV0ITDPJ81hVvl22rbFFCl5ZOSCX5BK7oZ4dUSO78GS9AUeMEU/KMFL73I1736syWiwculn6NeDxyAWHQUh9yiZpfanrP4veqtGxffmFXfowo7WZtX2FGbdn4KTxrHgShzVIE5v5PwGJqZw=
-  file: service-db-dumper.zip
+    secure: dfICg3fWHErwHuuFTl7d1emJN8Tg0oK7/PLBmBf2QjGlY0CBOwX/y4O78kyJO2dYzD2Qiz08jqOB+Ff2v0MK11S0p/VfHn005Ys5uV6gDu/VwzjFxpiwTDTRF55Bbv3Izpv7+5TZkJb3pnG5UqNWjxpUmOfECUTaP5hggi2UP7pkpiQ90A3dZNSh6bsAx2lWlcaSe7FCBZigQ2PGuZ1TVIxLT2eIwkDhj61dk6hTALr01Rr5zpLI2WBMByQaeRco11gFgRYZ3Q2mSGMXIvmGqf7uUEnpCflqOOj54oGOLZEdtNGhl6r1JQmjl2a5NNWAE8mjDggi3N7XJBLl9d552z1r/cnn+/aaCgS7SOl1KiQvhe0yd9o8kdpmJC0PmY5WagkY6PQ98hh+8K/q5X8BE/x2m2A1UXhnLKAHFXpcJmU2EuaL68F5vLST7j+nSr4ClgRhYE+6NOlruFcELdfSB7sQbIlnoS+o8PYNxD94r88KAQT5d6FIdbFTs48f7aLRpTcCa3WnfKukCR/s7NL1HK3P2pPhaF5uL9XcrIejTzgPFU3SSs4CPQmUKn1jzLM9334gNLpRB2EYeMWdeBuZmBGWZ4FdzebUeGosHExBZkPonXZzIP6f+m3/oW2omp1O86MEEWAZu/2jDGIDgNL4YfxGOcHjGkVw4WHkeoZs5sc=
+  file: db-dumper-service.zip
   on:
-    repo: Orange-OpenSource/service-db-dumper
+    repo: Orange-OpenSource/db-dumper-service
     tags: true
     all_branches: true

@@ -91,7 +91,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 request.getSpaceGuid(),
                 appUri + DASHBOARD_ROUTE);
         this.createDump(request.getParameters(), dbDumperServiceInstance);
-        return new ServiceInstance(request).withAsync(true);
+        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE).withAsync(true);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             default:
                 serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
         }
-        return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withLastOperation(serviceInstanceLastOperation);
+        return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withDashboardUrl(appUri + DASHBOARD_ROUTE).withLastOperation(serviceInstanceLastOperation);
     }
 
     @Override
@@ -137,7 +137,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             databaseRef.setDeleted(true);
         }
         this.jobFactory.createJobDeleteDatabaseRef(databaseRef);
-        return new ServiceInstance(request).withAsync(false);
+        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE).withAsync(false);
     }
 
     @Override
@@ -165,7 +165,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
             }
         }
-        serviceInstance.withAsync(true);
+        serviceInstance.withDashboardUrl(appUri + DASHBOARD_ROUTE).withAsync(true);
         return serviceInstance;
     }
 

@@ -35,18 +35,18 @@ public class CatalogConfig {
     public Catalog catalog() {
         return new Catalog(Arrays.asList(
                 new ServiceDefinition(
-                        "service-db-dumper",
-                        "service-db-dumper",
+                        "db-dumper-service",
+                        "db-dumper-service",
                         "Dump and restore data from your database, ** please do not use **",
                         true,
                         true,
                         Arrays.asList(
                                 new Plan("experimental",
                                         "experimental",
-                                        "This is a default service-db-dumper plan.  All services are created equally.",
+                                        "This is a default db-dumper-service plan.  All services are created equally.",
                                         getPlanMetadata(),
                                         true)), //TODO: change it cause set to free
-                        Arrays.asList("service-db-dumper", "dump", "restore"),
+                        Arrays.asList("db-dumper-service", "dump", "restore"),
                         getServiceDefinitionMetadata(),
                         null,
                         null)));
@@ -55,8 +55,8 @@ public class CatalogConfig {
 /* Used by Pivotal CF console */
 
     private Map<String, Object> getServiceDefinitionMetadata() {
-        sdMetadata.put("displayName", "service-db-dumper");
-        sdMetadata.put("longDescription", "service-db-dumper");
+        sdMetadata.put("displayName", "db-dumper-service");
+        sdMetadata.put("longDescription", "db-dumper-service");
         sdMetadata.put("providerDisplayName", "Orange");
         sdMetadata.put("documentationUrl", "");
         sdMetadata.put("supportUrl", "");
@@ -83,7 +83,7 @@ public class CatalogConfig {
     }
 
     private List<String> getBullets() {
-        return Arrays.asList("service-db-dumper",
+        return Arrays.asList("db-dumper-service",
                 "Unlimited storage",
                 "Stored in riakcs");
     }

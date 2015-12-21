@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 BASEDIR=$(dirname $0)
 $BASEDIR/target
-cf delete-service-broker service-db-dumper-do-not-use -f
+cf delete-service-broker db-dumper-service-do-not-use -f

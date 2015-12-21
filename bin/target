@@ -8,7 +8,7 @@ org=
 space=
 user=
 password=
-SERVICE_URL=https://service-db-dumper.cf.redacted-domain # url of your service when created
+SERVICE_URL=https://db-dumper-service.cf.redacted-domain # url of your service when created
 AVAILABLE_ON_ORG=brokers-sandboxes # for limiting to an org (remove -o $AVAILABLE_ON_ORG inside bin/register if you don't want limit it)
 ####
 

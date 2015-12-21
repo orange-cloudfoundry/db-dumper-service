@@ -3,12 +3,17 @@ WD=`pwd`
 echo "Restoring all binaries..."
 echo ""
 
+mysql_version="5.7.10"
+mysql_global_version="5.7"
+mongodb_version="3.0.8"
+postgresql_version="9.4.5"
+
 #####################################################################################
 #mysql
 #####################################################################################
-fileurl="http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.10-linux-glibc2.5-x86_64.tar.gz"
-filepath="mysql-5.7.10-linux-glibc2.5-x86_64.tar.gz"
-finalfile="mysql-5.7.10-linux-glibc2.5-x86_64"
+fileurl="http://dev.mysql.com/get/Downloads/MySQL-${mysql_global_version}/mysql-${mysql_version}-linux-glibc2.5-x86_64.tar.gz"
+filepath="mysql-${mysql_version}-linux-glibc2.5-x86_64.tar.gz"
+finalfile="mysql-${mysql_version}-linux-glibc2.5-x86_64"
 echo "Installing mysql dump and restore binaries..."
 if hash curl 2>/dev/null; then
     RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
@@ -32,9 +37,9 @@ echo "Done installing mysql binaries."
 #####################################################################################
 #mongodb
 #####################################################################################
-fileurl="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.0.8.tgz"
-filepath="mongodb-linux-x86_64-3.0.8.tgz"
-finalfile="mongodb-linux-x86_64-3.0.8"
+fileurl="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${mongodb_version}.tgz"
+filepath="mongodb-linux-x86_64-${mongodb_version}.tgz"
+finalfile="mongodb-linux-x86_64-${mongodb_version}"
 echo "Installing mongodb dump and restore binaries..."
 if hash curl 2>/dev/null; then
     RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
@@ -63,9 +68,9 @@ if [[ "$ARCHNUM" != "64" ]]; then
     echo "you must be on linux 64"
     exit 1
 fi
-fileurl="https://ftp.postgresql.org/pub/source/v9.4.5/postgresql-9.4.5.tar.gz"
-filepath="postgresql-9.4.5.tar.gz"
-finalfile="postgresql-9.4.5"
+fileurl="https://ftp.postgresql.org/pub/source/v${postgresql_version}/postgresql-${postgresql_version}.tar.gz"
+filepath="postgresql-${postgresql_version}.tar.gz"
+finalfile="postgresql-${postgresql_version}"
 echo "Installing postgresql dump and restore binaries..."
 if hash curl 2>/dev/null; then
     RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
