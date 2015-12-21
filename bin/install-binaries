@@ -87,8 +87,7 @@ make
 sudo make install
 cd -
 cd /usr/local/pgsql
-ls
-sudo cp "lib/*" "${WD}/src/main/resources/binaries/postgresql/lib"
+sudo cp -Rf "lib/" "${WD}/src/main/resources/binaries/postgresql/lib"
 sudo cp "bin/pg_dump" "${WD}/src/main/resources/binaries/postgresql/bin"
 sudo cp "bin/pg_restore" "${WD}/src/main/resources/binaries/postgresql/bin"
 sudo cp "bin/psql" "${WD}/src/main/resources/binaries/postgresql/bin"
