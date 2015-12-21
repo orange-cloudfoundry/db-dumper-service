@@ -55,6 +55,9 @@ public class CryptoConverter implements AttributeConverter<String, String> {
     }
 
     private void loadKey() throws URISyntaxException, IOException {
+        if (this.encryptionKey != null) {
+            return;
+        }
         ClassLoader classLoader = getClass().getClassLoader();
         File encryptionKeyFile = new File(classLoader.getResource(ENCRYPTION_KEY_FILEPATH).toURI());
         this.encryptionKey = Files.readAllBytes(encryptionKeyFile.toPath());

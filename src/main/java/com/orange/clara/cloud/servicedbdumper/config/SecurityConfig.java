@@ -86,7 +86,7 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                    .antMatcher("/admin/jobs/**")
+                    .antMatcher("/admin/control/**")
                     .authorizeRequests()
                     .anyRequest()
                     .hasRole("ADMIN")
@@ -117,24 +117,6 @@ public class SecurityConfig {
 
     @Configuration
     @Order(4)
-    public static class AdminWelcomeSecurity extends WebSecurityConfigurerAdapter {
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http
-                    .antMatcher("/admin/control/**")
-                    .authorizeRequests()
-                    .anyRequest()
-                    .hasRole("ADMIN")
-                    .and()
-                    .httpBasic()
-                    .and()
-                    .csrf().disable();
-        }
-    }
-
-    @Configuration
-    @Order(5)
     public static class AdminMonitorSecurity extends WebSecurityConfigurerAdapter {
 
         @Override
