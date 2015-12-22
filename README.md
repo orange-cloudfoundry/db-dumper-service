@@ -7,8 +7,8 @@ More details in the specifications at https://docs.google.com/document/d/1Y5vwWj
 ## Requirement
 
 - [Cloud Foundry](http://cloudfoundry.org/) with service broker api 2.6 at least
-- A s3 service broker to store dump (e.g: [p-riakcs](http://docs.pivotal.io/p-riakcs/), [s3-cf-service-broker](https://github.com/cloudfoundry-community/s3-cf-service-broker) or aws s3 given with cups)
-- A database service broker to store model (e.g: [p-mysql](http://docs.pivotal.io/p-mysql/), [cleardb](http://docs.pivotal.io/p-mysql/))
+- A s3 service to store dump (e.g: [p-riakcs](http://docs.pivotal.io/p-riakcs/), [s3-cf-service-broker](https://github.com/cloudfoundry-community/s3-cf-service-broker) or aws s3 given with cups)
+- A database service to store model (e.g: [p-mysql](http://docs.pivotal.io/p-mysql/), [cleardb](http://docs.pivotal.io/p-mysql/))
 
 
 ## Installation in 3 Minutes
@@ -42,7 +42,7 @@ cf cs db-dumper-service experimental service-name -c '{"src_url":"mysql://user:p
 
 To restore a dump you will need to pass 2 databases, the one you want to retrieve the dump, the second one to restore the retrieved dump (**Note**: the second database can be the same):
 ```
-cf update-service test -c '{"src_url":"mysql://user:password@nameorip.of.your.db:port/database-name", "target_url": "src_url":"mysql://user:password@nameorip.of.your.second.db:port/database-second-name", "created_at": "", "action": "restore"}'
+cf update-service test -c '{"action": "restore", "src_url":"mysql://user:password@nameorip.of.your.db:port/database-name", "target_url": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
 ```
 
 ### Update a dump
