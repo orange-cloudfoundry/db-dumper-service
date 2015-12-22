@@ -35,7 +35,7 @@ $ cf enable-service-access db-dumper-service
 **NOTE**: For the moment you need to pass your database uri but in next release you could just pass a database service to db-dumper-service
 This command will create a dump for you: 
 ```
-cf cs db-dumper-service experimental service-name -c '{"src_url": "mysql://user:password@nameorip.of.your.db:port/database-name", "restore_soft_deleted_dump_id": "345554"}'
+cf cs db-dumper-service experimental service-name -c '{"src_url": "mysql://user:password@nameorip.of.your.db:port/database-name"}'
 ```
 
 ### Restore a dump
@@ -69,7 +69,7 @@ Message: the dump is scheduled for deletion at $date. Use "restore_soft_deleted_
 
 Your dump will be deleted within 5 days to allow to recover from a deletion requested by mistake. The soft delete duration of 5 days is configured by service operator in `dump_delete_expiration_days` property in the manifest.
 
-During the soft-delete period, CF users can recover a dump by instanciating a new service instance specifying the dump id to recover
+During the soft-delete period, CF users can recover a dump by instanciating a new service instance specifying the dump id to recover (in the same space where the original dump was done).
 
 ```
 cf cs db-dumper-service experimental service-name -c '{"src_url": "mysql://user:password@nameorip.of.your.db:port/database-name", "restore_soft_deleted_dump_id": "345554"}'
