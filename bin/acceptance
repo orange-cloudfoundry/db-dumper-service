@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+BASEDIR=$(dirname $0)
+service_name="db-dumper-service-acceptance"
+fileurl="https://media.githubusercontent.com/media/ArthurHlt/worldcities-database/master/worldcities_100mb.sql"
+filepath="worldcities_100mb.sql"
+
+
+if [ ! -f "$filepath" ]; then
+    echo "Downloading sample sql..."
+    if hash curl 2>/dev/null; then
+        RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
+    else
+        wget -o "${filepath}" "$fileurl"
+        RESPONSE=$?
+    fi
+    if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+        echo "File ${fileurl} not found, so it can't be downloaded."
+        rm "$filepath"
+        exit 1
+    fi
+    echo "Download is finished."
+    echo ""
+fi
+
+echo "Deploying db-dumper-service..."
+$BASEDIR/deploy
+echo "Deployed."
+echo ""
+
+echo "Registering db-dumper-service as a service..."
+$BASEDIR/target
+source $BASEDIR/user
+cf create-service-broker $service_name myUs3r myPasssw0rd $SERVICE_URL
+cf enable-service-access db-dumper-service -o $AVAILABLE_ON_ORG
+echo "Registered."
+echo ""
+
+echo "Unregistering db-dumper-service"
+cf delete-service-broker $service_name -f
+echo "Unregistered."
