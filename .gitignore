@@ -3,6 +3,7 @@
 /orange-manifest.yml
 application-orange.yml
 /bin/user
-/worldcities_100mb.sql
+/bin/acceptance_orange
+/fakedata*
 /github-blob-sender
 /github-blob-sender.exe

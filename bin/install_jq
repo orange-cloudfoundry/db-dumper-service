@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+VERSION="1.5"
+NAME="jq"
+OS=""
+
+: "${TMPDIR:=${TMP:-$(CDPATH=/var:/; cd -P tmp)}}"
+cd -- "${TMPDIR:?NO TEMP DIRECTORY FOUND!}" || exit
+cd -
+echo "Installing ${NAME}..."
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    OS="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="mac"
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+    OS="windows"
+elif [[ "$OSTYPE" == "msys" ]]; then
+    OS="windows"
+elif [[ "$OSTYPE" == "win32" ]]; then
+    OS="windows"
+else
+    echo "Os not supported by install script"
+    exit 1
+fi
+if hash "${NAME}" 2>/dev/null; then
+    echo "jq already installed"
+    exit 0
+fi
+if [ -f "${NAME}" ] || [ -f "${NAME}.exe" ]; then
+    echo "jq already installed"
+    exit 0
+fi
+ARCHNUM=`getconf LONG_BIT`
+ARCH=""
+CPUINFO=`uname -m`
+if [[ "$ARCHNUM" == "32" ]]; then
+    ARCH="32"
+else
+    ARCH="64"
+fi
+if [[ "$OS" == "windows" ]]; then
+    FILENAME="${NAME}-win${ARCH}.exe"
+fi
+if [[ "$OS" == "mac" ]]; then
+    FILENAME="${NAME}-osx-amd64"
+fi
+if [[ "$OS" == "linux" ]]; then
+    FILENAME="${NAME}-linux${ARCH}"
+fi
+LINK="https://github.com/stedolan/jq/releases/download/jq-${VERSION}/${FILENAME}"
+if [[ "$OS" == "windows" ]]; then
+    FILEOUTPUT="${FILENAME}"
+else
+    FILEOUTPUT="${TMPDIR}/${FILENAME}"
+fi
+RESPONSE=200
+if hash curl 2>/dev/null; then
+    RESPONSE=$(curl --write-out %{http_code} -L -o "${FILEOUTPUT}" "$LINK")
+else
+    wget -o "${FILEOUTPUT}" "$LINK"
+    RESPONSE=$?
+fi
+
+if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ] && [[ "$OS" != "windows" && "$RESPONSE" != "%http_code" ]]; then
+    echo "File ${LINK} not found, so it can't be downloaded. (HTTP CODE ${RESPONSE})"
+    rm "$FILEOUTPUT"
+    exit 1
+fi
+
+chmod +x "$FILEOUTPUT"
+if [[ "$OS" == "windows" ]]; then
+    mv "$FILEOUTPUT" "${NAME}.exe"
+else
+    mv "$FILEOUTPUT" "${NAME}"
+fi
+echo "${NAME} has been installed."
