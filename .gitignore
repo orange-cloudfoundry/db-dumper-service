@@ -4,6 +4,8 @@
 application-orange.yml
 /bin/user
 /bin/acceptance_orange
+/*.log
 /fakedata*
 /github-blob-sender
 /github-blob-sender.exe
+/jq*

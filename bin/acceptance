@@ -6,16 +6,18 @@ if [ $# -ne 1 ];then
     exit 1
 fi
 BASEDIR=$(dirname $0)
-service_name="db-dumper-service-acceptance"
+service_broker_name="db-dumper-service-acceptance"
+service_name="acceptance_test"
 filepath="fakedata_$1.sql"
 WD=`pwd`
 mysql_bin_path="${WD}/src/main/resources/binaries/mysql/bin/mysql"
 push_data_app_dir="${BASEDIR}/acceptance_app/push_data"
 push_data_app_name="db-dumper-push-data"
 
+
 jq_path="jq"
 hash mysql 2>/dev/null || { echo "Mysql is required to run acceptance test"; exit 1; }
-hash jq 2>/dev/null || { echo "Installing jq"; $BASEDIR/install_jq; jq_path="./jq"; }
+hash jq 2>/dev/null || { echo "Installing jq"; $BASEDIR/install_jq > /dev/null ; jq_path="./jq"; }
 
 if [ ! -f "$mysql_bin_path" ]; then
     echo "Please install binaries for mysql first (You can use bin/install-binaries)"
@@ -31,11 +33,15 @@ fi
 
 get_push_data_state () {
     if hash curl 2>/dev/null; then
-        `curl $1 &> /dev/null`
+        RESPONSE=`curl $1 2> "${WD}/curl.log"`
     else
-        `wget -O - "$1" &> /dev/null`
+        RESPONSE=`wget -O - "$1" 2> /dev/null`
     fi
-    return "$?"
+    if [ "$RESPONSE" != "1" ] && [ "$RESPONSE" != "0" ]; then
+        echo "Error: $RESPONSE"
+        exit 1
+    fi
+    return "$RESPONSE"
 }
 
 echo "Deploying db-dumper-service..."
@@ -46,7 +52,7 @@ echo ""
 echo "Registering db-dumper-service as a service..."
 $BASEDIR/target
 source $BASEDIR/user
-cf create-service-broker $service_name myUs3r myPasssw0rd $SERVICE_URL
+cf create-service-broker $service_broker_name myUs3r myPasssw0rd $SERVICE_URL
 cf enable-service-access db-dumper-service -o $AVAILABLE_ON_ORG
 echo "Registered."
 echo ""
@@ -79,25 +85,26 @@ cf push "$push_data_app_name" -p "$push_data_app_dir" -b php_buildpack --no-mani
 
 app_url=`cf a | awk -v search="$push_data_app_name" '$0 ~ search { print $6 }'`
 i="0"
-while true
+while :
 do
     get_push_data_state "$app_url"
     state=$?
     if [ "$state" != "0" ]; then
+        printf "\rOver.\n"
         break
     fi
     if (( $i % 3 == 0 ))
     then
-         printf "\rPushing.  "
+        printf "\rPushing.  "
     elif (( $i % 3 == 1 )); then
         printf "\rPushing.. "
     elif (( $i % 3 == 2 )); then
         printf "\rPushing..."
     fi
     i=$(( $i + 1 ))
-    sleep 1
+    sleep 2
 done
-
+echo ""
 if [ "$state" != "1" ]; then
     echo "Error occurred when pushing data:"
     echo "$state"
@@ -106,7 +113,44 @@ fi
 echo "Data have been pushed."
 echo ""
 
-exit 0
+
+echo "Dumping with db-dumper-service..."
+cf cs db-dumper-service experimental "$service_name" -c "{\"src_url\": ${uri_database_source}}"
+
+i="0"
+while :
+do
+    state=`cf service mysql_restore | awk '/Status: create succeeded/ { print "1" }'`
+    if [ "$state" != "1" ]; then
+        printf "\rOver.\n"
+        break
+    fi
+    if (( $i % 3 == 0 ))
+    then
+        printf "\rDumping.  "
+    elif (( $i % 3 == 1 )); then
+        printf "\rDumping.. "
+    elif (( $i % 3 == 2 )); then
+        printf "\rDumping..."
+    fi
+    i=$(( $i + 1 ))
+    sleep 1
+done
+echo ""
+echo "Dump finished."
+echo ""
+
+#echo "Restoring in target database"
+#service_value=`cf service-key source_db_dumper_acceptance mykey | awk 'FNR > 1'`
+#uri_database_target=`echo $service_value | $jq_path '.uri'`
+#cf update-service acceptance_test -c '{"src_url":"${uri_database_source}", "target_url": "${uri_database_target}", "action": "restore"}'
+#echo "Restore finished."
+#echo ""
+
+echo "Deleting db-dumper-service instance..."
+cf ds db-dumper-service "$service_name"
+echo "Deleted."
+echo ""
 
 echo "Deleting service source database..."
 cf delete-service-key source_db_dumper_acceptance mykey -f
@@ -119,28 +163,11 @@ cf delete-service-key target_db_dumper_acceptance mykey -f
 cf ds target_db_dumper_acceptance -f
 echo "Deleted."
 echo ""
+
 # cf delete-service-broker db-dumper-service-acceptance -f
 echo "Unregistering db-dumper-service as a service..."
 $BASEDIR/target
 source $BASEDIR/user
-cf delete-service-broker $service_name -f
+cf delete-service-broker $service_broker_name -f
 echo "Unregistered."
 echo ""
-
-exit 0
-
-echo "Dumping with db-dumper-service"
-cf cs db-dumper-service experimental acceptance_test -c '{"src_url":"${uri_database_source}"}'
-echo "Dump finished."
-echo ""
-
-echo "Restoring in target database"
-service_value=`cf service-key source_db_dumper_acceptance mykey | awk 'FNR > 1'`
-uri_database_target=`echo $service_value | $jq_path '.uri'`
-cf update-service acceptance_test -c '{"src_url":"${uri_database_source}", "target_url": "${uri_database_target}", "action": "restore"}'
-echo "Restore finished."
-echo ""
-
-echo "Unregistering db-dumper-service"
-cf delete-service-broker $service_name -f
-echo "Unregistered."
