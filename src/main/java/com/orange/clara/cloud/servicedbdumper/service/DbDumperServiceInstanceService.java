@@ -196,6 +196,9 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             return defaultValue;
         }
         Object paramObject = parameters.get(parameter);
+        if (paramObject == null) {
+            return defaultValue;
+        }
         return paramObject.toString();
     }
 

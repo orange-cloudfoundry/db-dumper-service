@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+#set -v
 # 120586240 = 100 mb + 15%
 if [ $# -ne 1 ];then
     echo "You need to pass a file size in bytes as first argument."
@@ -11,15 +11,18 @@ service_name="acceptance_test"
 filepath="fakedata_$1.sql"
 WD=`pwd`
 mysql_bin_path="${WD}/src/main/resources/binaries/mysql/bin/mysql"
+mysqldump_bin_path="${WD}/src/main/resources/binaries/mysql/bin/mysqldump"
 push_data_app_dir="${BASEDIR}/acceptance_app/push_data"
 push_data_app_name="db-dumper-push-data"
 
+diff_data_app_dir="${BASEDIR}/acceptance_app/diff_database"
+diff_data_app_name="db-dumper-diff-data"
 
 jq_path="jq"
 hash mysql 2>/dev/null || { echo "Mysql is required to run acceptance test"; exit 1; }
-hash jq 2>/dev/null || { echo "Installing jq"; $BASEDIR/install_jq > /dev/null ; jq_path="./jq"; }
+hash jq 2>/dev/null || { $BASEDIR/install_jq > /dev/null ; jq_path="./jq"; }
 
-if [ ! -f "$mysql_bin_path" ]; then
+if [ ! -f "$mysql_bin_path" ] || [ ! -f "$mysqldump_bin_path" ]; then
     echo "Please install binaries for mysql first (You can use bin/install-binaries)"
     exit 1
 fi
@@ -33,7 +36,7 @@ fi
 
 get_push_data_state () {
     if hash curl 2>/dev/null; then
-        RESPONSE=`curl $1 2> "${WD}/curl.log"`
+        RESPONSE=`curl $1 2> /dev/null`
     else
         RESPONSE=`wget -O - "$1" 2> /dev/null`
     fi
@@ -49,7 +52,7 @@ $BASEDIR/deploy
 echo "Deployed."
 echo ""
 
-echo "Registering db-dumper-service as a service..."
+echo "Registering a temporary service of db-dumper-service..."
 $BASEDIR/target
 source $BASEDIR/user
 cf create-service-broker $service_broker_name myUs3r myPasssw0rd $SERVICE_URL
@@ -72,83 +75,119 @@ echo ""
 echo "Pushing data in source database..."
 rm -f "$push_data_app_dir"/fakedata*
 cp "$mysql_bin_path" "$push_data_app_dir"
+cp "$mysqldump_bin_path" "$diff_data_app_dir"
 cp "$filepath" "$push_data_app_dir"
-service_value=`cf service-key source_db_dumper_acceptance mykey | awk 'FNR > 1'`
+service_source_value=`cf service-key source_db_dumper_acceptance mykey | awk 'FNR > 1'`
 
-port=`echo $service_value | $jq_path '.port'`
-hostname=`echo $service_value | $jq_path .hostname`
-database_name=`echo $service_value | $jq_path .name`
-username=`echo $service_value | $jq_path .username`
-password=`echo $service_value | $jq_path .password`
-uri_database_source=`echo $service_value | $jq_path .uri`
+service_target_value=`cf service-key target_db_dumper_acceptance mykey | awk 'FNR > 1'`
+
+
+port=`echo $service_source_value | $jq_path '.port'`
+hostname=`echo $service_source_value | $jq_path .hostname`
+database_name=`echo $service_source_value | $jq_path .name`
+username=`echo $service_source_value | $jq_path .username`
+password=`echo $service_source_value | $jq_path .password`
+uri_database_source=`echo $service_source_value | $jq_path .uri`
+
+port_target=`echo $service_target_value | $jq_path '.port'`
+hostname_target=`echo $service_target_value | $jq_path .hostname`
+database_name_target=`echo $service_target_value | $jq_path .name`
+username_target=`echo $service_target_value | $jq_path .username`
+password_target=`echo $service_target_value | $jq_path .password`
+uri_database_target=`echo $service_target_value | $jq_path .uri`
+
 cf push "$push_data_app_name" -p "$push_data_app_dir" -b php_buildpack --no-manifest -c "\$HOME/htdocs/push_data $hostname $port $username $password $database_name $filepath & .bp/bin/start"
 
 app_url=`cf a | awk -v search="$push_data_app_name" '$0 ~ search { print $6 }'`
-i="0"
+
+printf "App is pushing wait for it..."
 while :
 do
     get_push_data_state "$app_url"
     state=$?
-    if [ "$state" != "0" ]; then
-        printf "\rOver.\n"
+    if [ "$state" == "1" ]; then
+        printf "Over.\n"
         break
     fi
-    if (( $i % 3 == 0 ))
-    then
-        printf "\rPushing.  "
-    elif (( $i % 3 == 1 )); then
-        printf "\rPushing.. "
-    elif (( $i % 3 == 2 )); then
-        printf "\rPushing..."
-    fi
-    i=$(( $i + 1 ))
+    printf "."
     sleep 2
 done
-echo ""
+printf "\n"
 if [ "$state" != "1" ]; then
     echo "Error occurred when pushing data:"
     echo "$state"
     exit 1
 fi
+cf d "$push_data_app_name" -f
 echo "Data have been pushed."
 echo ""
 
-
 echo "Dumping with db-dumper-service..."
 cf cs db-dumper-service experimental "$service_name" -c "{\"src_url\": ${uri_database_source}}"
-
-i="0"
+printf "Wait for dump with db-dumper-service..."
 while :
 do
-    state=`cf service mysql_restore | awk '/Status: create succeeded/ { print "1" }'`
-    if [ "$state" != "1" ]; then
-        printf "\rOver.\n"
+    state=`cf service "$service_name" | awk '/Status: create succeeded/ { print "1" }'`
+    if [ "$state" == "1" ]; then
+        printf "Over.\n"
         break
     fi
-    if (( $i % 3 == 0 ))
-    then
-        printf "\rDumping.  "
-    elif (( $i % 3 == 1 )); then
-        printf "\rDumping.. "
-    elif (( $i % 3 == 2 )); then
-        printf "\rDumping..."
-    fi
-    i=$(( $i + 1 ))
+    printf "."
     sleep 1
 done
 echo ""
 echo "Dump finished."
 echo ""
 
-#echo "Restoring in target database"
-#service_value=`cf service-key source_db_dumper_acceptance mykey | awk 'FNR > 1'`
-#uri_database_target=`echo $service_value | $jq_path '.uri'`
-#cf update-service acceptance_test -c '{"src_url":"${uri_database_source}", "target_url": "${uri_database_target}", "action": "restore"}'
-#echo "Restore finished."
-#echo ""
+echo "Restoring in target database"
+cf update-service acceptance_test -c "{\"src_url\": ${uri_database_source}, \"target_url\": ${uri_database_target}, \"action\": \"restore\"}"
+printf "Wait for restore with db-dumper-service..."
+while :
+do
+    state=`cf service "$service_name" | awk '/Status: update succeeded/ { print "1" }'`
+    if [ "$state" == "1" ]; then
+        printf "Over.\n"
+        break
+    fi
+    printf "."
+    sleep 1
+done
+echo ""
+echo "Restore finished."
+echo ""
 
-echo "Deleting db-dumper-service instance..."
-cf ds db-dumper-service "$service_name"
+echo "Running test..."
+cf push "$diff_data_app_name" -p "$diff_data_app_dir" -b php_buildpack --no-manifest -c "\$HOME/htdocs/diff_data $hostname $port $username $password $database_name $hostname_target $port_target $username_target $password_target $database_name_target &> diff_data.log & .bp/bin/start"
+
+app_url=`cf a | awk -v search="$diff_data_app_name" '$0 ~ search { print $6 }'`
+
+printf "App is testing..."
+while :
+do
+    get_push_data_state "$app_url"
+    state=$?
+    if [ "$state" != "0" ]; then
+        printf "Over.\n"
+        break
+    fi
+    printf "."
+    sleep 2
+done
+cf d "$diff_data_app_name" -f
+
+if [ "$state" == "1" ]; then
+    RESULT="0"
+else
+    RESULT="1"
+fi
+
+echo ""
+echo "Test is finished, wait for cleaning to have result."
+echo ""
+
+
+echo "Deleting service $service_name instance..."
+cf ds "$service_name" -f
 echo "Deleted."
 echo ""
 
@@ -165,9 +204,22 @@ echo "Deleted."
 echo ""
 
 # cf delete-service-broker db-dumper-service-acceptance -f
-echo "Unregistering db-dumper-service as a service..."
+echo "Unregistering the temporary service..."
 $BASEDIR/target
 source $BASEDIR/user
 cf delete-service-broker $service_broker_name -f
 echo "Unregistered."
 echo ""
+
+printf "Result for a file of $1 bytes: "
+
+if [ "$RESULT" == "0" ]; then
+    printf "\033[0;32m"
+    printf "OK\n"
+    printf "\033[0m"
+else
+    printf "\033[0;31m"
+    printf "NOK\n"
+    printf "\033[0m"
+fi
+exit $RESULT

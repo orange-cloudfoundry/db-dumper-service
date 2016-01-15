@@ -7,7 +7,6 @@ OS=""
 : "${TMPDIR:=${TMP:-$(CDPATH=/var:/; cd -P tmp)}}"
 cd -- "${TMPDIR:?NO TEMP DIRECTORY FOUND!}" || exit
 cd -
-echo "Installing ${NAME}..."
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     OS="linux"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -30,6 +29,7 @@ if [ -f "${NAME}" ] || [ -f "${NAME}.exe" ]; then
     echo "jq already installed"
     exit 0
 fi
+echo "Installing ${NAME}..."
 ARCHNUM=`getconf LONG_BIT`
 ARCH=""
 CPUINFO=`uname -m`
