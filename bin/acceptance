@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #set -v
-# 120586240 = 100 mb + 15%
+# 131072000 = 100 mb + 25%
 if [ $# -ne 1 ];then
     echo "You need to pass a file size in bytes as first argument."
     exit 1
@@ -61,13 +61,13 @@ echo "Registered."
 echo ""
 
 echo "Creating service source database..."
-cf cs p-mysql 100mb source_db_dumper_acceptance
+cf cs p-mysql 1gb source_db_dumper_acceptance
 cf create-service-key source_db_dumper_acceptance mykey
 echo "Created."
 echo ""
 
 echo "Creating service target database..."
-cf cs p-mysql 100mb target_db_dumper_acceptance
+cf cs p-mysql 1gb target_db_dumper_acceptance
 cf create-service-key target_db_dumper_acceptance mykey
 echo "Created."
 echo ""
