@@ -48,9 +48,9 @@ public class SecurityConfig {
     @Value("${admin.password:password}")
     private String adminPassword;
 
-    @Value("${spring.boot.admin.username}")
+    @Value("${spring.boot.admin.username:username}")
     private String springBootAdminUsername;
-    @Value("${spring.boot.admin.password}")
+    @Value("${spring.boot.admin.password:password}")
     private String springBootAdminPassword;
 
     @Autowired

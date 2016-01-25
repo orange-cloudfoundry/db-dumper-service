@@ -31,7 +31,7 @@ import java.util.Map;
 @Service
 public class DbDumperServiceInstanceBindingService implements ServiceInstanceBindingService {
 
-    @Value("${vcap.application.uris[0]:localhost:8080}")
+    @Value("#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
     @Autowired
     private DbDumperServiceInstanceBindingRepo repositoryInstanceBinding;

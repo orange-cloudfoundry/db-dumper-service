@@ -2,16 +2,18 @@
 #Generated manifest
 name: db-dumper-service
 memory: 1G
-instances: 1
+instances: 2 # db-dumper-service handle n instances
 path: ./target/db-dumper-service-1.0.0.war
 host: db-dumper-service
 env:
   spring_profiles_active: development,cloud,core,uaa
+  logging_level_com_orange_clara_cloud_servicedbdumper: INFO # you can change the verbosity to: WARN, DEBUG, ERROR
   broker_username: myUs3r
   broker_password: myPasssw0rd
   admin_username: my@dmin
   admin_password: myPasssw0rd
   dump_delete_expiration_days: 5
+  use_ssl: false # If you will be on https set this value to true
   CF_TARGET: https://your.uaa.url.com
   security_oauth2_client_clientId: your-client-id-uaa
   security_oauth2_client_clientSecret: your-client-secret-uaa
@@ -22,7 +24,7 @@ env:
   job_errored_delete_expiration_days: 2
   job_finished_delete_expiration_minutes: 8
   dump_delete_expiration_days: 5
-  encryption_key: PleaseChangeIt_64568sdfs54gr86
+  encryption_key: PleaseChangeIt_64568sdfs54gr86 # This ecryption key is used to encrypt databases passwords in database
 buildpack: java_buildpack
 #services:
 #- riak-db-dumper-service

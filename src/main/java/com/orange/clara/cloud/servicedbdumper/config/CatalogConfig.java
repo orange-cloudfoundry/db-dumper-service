@@ -26,7 +26,7 @@ import java.util.Map;
 @Configuration
 public class CatalogConfig {
 
-    @Value("${vcap.application.uris[0]:localhost:8080}")
+    @Value("#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
 
     private Map<String, Object> sdMetadata = new HashMap<String, Object>();
@@ -90,6 +90,6 @@ public class CatalogConfig {
 
     @PostConstruct
     public void postConstruct() {
-        sdMetadata.put("imageUrl", "http://" + appUri + "/images/logo.png");
+        sdMetadata.put("imageUrl", appUri + "/images/logo.png");
     }
 }
