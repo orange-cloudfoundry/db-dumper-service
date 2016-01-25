@@ -26,6 +26,14 @@ $ cf enable-service-access db-dumper-service
 ```
 8. You're done
 
+## Configure your UAA (Optional)
+
+You need to create a new uaa client if you want to use UAA to authenticate user in the dashboard, here the steps you need to do:
+
+1. use uaa-cli and run: `uaac client add db-dumper-service --name "db-dumper-service" --scope "openid" --authorities "openid" -s "mysupersecretkey" --signup_redirect_url "http://your.db-dumper-service.url"` (**Note**: `--signup_redirect_url`is optional but highly recommended for security)
+2. Update your `manifest.yml` (see: `CF_TARGET`, `security_oauth2_client_clientId` and `security_oauth2_client_clientSecret` keys)
+
+
 ## How to use
 
 **Note**: The service broker will run task asynchronously.

@@ -25,8 +25,6 @@ security:
       clientAuthenticationScheme: header
       scope:
       - openid
-      - cloud_controller.read
-      - cloud_controller.write
     resource:
       userInfoUri: ${CF_TARGET}/userinfo
       preferTokenInfo: false
