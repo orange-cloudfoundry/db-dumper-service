@@ -45,29 +45,46 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 **NOTE**: For the moment you need to pass your database uri but in next release you could just pass a database service to db-dumper-service
 This command will create a dump for you: 
 ```
-cf cs db-dumper-service experimental service-name -c '{"src_url":"mysql://user:password@nameorip.of.your.db:port/database-name"}'
+cf cs db-dumper-service experimental service-name -c '{"src_url": "mysql://user:password@nameorip.of.your.db:port/database-name"}'
 ```
 
 ### Restore a dump
 
 To restore a dump you will need to pass 2 databases, the one you want to retrieve the dump, the second one to restore the retrieved dump (**Note**: the second database can be the same):
 ```
-cf update-service test -c '{"action": "restore", "src_url":"mysql://user:password@nameorip.of.your.db:port/database-name", "target_url": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
+cf update-service test -c '{"action": "restore",  "target_url": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
 ```
 
 ### Update a dump
 
 If you want to update a dump you can use this command but it will replace your actual dump:
 ```
-cf update-service test -c '{"src_url":"mysql://user:password@nameorip.of.your.db:port/database-name", "action": "dump"}'
+cf update-service test -c '{"action": "dump"}'
 ```
 
 ### Delete a dump
 
-This is equivalent to delete the service, your dumps will be deleted after 5 days to prevent mistake (set by `dump_delete_expiration_days` in manifest):
+Deleting a dump is equivalent to delete the service:
+
 ```
-cf ds db-dumper-service experimental service-name
+$ cf ds db-dumper-service experimental service-name
+[...]
+
+$ cf service service-name
+[...]
+Last Operation
+Status: delete in progress
+Message: the dump is scheduled for deletion at $date. Use "restore_soft_deleted_dump_id": "345554" to restore it.
 ```
+
+Your dump will be deleted within 5 days to allow to recover from a deletion requested by mistake. The soft delete duration of 5 days is configured by service operator in `dump_delete_expiration_days` property in the manifest.
+
+During the soft-delete period, CF users can recover a dump by instanciating a new service instance specifying the dump id to recover (in the same space where the original dump was done).
+
+```
+cf cs db-dumper-service experimental service-name -c '{"src_url": "mysql://user:password@nameorip.of.your.db:port/database-name", "restore_soft_deleted_dump_id": "345554"}'
+```
+
 
 ## Access to dashboard
 
