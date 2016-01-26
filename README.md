@@ -4,6 +4,8 @@ A Cloud Foundry service broker to dump and restore database on demand.
 
 More details in the specifications at https://docs.google.com/document/d/1Y5vwWjvaUIwHI76XU63cAS8xEOJvN69-cNoCQRqLPqU/edit
 
+See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with label "service-db-dumper"
+
 ## Requirement
 
 - [Cloud Foundry](http://cloudfoundry.org/) with service broker api 2.6 at least
