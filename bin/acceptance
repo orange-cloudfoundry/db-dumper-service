@@ -140,7 +140,7 @@ echo "Dump finished."
 echo ""
 
 echo "Restoring in target database"
-cf update-service acceptance_test -c "{\"src_url\": ${uri_database_source}, \"target_url\": ${uri_database_target}, \"action\": \"restore\"}"
+cf update-service acceptance_test -c "{\"target_url\": ${uri_database_target}, \"action\": \"restore\"}"
 printf "Wait for restore with db-dumper-service..."
 while :
 do

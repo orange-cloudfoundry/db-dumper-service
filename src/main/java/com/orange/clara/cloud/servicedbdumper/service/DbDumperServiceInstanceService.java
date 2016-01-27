@@ -155,7 +155,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             throw new ServiceBrokerException("Action doesn't exist. you need to set this parameter: " + ACTION_PARAMETER + " valid value are: " + UpdateAction.showValues());
         }
         if (action.equals(UpdateAction.DUMP)) {
-            this.createDump(request.getParameters(), instance);
+            this.createDump(instance);
         } else if (action.equals(UpdateAction.RESTORE)) {
             try {
                 this.restoreDump(request.getParameters(), instance);
@@ -169,6 +169,10 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         return serviceInstance;
     }
 
+    private void createDump(DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
+        this.jobFactory.createJobCreateDump(dbDumperServiceInstance);
+    }
+
     private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
 
         String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
@@ -180,7 +184,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
         repository.save(dbDumperServiceInstance);
-        this.jobFactory.createJobCreateDump(databaseRef, dbDumperServiceInstance);
+        this.createDump(dbDumperServiceInstance);
     }
 
     private String getParameter(Map<String, Object> parameters, String parameter) throws ServiceBrokerException {
@@ -203,16 +207,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
-        String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
         String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER);
         String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
 
-        UUID dbSrcName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
         UUID dbTargetName = UUID.nameUUIDFromBytes(targetUrl.getBytes());
-
-        DatabaseRef databaseRefSource = this.getDatabaseRefFromUrl(srcUrl, dbSrcName.toString());
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(targetUrl, dbTargetName.toString());
-        dbDumperServiceInstance.setDatabaseRef(databaseRefSource);
         if (createdAtString == null || createdAtString.isEmpty()) {
             SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
             Date today = new Date();
@@ -220,7 +219,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 today = form.parse(form.format(new Date()));
             } catch (ParseException e) { // should have no error
             }
-            this.jobFactory.createJobRestoreDump(databaseRefSource, databaseRefTarget, today, dbDumperServiceInstance);
+            this.jobFactory.createJobRestoreDump(databaseRefTarget, today, dbDumperServiceInstance);
 
             return;
         }
@@ -231,7 +230,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         } catch (ParseException e) {
             throw new ServiceBrokerException("When use " + CREATED_AT_PARAMETER + " parameter you should pass a date in this form: yyyy-MM-dd");
         }
-        this.jobFactory.createJobRestoreDump(databaseRefSource, databaseRefTarget, createdAt, dbDumperServiceInstance);
+        this.jobFactory.createJobRestoreDump(databaseRefTarget, createdAt, dbDumperServiceInstance);
 
     }
 

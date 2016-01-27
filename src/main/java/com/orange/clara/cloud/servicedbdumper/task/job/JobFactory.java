@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ public class JobFactory {
     @Autowired
     private JobRepo jobRepo;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
         Job job = new Job(jobType, databaseRefSrc, databaseRefTarget, dumpDate, dbDumperServiceInstance);
         if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.START, databaseRefSrc, databaseRefTarget).size() > 0
@@ -52,7 +53,7 @@ public class JobFactory {
         this.jobRepo.save(job);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createJobWithDatabaseRefSrc(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
         Job job = new Job(jobType, databaseRefSrc, dbDumperServiceInstance);
         if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.START, databaseRefSrc).size() > 0
@@ -68,6 +69,17 @@ public class JobFactory {
         this.jobRepo.save(job);
     }
 
+    public void createJobCreateDump(DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);
+    }
+
+    public void createJobDeleteDumps(DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);
+    }
+
+    public void createJobRestoreDump(DatabaseRef databaseRefTarget, Date createdAt, DbDumperServiceInstance dbDumperServiceInstance) {
+        this.createJob(JobType.RESTORE_DUMP, dbDumperServiceInstance.getDatabaseRef(), databaseRefTarget, createdAt, dbDumperServiceInstance);
+    }
 
     public void createJobCreateDump(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
         this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, databaseRefSrc, dbDumperServiceInstance);

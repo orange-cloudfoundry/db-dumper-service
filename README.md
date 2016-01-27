@@ -52,14 +52,14 @@ cf cs db-dumper-service experimental service-name -c '{"src_url":"mysql://user:p
 
 To restore a dump you will need to pass 2 databases, the one you want to retrieve the dump, the second one to restore the retrieved dump (**Note**: the second database can be the same):
 ```
-cf update-service test -c '{"action": "restore", "src_url":"mysql://user:password@nameorip.of.your.db:port/database-name", "target_url": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
+cf update-service test -c '{"action": "restore", "target_url": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
 ```
 
 ### Update a dump
 
 If you want to update a dump you can use this command but it will replace your actual dump:
 ```
-cf update-service test -c '{"src_url":"mysql://user:password@nameorip.of.your.db:port/database-name", "action": "dump"}'
+cf update-service test -c '{"action": "dump"}'
 ```
 
 ### Delete a dump
