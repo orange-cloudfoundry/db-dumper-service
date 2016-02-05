@@ -3,7 +3,7 @@
 name: db-dumper-service
 memory: 1G
 instances: 2 # db-dumper-service handle n instances
-path: ./target/db-dumper-service-1.0.0.war
+path: ./target/db-dumper-service-1.0.1.war
 host: db-dumper-service
 env:
   spring_profiles_active: development,cloud,core,uaa
@@ -17,6 +17,7 @@ env:
   CF_TARGET: https://your.uaa.url.com
   security_oauth2_client_clientId: your-client-id-uaa
   security_oauth2_client_clientSecret: your-client-secret-uaa
+  service_definition_id: db-dumper-service # your service broker id for multi-db-dumper-service instances
   # uncomment if you want to plug to a spring-boot-admin app (see: https://github.com/codecentric/spring-boot-admin)
   #spring_boot_admin_url: http://spring-boot-admin.your.url.com
   #spring_boot_admin_username: spring-boot-admin-user

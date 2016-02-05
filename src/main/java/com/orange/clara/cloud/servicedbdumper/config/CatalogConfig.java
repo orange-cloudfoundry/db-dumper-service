@@ -29,15 +29,18 @@ public class CatalogConfig {
     @Value("#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
 
+    @Value("${service.definition.id:db-dumper-service}")
+    private String serviceDefinitionId;
+
     private Map<String, Object> sdMetadata = new HashMap<String, Object>();
 
     @Bean
     public Catalog catalog() {
         return new Catalog(Arrays.asList(
                 new ServiceDefinition(
+                        this.serviceDefinitionId,
                         "db-dumper-service",
-                        "db-dumper-service",
-                        "Dump and restore data from your database, ** please do not use **",
+                        "Dump and restore data from your database",
                         true,
                         true,
                         Arrays.asList(
