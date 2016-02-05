@@ -5,10 +5,10 @@ jdk:
 after_success:
 - bin/install-binaries
 - mvn clean install -DskipTests=true
-- mkdir -p deploy/target
-- cp target/db-dumper-service-1.0.1.war deploy/target
-- cp manifest.yml deploy/
-- zip -r db-dumper-service ./deploy/*
+- mkdir -p db-dumper-service/target
+- cp target/db-dumper-service-1.0.1.war db-dumper-service/target
+- cp manifest.yml db-dumper-service/
+- zip -r db-dumper-service ./db-dumper-service/*
 deploy:
   provider: releases
   api_key:
