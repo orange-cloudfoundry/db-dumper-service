@@ -26,4 +26,6 @@ public interface Filer {
     void delete(String filename);
 
     long getContentLength(String filename);
+
+    String getFileExtension();
 }

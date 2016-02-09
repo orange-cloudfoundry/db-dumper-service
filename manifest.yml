@@ -13,6 +13,7 @@ env:
   broker_password: myPasssw0rd
   admin_username: my@dmin
   admin_password: myPasssw0rd
+  filer_type: GzipS3 # this is create a compressed dump and send to S3 -- other value is: S3 (this will send dump to S3 without compression)
   dump_delete_expiration_days: 5
   use_ssl: false # If you will be on https set this value to true
   CF_TARGET: https://your.uaa.url.com

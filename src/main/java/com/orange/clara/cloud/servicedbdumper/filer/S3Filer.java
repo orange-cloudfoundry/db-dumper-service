@@ -87,4 +87,9 @@ public class S3Filer implements Filer {
         Blob blob = blobStore.getBlob(this.bucketName, filename);
         return blob.getPayload().getContentMetadata().getContentLength();
     }
+
+    @Override
+    public String getFileExtension() {
+        return ".sql";
+    }
 }

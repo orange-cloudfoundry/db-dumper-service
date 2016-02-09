@@ -54,4 +54,9 @@ public class GzipS3Filer extends S3Filer implements Filer {
     public InputStream retrieveWithOriginalStream(String filename) throws IOException {
         return super.retrieveWithOriginalStream(filename);
     }
+
+    @Override
+    public String getFileExtension() {
+        return ".sql.gzip";
+    }
 }
