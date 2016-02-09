@@ -29,6 +29,11 @@ import java.util.Date;
 public abstract class AbstractCoreDbAction {
     public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
     protected Logger logger = LoggerFactory.getLogger(AbstractCoreDbAction.class);
+
+    @Autowired
+    @Qualifier(value = "dateFormatFile")
+    protected String dateFormat;
+
     @Autowired
     @Qualifier(value = "dbDumpersFactory")
     protected DbDumpersFactory dbDumpersFactory;
@@ -136,7 +141,7 @@ public abstract class AbstractCoreDbAction {
 
     protected String generateFileName() {
         Date d = new Date();
-        SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
         return form.format(d) + ".sql";
+        SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
     }
 }

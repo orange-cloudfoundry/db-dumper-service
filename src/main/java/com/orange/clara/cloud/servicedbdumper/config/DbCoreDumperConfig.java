@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import org.springframework.beans.factory.annotation.Value;
+import java.util.regex.Pattern;
+
 /**
  * Copyright (C) 2015 Orange
  * <p/>
@@ -30,6 +33,23 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile({"core", "local"})
 public class DbCoreDumperConfig {
+
+    @Value("${file.date.format:dd-MM-yyyy HH:mm}")
+    private String dateFormat;
+
+
+    @Bean
+    public String dateFormatFile() {
+        String finalDateFormat = dateFormat.replaceAll(Pattern.quote(" "), "-");
+        finalDateFormat = finalDateFormat.replaceAll(Pattern.quote(":"), "");
+        return finalDateFormat;
+    }
+
+    @Bean
+    public String dateFormat() {
+        return this.dateFormat;
+    }
+
 
     @Bean
     public Filer filer() {

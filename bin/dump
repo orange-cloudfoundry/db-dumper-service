@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 BASEDIR=$(dirname $0)
 $BASEDIR/target
-cf cs db-dumper-service experimental test -c '{"src_url":"mysql://eIDL4y9r2tiqR7z4:GYwJ62sC0x1z5Uk8@192.168.30.150:3306/cf_0e26d1cf_5659_49a5_9e16_8ce245873a28"}'
+cf cs db-dumper-service-dev experimental test -c '{"src_url":"mysql://eIDL4y9r2tiqR7z4:GYwJ62sC0x1z5Uk8@192.168.30.150:3306/cf_0e26d1cf_5659_49a5_9e16_8ce245873a28"}'
 cf update-service test -c '{"action": "dump"}'
 cf update-service test -c '{"action": "dump"}'

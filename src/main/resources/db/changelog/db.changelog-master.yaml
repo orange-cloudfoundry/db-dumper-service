@@ -275,3 +275,11 @@ databaseChangeLog:
             columnNames: created_at, database_ref_id
             constraintName: unique_database_dump_file_created_at
             tableName: database_dump_file
+  - changeSet:
+      id: 2
+      author: arthurhalet
+      changes:
+      - modifyDataType:
+          columnName: created_at
+          newDataType: datetime
+          tableName: database_dump_file

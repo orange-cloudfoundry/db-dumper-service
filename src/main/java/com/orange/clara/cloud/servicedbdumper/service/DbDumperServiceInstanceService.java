@@ -53,6 +53,12 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private final static String TARGET_URL_PARAMETER = "target_url";
     private final static String DASHBOARD_ROUTE = "/manage";
     private Logger logger = LoggerFactory.getLogger(DbDumperServiceInstanceService.class);
+
+    @Autowired
+    @Qualifier(value = "dateFormat")
+    private String dateFormat;
+
+
     @Autowired
     @Qualifier(value = "restorer")
     private Restorer restorer;
@@ -213,7 +219,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         UUID dbTargetName = UUID.nameUUIDFromBytes(targetUrl.getBytes());
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(targetUrl, dbTargetName.toString());
         if (createdAtString == null || createdAtString.isEmpty()) {
-            SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
+            SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
             Date today = new Date();
             try {
                 today = form.parse(form.format(new Date()));
@@ -223,12 +229,12 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
             return;
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(this.dateFormat);
         Date createdAt;
         try {
             createdAt = simpleDateFormat.parse(createdAtString);
         } catch (ParseException e) {
-            throw new ServiceBrokerException("When use " + CREATED_AT_PARAMETER + " parameter you should pass a date in this form: yyyy-MM-dd");
+            throw new ServiceBrokerException("When use " + CREATED_AT_PARAMETER + " parameter you should pass a date in this form: " + this.dateFormat);
         }
         this.jobFactory.createJobRestoreDump(databaseRefTarget, createdAt, dbDumperServiceInstance);
 

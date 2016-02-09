@@ -28,6 +28,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
     private Logger logger = LoggerFactory.getLogger(CoreDumper.class);
 
+
     @Override
     @Transactional
     public void dump(DatabaseRef databaseRef) throws DumpException {
@@ -51,7 +52,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
     }
 
     private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName) {
-        SimpleDateFormat form = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
         Date today = new Date();
         try {
             today = form.parse(form.format(new Date()));

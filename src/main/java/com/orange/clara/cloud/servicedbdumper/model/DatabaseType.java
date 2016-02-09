@@ -11,14 +11,19 @@ package com.orange.clara.cloud.servicedbdumper.model;
  * Date: 08/09/2015
  */
 public enum DatabaseType {
-    MYSQL(".*(maria|my).*"), POSTGRESQL(".*(postgres|pgsql).*"), MONGODB(".*mongo.*");
+    MYSQL(".*(maria|my).*", 3306), POSTGRESQL(".*(postgres|pgsql).*", 5432), MONGODB(".*mongo.*", 27017);
 
     private String matcher;
+    private Integer defaultPort;
 
-    DatabaseType(String matcher) {
+    DatabaseType(String matcher, Integer defaultPort) {
         this.matcher = matcher;
+        this.defaultPort = defaultPort;
     }
 
+    public Integer getDefaultPort() {
+        return defaultPort;
+    }
 
     public String getMatcher() {
         return matcher;

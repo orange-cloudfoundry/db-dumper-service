@@ -26,10 +26,10 @@ import java.util.List;
 public class CoreDeleter extends AbstractCoreDbAction implements Deleter {
 
     @Autowired
-    DatabaseDumpFileRepo databaseDumpFileRepo;
+    private DatabaseDumpFileRepo databaseDumpFileRepo;
 
     @Autowired
-    DatabaseRefRepo databaseRefRepo;
+    private DatabaseRefRepo databaseRefRepo;
     private Logger logger = LoggerFactory.getLogger(CoreDeleter.class);
 
     @Override
