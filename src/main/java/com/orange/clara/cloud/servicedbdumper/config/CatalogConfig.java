@@ -39,12 +39,12 @@ public class CatalogConfig {
         return new Catalog(Arrays.asList(
                 new ServiceDefinition(
                         this.serviceDefinitionId,
-                        "db-dumper-service",
+                        this.serviceDefinitionId,
                         "Dump and restore data from your database",
                         true,
                         true,
                         Arrays.asList(
-                                new Plan("experimental",
+                                new Plan(this.serviceDefinitionId + "-plan-experimental",
                                         "experimental",
                                         "This is a default db-dumper-service plan.  All services are created equally.",
                                         getPlanMetadata(),
