@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.controllers;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Copyright (C) 2015 Orange
@@ -16,6 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 public class WelcomeController {
+
+    @RequestMapping("/")
+    public ModelAndView defaultRoute() {
+        return new ModelAndView("redirect:/manage");
+    }
+
     @RequestMapping("/manage")
     public String welcome(Model model) {
         return "welcome";

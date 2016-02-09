@@ -68,6 +68,13 @@ public class S3Filer implements Filer {
     }
 
     @Override
+    public InputStream retrieveWithOriginalStream(String filename) throws IOException {
+        BlobStore blobStore = this.blobStoreContext.getBlobStore();
+        Blob blob = blobStore.getBlob(this.bucketName, filename);
+        return blob.getPayload().openStream();
+    }
+
+    @Override
     public void delete(String filename) {
         BlobStore blobStore = this.blobStoreContext.getBlobStore();
         blobStore.removeBlob(this.bucketName, filename);

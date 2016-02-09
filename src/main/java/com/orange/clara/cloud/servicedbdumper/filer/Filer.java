@@ -21,6 +21,8 @@ public interface Filer {
 
     InputStream retrieveWithStream(String filename) throws IOException;
 
+    InputStream retrieveWithOriginalStream(String filename) throws IOException;
+
     void delete(String filename);
 
     long getContentLength(String filename);

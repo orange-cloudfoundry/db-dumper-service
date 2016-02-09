@@ -35,6 +35,10 @@ public abstract class AbstractCoreDbAction {
     protected String dateFormat;
 
     @Autowired
+    @Qualifier(value = "fileOutputExtension")
+    protected String fileOutputExtension;
+
+    @Autowired
     @Qualifier(value = "dbDumpersFactory")
     protected DbDumpersFactory dbDumpersFactory;
     @Autowired
@@ -141,7 +145,7 @@ public abstract class AbstractCoreDbAction {
 
     protected String generateFileName() {
         Date d = new Date();
-        return form.format(d) + ".sql";
         SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
+        return form.format(d) + this.fileOutputExtension;
     }
 }

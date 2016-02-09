@@ -6,6 +6,8 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.InputStreamResource;
@@ -38,7 +40,7 @@ import java.io.InputStreamReader;
 @Controller
 @RequestMapping(value = "/manage")
 public class ManagerController {
-
+    private Logger logger = LoggerFactory.getLogger(ManagerController.class);
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
 
@@ -126,7 +128,7 @@ public class ManagerController {
         respHeaders.setContentLength(this.filer.getContentLength(fileName));
         respHeaders.setContentDispositionFormData("attachment", fileName);
 
-        InputStream inputStream = this.filer.retrieveWithStream(fileName);
+        InputStream inputStream = this.filer.retrieveWithOriginalStream(fileName);
 
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
