@@ -7,7 +7,7 @@ path: ./target/db-dumper-service-1.1.0.war
 host: db-dumper-service
 timeout: 180
 env:
-  spring_profiles_active: development,cloud,core,uaa
+  spring_profiles_active: cloud,core,uaa
   logging_level_com_orange_clara_cloud_servicedbdumper: INFO # you can change the verbosity to: WARN, DEBUG, ERROR
   broker_username: myUs3r
   broker_password: myPasssw0rd
