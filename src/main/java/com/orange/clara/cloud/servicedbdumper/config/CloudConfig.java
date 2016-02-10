@@ -1,9 +1,12 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
 
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.filer.factory.FactoryFiler;
 import com.orange.cloudfoundry.connector.s3.factory.S3ContextBuilder;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.config.java.AbstractCloudConfig;
 import org.springframework.cloud.config.java.ServiceScan;
 import org.springframework.context.annotation.Bean;
@@ -34,8 +37,12 @@ public class CloudConfig extends AbstractCloudConfig {
     @Configuration
     @ServiceScan
     public static class CoreCloudConfig extends AbstractCloudConfig {
+
+
         @Autowired
         private S3ContextBuilder s3ContextBuilder;
+        @Value("${filer.type:GzipS3}")
+        private String filerType;
 
         @Bean
         public String bucketName() {
@@ -50,6 +57,11 @@ public class CloudConfig extends AbstractCloudConfig {
             return this.s3ContextBuilder.getContextBuilder()
                     .overrides(storeProviderInitProperties)
                     .buildView(BlobStoreContext.class);
+        }
+
+        @Bean
+        public Filer filer() throws InstantiationException, IllegalAccessException {
+            return FactoryFiler.createFiler(this.filerType);
         }
     }
 

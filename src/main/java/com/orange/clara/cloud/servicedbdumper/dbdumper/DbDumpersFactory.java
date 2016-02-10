@@ -23,17 +23,17 @@ import java.util.Map;
 public class DbDumpersFactory {
     private Map<DatabaseType, DatabaseDumper> dbDumpers;
 
-    @Value("classpath:binaries/mysql/bin/mysqldump")
+    @Value("${mysql.dump.bin.path:classpath:binaries/mysql/bin/mysqldump}")
     private File mysqlBinaryDump;
-    @Value("classpath:binaries/mysql/bin/mysql")
+    @Value("${mysql.restore.bin.path:classpath:binaries/mysql/bin/mysql}")
     private File mysqlBinaryRestore;
-    @Value("classpath:binaries/postgresql/bin/pg_dump")
+    @Value("${postgres.dump.bin.path:classpath:binaries/postgresql/bin/pg_dump}")
     private File postgresBinaryDump;
-    @Value("classpath:binaries/postgresql/bin/psql")
+    @Value("${postgres.restore.bin.path:classpath:binaries/postgresql/bin/psql}")
     private File postgresBinaryRestore;
-    @Value("classpath:binaries/mongodb/bin/mongodump")
+    @Value("${mongodb.dump.bin.path:classpath:binaries/mongodb/bin/mongodump}")
     private File mongodbBinaryDump;
-    @Value("classpath:binaries/mongodb/bin/mongorestore")
+    @Value("${mongodb.restore.bin.path:classpath:binaries/mongodb/bin/mongorestore}")
     private File mongodbBinaryRestore;
 
 

@@ -1,9 +1,12 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.filer.factory.FactoryFiler;
 import com.orange.cloudfoundry.connector.s3.factory.S3ContextBuilder;
 import com.orange.cloudfoundry.connector.s3.factory.S3FactoryCreator;
 import com.orange.cloudfoundry.connector.s3.service.info.S3ServiceInfo;
 import org.jclouds.blobstore.BlobStoreContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -28,6 +31,11 @@ import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCK
 @Profile("local")
 public class LocalConfig {
 
+
+    @Value("${filer.type:GzipDisk}")
+    private String filerType;
+
+
     @Bean
     public String bucketName() {
         return "myBucket";
@@ -44,4 +52,11 @@ public class LocalConfig {
         S3ContextBuilder s3ContextBuilder = s3FactoryCreator.create(riakcsServiceInfo, null);
         return s3ContextBuilder.getContextBuilder().overrides(storeProviderInitProperties).buildView(BlobStoreContext.class);
     }
+
+    @Bean
+    public Filer filer() throws InstantiationException, IllegalAccessException {
+        return FactoryFiler.createFiler(this.filerType);
+    }
+
+
 }

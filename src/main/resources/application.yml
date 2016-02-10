@@ -20,11 +20,11 @@ security:
     password: none
   oauth2:
     client:
-      accessTokenUri: ${CF_TARGET}/oauth/token
-      userAuthorizationUri: ${CF_TARGET}/oauth/authorize
+      accessTokenUri: ${CF_TARGET:http://fake.uaa.com}/oauth/token
+      userAuthorizationUri: ${CF_TARGET:http://fake.uaa.com}/oauth/authorize
       clientAuthenticationScheme: header
       scope:
       - openid
     resource:
-      userInfoUri: ${CF_TARGET}/userinfo
+      userInfoUri: ${CF_TARGET:http://fake.uaa.com}/userinfo
       preferTokenInfo: false

@@ -11,9 +11,6 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3StreamImpl;
-import com.orange.clara.cloud.servicedbdumper.filer.Filer;
-import com.orange.clara.cloud.servicedbdumper.filer.GzipS3Filer;
-import com.orange.clara.cloud.servicedbdumper.filer.S3Filer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +35,6 @@ public class DbCoreDumperConfig {
     @Value("${file.date.format:dd-MM-yyyy HH:mm}")
     private String dateFormat;
 
-    @Value("${filer.type:GzipS3}")
-    private String filerType;
 
     @Bean
     public String dateFormatFile() {
@@ -52,19 +47,6 @@ public class DbCoreDumperConfig {
     public String dateFormat() {
         return this.dateFormat;
     }
-
-
-    @Bean
-    public Filer filer() {
-
-        switch (this.filerType.toLowerCase()) {
-            case "gzips3":
-                return new GzipS3Filer();
-            default:
-                return new S3Filer();
-        }
-    }
-
 
     @Bean
     public DbDumpersFactory dbDumpersFactory() {

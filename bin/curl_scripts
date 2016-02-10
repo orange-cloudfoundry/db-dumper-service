@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+curl -vvv http://user:password@localhost:8080/v2/service_instances/1 -d '{
+  "organization_guid": "12-15",
+  "plan_id":           "db-dumper-service-plan-experimental",
+  "service_id":        "db-dumper-service",
+  "space_guid":        "10-20",
+  "parameters":        {
+    "src_url": "mysql://eIDL4y9r2tiqR7z4:GYwJ62sC0x1z5Uk8@192.168.30.150:3306/cf_0e26d1cf_5659_49a5_9e16_8ce245873a28"
+  }
+}' -X PUT -H "X-Broker-API-Version: *" -H "Content-Type: application/json"

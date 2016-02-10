@@ -8,11 +8,10 @@ package com.orange.clara.cloud.servicedbdumper.filer;
  * or at 'http://opensource.org/licenses/MIT'.
  * <p/>
  * Author: Arthur Halet
- * Date: 09/02/2016
+ * Date: 10/02/2016
  */
-public class GzipS3Filer extends AbstractGzipGenericFiler implements Filer {
-
-    public GzipS3Filer() {
-        super(new S3Filer());
+public class GzipDiskFiler extends AbstractGzipGenericFiler implements Filer {
+    public GzipDiskFiler() {
+        super(new DiskFiler());
     }
 }
