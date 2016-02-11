@@ -1,10 +1,12 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import com.orange.clara.cloud.servicedbdumper.security.UserAccessRight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,18 +36,21 @@ public class InterfaceController {
     @Autowired
     private DbDumperServiceInstanceRepo instanceRepository;
 
+    @Autowired
+    private UserAccessRight userAccessRight;
 
     @RequestMapping("/list")
-    public String list(Model model) throws IOException {
+    public String list(Model model) throws IOException, UserAccessRightException {
         List<DatabaseRef> databaseRefs = Lists.newArrayList(this.databaseRefRepo.findAll());
         model.addAttribute("databaseRefs", this.filteringDatabaseRef(databaseRefs));
         return "listfiles";
     }
 
-    private List<DatabaseRef> filteringDatabaseRef(List<DatabaseRef> databaseRefs) {
+    private List<DatabaseRef> filteringDatabaseRef(List<DatabaseRef> databaseRefs) throws UserAccessRightException {
         List<DatabaseRef> databaseRefsFinal = Lists.newArrayList();
         for (DatabaseRef databaseRef : databaseRefs) {
-            if (databaseRef.isDeleted()) {
+            if (databaseRef.isDeleted() || databaseRef.getDbDumperServiceInstances() == null
+                    || !this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
                 continue;
             }
             databaseRefsFinal.add(databaseRef);
@@ -54,8 +59,11 @@ public class InterfaceController {
     }
 
     @RequestMapping("/list/{instanceId}")
-    public String listFromInstance(@PathVariable String instanceId, Model model) throws IOException {
+    public String listFromInstance(@PathVariable String instanceId, Model model) throws IOException, UserAccessRightException {
         DbDumperServiceInstance serviceInstance = instanceRepository.findOne(instanceId);
+        if (serviceInstance != null && !this.userAccessRight.haveAccessToServiceInstance(serviceInstance)) {
+            throw new UserAccessRightException("You don't have access to this instance");
+        }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
         if (serviceInstance != null && !serviceInstance.getDatabaseRef().isDeleted()) {
             databaseRefs.add(serviceInstance.getDatabaseRef());
@@ -65,10 +73,13 @@ public class InterfaceController {
     }
 
     @RequestMapping("/list/database/{databaseName}")
-    public String listFromDatabase(@PathVariable String databaseName, Model model) throws IOException {
+    public String listFromDatabase(@PathVariable String databaseName, Model model) throws IOException, UserAccessRightException {
         DatabaseRef databaseRef = this.databaseRefRepo.findOne(databaseName);
         if (databaseRef == null) {
             throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
+        }
+        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
+            throw new UserAccessRightException("You don't have access to this instance");
         }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
         if (!databaseRef.isDeleted()) {

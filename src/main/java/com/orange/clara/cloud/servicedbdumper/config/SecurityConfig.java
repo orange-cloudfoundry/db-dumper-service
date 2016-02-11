@@ -138,6 +138,7 @@ public class SecurityConfig {
     @Profile(value = "uaa")
     @EnableOAuth2Sso
     public static class InterfaceSecurity extends WebSecurityConfigurerAdapter {
+
         private Filter csrfHeaderFilter() {
             return new OncePerRequestFilter() {
                 @Override

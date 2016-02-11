@@ -40,6 +40,7 @@ public class S3Filer implements Filer {
 
     private Logger logger = LoggerFactory.getLogger(S3Filer.class);
 
+
     @Override
     public void store(InputStream inputStream, String filename) throws IOException {
         BlobStore blobStore = this.blobStoreContext.getBlobStore();
@@ -91,5 +92,17 @@ public class S3Filer implements Filer {
     @Override
     public String getFileExtension() {
         return ".sql";
+    }
+
+    public void setUploadS3Stream(UploadS3Stream uploadS3Stream) {
+        this.uploadS3Stream = uploadS3Stream;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    public void setBlobStoreContext(BlobStoreContext blobStoreContext) {
+        this.blobStoreContext = blobStoreContext;
     }
 }

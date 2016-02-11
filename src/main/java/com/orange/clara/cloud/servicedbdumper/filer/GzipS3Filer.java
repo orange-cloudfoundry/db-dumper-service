@@ -1,5 +1,12 @@
 package com.orange.clara.cloud.servicedbdumper.filer;
 
+import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
+import org.jclouds.blobstore.BlobStoreContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.annotation.PostConstruct;
+
 /**
  * Copyright (C) 2016 Arthur Halet
  * <p/>
@@ -11,8 +18,29 @@ package com.orange.clara.cloud.servicedbdumper.filer;
  * Date: 09/02/2016
  */
 public class GzipS3Filer extends AbstractGzipGenericFiler implements Filer {
+    @Autowired
+    @Qualifier(value = "uploadS3Stream")
+    protected UploadS3Stream uploadS3Stream;
+
+    @Autowired
+    @Qualifier(value = "bucketName")
+    protected String bucketName;
+
+    @Autowired
+    @Qualifier(value = "blobStoreContext")
+    protected BlobStoreContext blobStoreContext;
 
     public GzipS3Filer() {
         super(new S3Filer());
     }
+
+    @PostConstruct
+    public void loadFilerDependances() {
+        S3Filer s3Filer = (S3Filer) this.originalFiler;
+        s3Filer.setBlobStoreContext(this.blobStoreContext);
+        s3Filer.setBucketName(this.bucketName);
+        s3Filer.setUploadS3Stream(this.uploadS3Stream);
+    }
+
+
 }

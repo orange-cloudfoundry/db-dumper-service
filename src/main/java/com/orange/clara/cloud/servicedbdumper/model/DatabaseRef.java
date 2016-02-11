@@ -46,20 +46,22 @@ public class DatabaseRef {
         this.extractDatabaseType(databaseUri.getScheme());
         this.name = serviceName;
         this.host = databaseUri.getHost();
-        if (databaseUri.getUserInfo() != null) {
-            String[] userInfo = databaseUri.getUserInfo().split(":");
-            this.user = userInfo[0];
-            this.password = userInfo[1];
-        } else {
-            this.user = "";
-            this.password = "";
-        }
+        this.user = "";
+        this.password = "";
         if (databaseUri.getPort() <= 0) {
             this.port = this.type.getDefaultPort();
         } else {
             this.port = databaseUri.getPort();
         }
         this.databaseName = databaseUri.getPath().substring(1);
+        if (databaseUri.getUserInfo() == null) {
+            return;
+        }
+        String[] userInfo = databaseUri.getUserInfo().split(":");
+        this.user = userInfo[0];
+        if (userInfo.length > 1) {
+            this.password = userInfo[1];
+        }
     }
 
     public DatabaseRef(String name) {

@@ -17,6 +17,7 @@ env:
   dump_delete_expiration_days: 5
   use_ssl: false # If you will be on https set this value to true
   CF_TARGET: https://your.uaa.url.com
+  cloud_controller_url: https://your.api.cf.url.com
   security_oauth2_client_clientId: your-client-id-uaa
   security_oauth2_client_clientSecret: your-client-secret-uaa
   service_definition_id: db-dumper-service # your service broker id for multi-db-dumper-service instances

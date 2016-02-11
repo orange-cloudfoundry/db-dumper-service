@@ -1,11 +1,13 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
+import com.orange.clara.cloud.servicedbdumper.security.UserAccessRight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class ManagerController {
     @Qualifier(value = "filer")
     private Filer filer;
 
+    @Autowired
+    private UserAccessRight userAccessRight;
+
 
     @Autowired
     private DatabaseDumpFileRepo databaseDumpFileRepo;
@@ -58,7 +63,7 @@ public class ManagerController {
 
     @RequestMapping("/raw/{databaseName}/{fileName:.*}")
     @ResponseBody
-    public String raw(@PathVariable String databaseName, @PathVariable String fileName) throws IOException {
+    public String raw(@PathVariable String databaseName, @PathVariable String fileName) throws IOException, UserAccessRightException {
         this.checkDatabase(databaseName);
         fileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(fileName);
@@ -74,10 +79,13 @@ public class ManagerController {
         return content;
     }
 
-    private void checkDatabase(String databaseName) {
+    private void checkDatabase(String databaseName) throws UserAccessRightException {
         DatabaseRef databaseRef = this.databaseRefRepo.findOne(databaseName);
         if (databaseRef == null) {
             throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
+        }
+        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
+            throw new UserAccessRightException("You don't have access to this instance");
         }
         if (databaseRef.isDeleted()) {
             throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", databaseName));
@@ -85,7 +93,7 @@ public class ManagerController {
     }
 
     @RequestMapping("/show/{databaseName}/{fileName:.*}")
-    public String show(@PathVariable String databaseName, @PathVariable String fileName, Model model) throws IOException {
+    public String show(@PathVariable String databaseName, @PathVariable String fileName, Model model) throws IOException, UserAccessRightException {
         this.checkDatabase(databaseName);
         String finalFileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(finalFileName);
@@ -104,7 +112,7 @@ public class ManagerController {
     }
 
     @RequestMapping("/delete/{dumpFileId:[0-9]+}")
-    public String delete(@PathVariable Integer dumpFileId, Model model) throws IOException {
+    public String delete(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
         if (databaseDumpFile == null) {
             throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
@@ -118,7 +126,7 @@ public class ManagerController {
 
     @RequestMapping(value = "/download/{databaseName}/{fileName:.*}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> download(@PathVariable String databaseName, @PathVariable String fileName)
-            throws IOException {
+            throws IOException, UserAccessRightException {
         this.checkDatabase(databaseName);
         fileName = databaseName + "/" + fileName;
 
