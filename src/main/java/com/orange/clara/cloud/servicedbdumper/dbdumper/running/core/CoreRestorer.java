@@ -5,6 +5,7 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
+import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         } catch (Exception e) {
             this.logOutputFromProcess();
             e.printStackTrace();
-            throw new RestoreException("An error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
+            throw new RestoreException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
         }
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " finished.");
     }
@@ -55,11 +56,15 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
     }
 
 
-    protected void runRestore(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException {
+    protected void runRestore(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException, RunProcessException {
 
         Process p = this.runCommandLine(databaseDumper.getRestoreCommandLine());
         this.filer.retrieve(p.getOutputStream(), fileName);
         p.waitFor();
+        if (p.exitValue() != 0) {
+            this.filer.delete(fileName);
+            throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
+        }
     }
 
     protected DatabaseDumper findAndCheckDatabaseDumper(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws CannotFindDatabaseDumperException, RestoreException {

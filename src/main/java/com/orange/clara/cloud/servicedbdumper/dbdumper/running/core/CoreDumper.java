@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
+import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.slf4j.Logger;
@@ -40,15 +41,19 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
             this.createDatabaseDumpFile(databaseRef, fileName);
         } catch (Exception e) {
             this.logOutputFromProcess();
-            e.printStackTrace();
-            throw new DumpException("An error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
+            throw new DumpException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
         }
         logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary finished.");
     }
 
-    private void runDump(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException {
-        Process p = this.runCommandLine(databaseDumper.getDumpCommandLine());
+    private void runDump(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException, RunProcessException {
+        String[] commandLine = databaseDumper.getDumpCommandLine();
+        Process p = this.runCommandLine(commandLine);
         this.filer.store(p.getInputStream(), fileName);
+        if (p.exitValue() != 0) {
+            this.filer.delete(fileName);
+            throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
+        }
     }
 
     private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName) {

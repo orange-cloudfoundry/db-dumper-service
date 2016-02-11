@@ -39,6 +39,7 @@ public class DiskFiler implements Filer {
         ByteStreams.copy(inputStream, dumpFileOutputStream);
         dumpFileOutputStream.flush();
         dumpFileOutputStream.close();
+        inputStream.close();
         logger.debug("Store finished in file " + dumpfile.getAbsolutePath());
     }
 
