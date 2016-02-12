@@ -38,6 +38,8 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 
 ## Running locally
 
+**Note**: Default user to access to dashboard is user/password
+
 ### Linux 64 bits users
 
 1. Clone this project
@@ -52,6 +54,8 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 3. These env vars need to be set (set only driver you want to use): `mysql_dump_bin_path`(Path to mysqldump binary), `mysql_restore_bin_path`(Path to mysql binary), `postgres_dump_bin_path`(Path to pg_dump binary), `postgres_restore_bin_path`(Path to psql binary), `mongodb_dump_bin_path`(Path to mongodump binary), `mongodb_restore_bin_path`(Path to mongorestore binary)
 4. You need to activate the spring profile `local` to do this set an env var `spring_profiles_default=local`, you can either use with uaa profile to: `spring_profiles_default=local,uaa` (in this case you will need to set the env `CF_TARGET` with the url of your uaa)
 5. Run the application
+
+
 
 ## How to use
 

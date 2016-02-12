@@ -8,6 +8,7 @@ import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.security.UserAccessRight;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,7 @@ public class InterfaceController {
     private DbDumperServiceInstanceRepo instanceRepository;
 
     @Autowired
+    @Qualifier("userAccessRight")
     private UserAccessRight userAccessRight;
 
     @RequestMapping("/list")

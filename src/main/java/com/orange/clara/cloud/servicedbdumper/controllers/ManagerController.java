@@ -51,6 +51,7 @@ public class ManagerController {
     private Filer filer;
 
     @Autowired
+    @Qualifier("userAccessRight")
     private UserAccessRight userAccessRight;
 
 

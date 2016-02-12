@@ -28,7 +28,10 @@ env:
   job_errored_delete_expiration_days: 2
   job_finished_delete_expiration_minutes: 8
   dump_delete_expiration_days: 5
-  encryption_key: PleaseChangeIt_64568sdfs54gr86 # This ecryption key is used to encrypt databases passwords in database
+  encryption_key: PleaseChangeIt_64568sdfs54gr86 # This encryption key is used to encrypt databases passwords in database
+  #when you do not use uaa, dashboard use basic auth with a default user: user/password . Set and uncomment those env var to change name and password
+  #user_username: user
+  #user_password: password
 buildpack: java_buildpack
 #services:
 #- riak-db-dumper-service

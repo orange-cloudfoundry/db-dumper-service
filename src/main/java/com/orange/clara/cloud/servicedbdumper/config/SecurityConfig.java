@@ -53,10 +53,17 @@ public class SecurityConfig {
     @Value("${spring.boot.admin.password:password}")
     private String springBootAdminPassword;
 
+    @Value("${user.username:user}")
+    private String defaultUserUsername;
+    @Value("${user.password:password}")
+    private String defaultUserPassword;
+
+
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles("API");
-        auth.inMemoryAuthentication().withUser(adminUsername).password(adminPassword).roles("ADMIN", "SPRING_BOOT_ADMIN");
+        auth.inMemoryAuthentication().withUser(defaultUserUsername).password(defaultUserPassword).roles("USER");
+        auth.inMemoryAuthentication().withUser(adminUsername).password(adminPassword).roles("ADMIN", "SPRING_BOOT_ADMIN", "USER");
         auth.inMemoryAuthentication().withUser(springBootAdminUsername).password(springBootAdminPassword).roles("SPRING_BOOT_ADMIN");
     }
 
@@ -179,7 +186,19 @@ public class SecurityConfig {
                     .csrfTokenRepository(csrfTokenRepository()).and()
                     .addFilterAfter(csrfHeaderFilter(), CsrfFilter.class);
         }
+    }
 
+    @Configuration
+    @Profile("!uaa")
+    public static class NoUaaSecurity extends WebSecurityConfigurerAdapter {
 
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and()
+                    .httpBasic();
+        }
     }
 }
