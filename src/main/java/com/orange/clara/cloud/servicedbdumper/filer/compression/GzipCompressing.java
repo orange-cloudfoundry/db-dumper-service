@@ -17,11 +17,11 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * Copyright (C) 2016 Arthur Halet
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 09/02/2016
  */
@@ -31,25 +31,25 @@ public class GzipCompressing {
 
     @Async
     public Future<Boolean> gunziptIt(OutputStream outputStream, InputStream inputStream) throws IOException {
-        logger.debug("Start compressing...");
+        logger.debug("Start uncompressing...");
         GZIPInputStream gzis = new GZIPInputStream(inputStream);
         ByteStreams.copy(gzis, outputStream);
         outputStream.flush();
         outputStream.close();
-        logger.debug("Finish compressing");
+        logger.debug("Finish uncompressing");
         return new AsyncResult<Boolean>(true);
     }
 
     @Async
     public Future<Boolean> gziptIt(InputStream inputStream, PipedOutputStream outputPipe) throws IOException {
-        logger.debug("Start uncompressing...");
+        logger.debug("Start compressing...");
         GZIPOutputStream gout = new GZIPOutputStream(outputPipe);
         ByteStreams.copy(inputStream, gout);
         gout.flush();
         gout.close();
         outputPipe.flush();
         outputPipe.close();
-        logger.debug("Finish uncompressing");
+        logger.debug("Finish compressing");
         return new AsyncResult<Boolean>(true);
     }
 }

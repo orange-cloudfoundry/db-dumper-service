@@ -35,11 +35,11 @@ import java.util.UUID;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 12/10/2015
  */
@@ -51,8 +51,28 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private final static String CREATED_AT_PARAMETER = "created_at";
     private final static String TARGET_URL_PARAMETER = "target_url";
     private final static String DASHBOARD_ROUTE = "/manage";
+    private final static String[] VALID_DATES_FORMAT = {
+            "dd-MM-yyyy HH:mm:ss",
+            "dd/MM/yyyy HH:mm:ss",
+            "yyyy/MM/dd HH:mm:ss",
+            "dd-MM-yyyy HH:mm",
+            "dd/MM/yyyy HH:mm",
+            "yyyy/MM/dd HH:mm",
+            "dd-MM-yyyy HH",
+            "dd/MM/yyyy HH",
+            "yyyy/MM/dd HH",
+            "dd-MM-yyyy",
+            "dd/MM/yyyy",
+            "yyyy/MM/dd",
+            "MM/yyyy",
+            "MM-yyyy",
+            "yyyy/MM",
+            "dd-MM",
+            "dd/MM",
+            "MM/dd",
+            "dd",
+    };
     private Logger logger = LoggerFactory.getLogger(DbDumperServiceInstanceService.class);
-
     @Autowired
     @Qualifier(value = "dateFormat")
     private String dateFormat;
@@ -229,12 +249,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
             return;
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(this.dateFormat);
         Date createdAt;
         try {
-            createdAt = simpleDateFormat.parse(createdAtString);
+            createdAt = this.parseDate(createdAtString);
         } catch (ParseException e) {
-            throw new ServiceBrokerException("When use " + CREATED_AT_PARAMETER + " parameter you should pass a date in this form: " + this.dateFormat);
+            throw new ServiceBrokerException("When use " + CREATED_AT_PARAMETER + " parameter you should pass a date in one of this forms: " + String.join(", ", VALID_DATES_FORMAT));
         }
         this.jobFactory.createJobRestoreDump(databaseRefTarget, createdAt, dbDumperServiceInstance);
 
@@ -265,5 +284,23 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         databaseRefDao.setType(databaseRefTemp.getType());
         databaseRefDao.setUser(databaseRefTemp.getUser());
         this.databaseRefRepo.save(databaseRefDao);
+    }
+
+    private Date parseDate(String date) throws ParseException {
+        SimpleDateFormat simpleDateFormat;
+        Date createdAt = null;
+        for (String validDateFormat : VALID_DATES_FORMAT) {
+            simpleDateFormat = new SimpleDateFormat(validDateFormat);
+            try {
+                createdAt = simpleDateFormat.parse(date);
+                break;
+            } catch (ParseException e) {
+                createdAt = null;
+            }
+        }
+        if (createdAt == null) {
+            throw new ParseException("Cannot parse date", 0);
+        }
+        return createdAt;
     }
 }

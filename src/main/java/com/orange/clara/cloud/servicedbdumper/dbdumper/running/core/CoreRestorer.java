@@ -17,11 +17,11 @@ import java.util.Date;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 01/10/2015
  */
@@ -78,6 +78,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         if (date == null) {
             return this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
         }
-        return this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRefSource, date);
+        logger.debug(date.toString());
+        return this.databaseDumpFileRepo.findFirstByDatabaseRefAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(databaseRefSource, date);
     }
 }

@@ -16,11 +16,11 @@ import java.util.Map;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
@@ -53,7 +53,7 @@ public class CoreCredentials implements Credentials {
         for (DatabaseDumpFile databaseDumpFile : dbDumperServiceInstance.getDatabaseRef().getDatabaseDumpFiles()) {
             dumpFile = Maps.newHashMap();
             dumpFile.put("download_url", urlForge.createDownloadLink(databaseDumpFile));
-            dumpFile.put("date", dateFormater.format(databaseDumpFile.getCreatedAt()));
+            dumpFile.put("created_at", dateFormater.format(databaseDumpFile.getCreatedAt()));
             dumpFiles.add(dumpFile);
         }
         credentials.put("dumps", dumpFiles);

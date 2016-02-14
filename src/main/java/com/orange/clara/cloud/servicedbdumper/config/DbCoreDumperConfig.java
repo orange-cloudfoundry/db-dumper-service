@@ -11,20 +11,17 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3StreamImpl;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.util.regex.Pattern;
-
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
@@ -32,21 +29,6 @@ import java.util.regex.Pattern;
 @Profile({"core", "local"})
 public class DbCoreDumperConfig {
 
-    @Value("${file.date.format:dd-MM-yyyy HH:mm}")
-    private String dateFormat;
-
-
-    @Bean
-    public String dateFormatFile() {
-        String finalDateFormat = dateFormat.replaceAll(Pattern.quote(" "), "-");
-        finalDateFormat = finalDateFormat.replaceAll(Pattern.quote(":"), "");
-        return finalDateFormat;
-    }
-
-    @Bean
-    public String dateFormat() {
-        return this.dateFormat;
-    }
 
     @Bean
     public DbDumpersFactory dbDumpersFactory() {
