@@ -73,7 +73,7 @@ abstract public class AbstractGzipGenericFiler implements Filer {
     }
 
     @Override
-    public String getFileExtension() {
-        return ".sql.gzip";
+    public String getAppendedFileExtension() {
+        return ".gzip";
     }
 }

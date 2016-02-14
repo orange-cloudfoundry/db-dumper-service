@@ -20,4 +20,6 @@ public interface DatabaseDumper {
 
     String[] getRestoreCommandLine();
 
+    String getFileExtension();
+
 }

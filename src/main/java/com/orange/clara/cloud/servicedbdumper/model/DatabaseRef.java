@@ -48,12 +48,15 @@ public class DatabaseRef {
         this.host = databaseUri.getHost();
         this.user = "";
         this.password = "";
+        this.databaseName = "";
         if (databaseUri.getPort() <= 0) {
             this.port = this.type.getDefaultPort();
         } else {
             this.port = databaseUri.getPort();
         }
-        this.databaseName = databaseUri.getPath().substring(1);
+        if (databaseUri.getPath() != null) {
+            this.databaseName = databaseUri.getPath().substring(1);
+        }
         if (databaseUri.getUserInfo() == null) {
             return;
         }

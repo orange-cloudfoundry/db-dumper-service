@@ -5,7 +5,7 @@ echo ""
 
 mysql_version="5.7.10"
 mysql_global_version="5.7"
-mongodb_version="3.0.8"
+mongodb_version="3.2.1"
 postgresql_version="9.4.5"
 
 #####################################################################################
@@ -101,5 +101,16 @@ rm -Rf "$finalfile"
 rm "$filepath"
 cd -
 echo "Done installing postgresql binaries."
+
+#####################################################################################
+#rutil - redis tool to restore and dump
+#####################################################################################
+echo "Installing redis dump and restore tool (rutil)..."
+go get -v github.com/pampa/rutil
+mkdir -p "${WD}/src/main/resources/binaries/redis/bin"
+sudo cp "${GOPATH}/bin/rutil" "${WD}/src/main/resources/binaries/redis/bin"
+echo "Done installing redis tool."
+
+
 echo ""
 echo "Binaries are installed."

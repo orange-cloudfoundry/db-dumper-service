@@ -81,7 +81,7 @@ public class DiskFiler implements Filer {
     }
 
     @Override
-    public String getFileExtension() {
-        return ".sql";
+    public String getAppendedFileExtension() {
+        return "";
     }
 }

@@ -90,8 +90,8 @@ public class S3Filer implements Filer {
     }
 
     @Override
-    public String getFileExtension() {
-        return ".sql";
+    public String getAppendedFileExtension() {
+        return "";
     }
 
     public void setUploadS3Stream(UploadS3Stream uploadS3Stream) {

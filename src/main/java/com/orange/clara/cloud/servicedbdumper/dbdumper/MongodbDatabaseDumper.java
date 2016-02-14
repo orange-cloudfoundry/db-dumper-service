@@ -20,7 +20,7 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     @Override
     public String[] getDumpCommandLine() {
         return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s",
+                "%s --host %s --port %s --username %s --password %s --db %s --archive",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
@@ -33,7 +33,7 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     @Override
     public String[] getRestoreCommandLine() {
         return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s",
+                "%s --host %s --port %s --username %s --password %s --db %s --archive",
                 this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
@@ -41,5 +41,10 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
                 this.databaseRef.getPassword(),
                 this.databaseRef.getDatabaseName()
         ).split(" ");
+    }
+
+    @Override
+    public String getFileExtension() {
+        return ".bson";
     }
 }

@@ -35,7 +35,8 @@ public class DbDumpersFactory {
     private File mongodbBinaryDump;
     @Value("${mongodb.restore.bin.path:classpath:binaries/mongodb/bin/mongorestore}")
     private File mongodbBinaryRestore;
-
+    @Value("${redis.rutil.bin.path:classpath:binaries/redis/bin/rutil}")
+    private File redisRutilBinary;
 
     @PostConstruct
     public void dbDumpers() {
@@ -43,6 +44,7 @@ public class DbDumpersFactory {
         dbDumpers.put(DatabaseType.MYSQL, new MysqlDatabaseDumper(this.mysqlBinaryDump, this.mysqlBinaryRestore));
         dbDumpers.put(DatabaseType.POSTGRESQL, new PostgresqlDatabaseDumper(this.postgresBinaryDump, this.postgresBinaryRestore));
         dbDumpers.put(DatabaseType.MONGODB, new MongodbDatabaseDumper(this.mongodbBinaryDump, this.mongodbBinaryRestore));
+        dbDumpers.put(DatabaseType.REDIS, new RedisDatabaseDumper(this.redisRutilBinary));
     }
 
     public DatabaseDumper getDatabaseDumper(DatabaseType databaseType) {

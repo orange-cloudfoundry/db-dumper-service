@@ -33,9 +33,9 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
     @Override
     @Transactional
     public void dump(DatabaseRef databaseRef) throws DumpException {
-        String fileName = this.generateFileName();
         try {
             DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef);
+            String fileName = this.generateFileName(databaseDumper);
             logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
             this.runDump(databaseDumper, databaseRef.getName() + "/" + fileName);
             this.createDatabaseDumpFile(databaseRef, fileName);

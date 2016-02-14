@@ -2,6 +2,12 @@
 
 A Cloud Foundry service broker to dump and restore database on demand.
 
+Currently supported databases are:
+- mysql
+- postgresql
+- mongodb
+- redis
+
 More details in the specifications at https://docs.google.com/document/d/1Y5vwWjvaUIwHI76XU63cAS8xEOJvN69-cNoCQRqLPqU/edit
 
 See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with label "service-db-dumper"
@@ -51,7 +57,7 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 
 1. Clone this project
 2. You will need to have binaries for driver you want to use
-3. These env vars need to be set (set only driver you want to use): `mysql_dump_bin_path`(Path to mysqldump binary), `mysql_restore_bin_path`(Path to mysql binary), `postgres_dump_bin_path`(Path to pg_dump binary), `postgres_restore_bin_path`(Path to psql binary), `mongodb_dump_bin_path`(Path to mongodump binary), `mongodb_restore_bin_path`(Path to mongorestore binary)
+3. These env vars need to be set (set only driver you want to use): `mysql_dump_bin_path`(Path to mysqldump binary), `mysql_restore_bin_path`(Path to mysql binary), `postgres_dump_bin_path`(Path to pg_dump binary), `postgres_restore_bin_path`(Path to psql binary), `mongodb_dump_bin_path`(Path to mongodump binary), `mongodb_restore_bin_path`(Path to mongorestore binary), `redis_rutil_bin_path`(Path to [rutil](https://github.com/pampa/rutil) binary)
 4. You need to activate the spring profile `local` to do this set an env var `spring_profiles_default=local`, you can either use with uaa profile to: `spring_profiles_default=local,uaa` (in this case you will need to set the env `CF_TARGET` with the url of your uaa)
 5. Run the application
 

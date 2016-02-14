@@ -11,7 +11,7 @@ package com.orange.clara.cloud.servicedbdumper.model;
  * Date: 08/09/2015
  */
 public enum DatabaseType {
-    MYSQL(".*(maria|my).*", 3306), POSTGRESQL(".*(postgres|pgsql).*", 5432), MONGODB(".*mongo.*", 27017);
+    MYSQL(".*(maria|my).*", 3306), POSTGRESQL(".*(postgres|pgsql).*", 5432), MONGODB(".*mongo.*", 27017), REDIS(".*redis.*", 6379);
 
     private String matcher;
     private Integer defaultPort;

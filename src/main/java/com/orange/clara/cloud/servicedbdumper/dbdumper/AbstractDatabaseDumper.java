@@ -56,4 +56,9 @@ public abstract class AbstractDatabaseDumper implements DatabaseDumper {
         this.databaseRef = databaseRef;
     }
 
+    @Override
+    public String getFileExtension() {
+        return ".sql";
+    }
+
 }
