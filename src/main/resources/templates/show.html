@@ -10,11 +10,12 @@
     <!--@thymesVar id="databaseName" type="java.lang.String"-->
     <!--@thymesVar id="fileName" type="java.lang.String"-->
     <!--@thymesVar id="sql" type="java.lang.String"-->
+    <!--@thymesVar id="id" type="java.lang.Integer"-->
     <h5>Show your dump from
         <span th:text="${databaseName}"></span>: <span th:text="${fileName}"></span></h5>
     <hr/>
     <a class="btn waves-effect waves-light orange"
-       th:href="@{/manage/raw/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseName},databaseDumpFileName=${fileName})}">
+       th:href="@{/manage/raw/{databaseDumpFileId}(databaseDumpFileId=${id})}">
         Raw</a>
     <br/>
     <pre class="language-sql line-numbers"><code th:text="${sql}"></code></pre>

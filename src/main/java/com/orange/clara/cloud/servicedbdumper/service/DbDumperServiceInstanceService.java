@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +67,8 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Autowired
     private DbDumperServiceInstanceBindingRepo serviceInstanceBindingRepo;
 
-    @Value("#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}")
+    @Autowired
+    @Qualifier("appUri")
     private String appUri;
 
     @Autowired

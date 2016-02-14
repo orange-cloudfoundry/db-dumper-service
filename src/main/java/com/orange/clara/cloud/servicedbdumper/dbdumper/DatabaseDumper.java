@@ -22,4 +22,5 @@ public interface DatabaseDumper {
 
     String getFileExtension();
 
+    Boolean isDumpShowable();
 }

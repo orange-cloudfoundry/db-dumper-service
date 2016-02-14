@@ -43,4 +43,9 @@ public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements 
                 this.databaseRef.getDatabaseName()
         ).split(" ");
     }
+
+    @Override
+    public Boolean isDumpShowable() {
+        return true;
+    }
 }

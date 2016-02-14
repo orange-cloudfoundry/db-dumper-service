@@ -35,6 +35,11 @@ public class CatalogConfig {
     private Map<String, Object> sdMetadata = new HashMap<String, Object>();
 
     @Bean
+    public String appUri() {
+        return this.appUri;
+    }
+
+    @Bean
     public Catalog catalog() {
         return new Catalog(Arrays.asList(
                 new ServiceDefinition(

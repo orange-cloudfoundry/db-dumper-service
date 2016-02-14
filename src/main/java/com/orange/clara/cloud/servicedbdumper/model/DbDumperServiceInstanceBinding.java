@@ -1,7 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
-import javax.persistence.*;
-import java.util.Map;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * Copyright (C) 2015 Orange
@@ -23,9 +25,6 @@ public class DbDumperServiceInstanceBinding {
     @JoinColumn(name = "db_dumper_service_instance_id")
     private DbDumperServiceInstance dbDumperServiceInstance;
 
-    @ElementCollection
-    private Map<String, String> credentials;
-
     private String appGuid;
 
     public DbDumperServiceInstanceBinding() {
@@ -35,14 +34,6 @@ public class DbDumperServiceInstanceBinding {
         this.id = id;
         this.dbDumperServiceInstance = dbDumperServiceInstance;
         this.appGuid = appGuid;
-    }
-
-    public Map<String, String> getCredentials() {
-        return credentials;
-    }
-
-    public void setCredentials(Map<String, String> credentials) {
-        this.credentials = credentials;
     }
 
     public String getId() {

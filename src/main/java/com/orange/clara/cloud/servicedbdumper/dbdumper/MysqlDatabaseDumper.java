@@ -41,4 +41,9 @@ public class MysqlDatabaseDumper extends AbstractDatabaseDumper implements Datab
                 this.databaseRef.getDatabaseName()
         };
     }
+
+    @Override
+    public Boolean isDumpShowable() {
+        return true;
+    }
 }

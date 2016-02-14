@@ -2,12 +2,16 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
 
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Credentials;
+import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,14 +33,30 @@ public class CoreCredentials implements Credentials {
     @Autowired
     @Qualifier(value = "blobStoreContext")
     protected BlobStoreContext blobStoreContext;
-    @Value("${vcap.application.uris[0]:localhost:8080}")
+    @Autowired
+    @Qualifier("appUri")
     private String appUri;
 
+    @Autowired
+    @Qualifier(value = "dateFormat")
+    private String dateFormat;
+
+    @Autowired
+    private UrlForge urlForge;
+
     @Override
-    public Map<String, String> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
-        Map<String, String> credentials = Maps.newHashMap();
-        credentials.put("bucket_folder", dbDumperServiceInstance.getDatabaseRef().getDatabaseName());
-        credentials.put("list_dump", String.format(this.appUri + LIST_URL, dbDumperServiceInstance.getServiceInstanceId()));
+    public Map<String, Object> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
+        SimpleDateFormat dateFormater = new SimpleDateFormat(this.dateFormat);
+        Map<String, Object> credentials = Maps.newHashMap();
+        List<Map<String, String>> dumpFiles = new ArrayList<>();
+        Map<String, String> dumpFile;
+        for (DatabaseDumpFile databaseDumpFile : dbDumperServiceInstance.getDatabaseRef().getDatabaseDumpFiles()) {
+            dumpFile = Maps.newHashMap();
+            dumpFile.put("download_url", urlForge.createDownloadLink(databaseDumpFile));
+            dumpFile.put("date", dateFormater.format(databaseDumpFile.getCreatedAt()));
+            dumpFiles.add(dumpFile);
+        }
+        credentials.put("dumps", dumpFiles);
         return credentials;
     }
 }

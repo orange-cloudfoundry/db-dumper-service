@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Copyright (C) 2015 Orange
@@ -38,7 +39,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
             String fileName = this.generateFileName(databaseDumper);
             logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
             this.runDump(databaseDumper, databaseRef.getName() + "/" + fileName);
-            this.createDatabaseDumpFile(databaseRef, fileName);
+            this.createDatabaseDumpFile(databaseRef, fileName, databaseDumper.isDumpShowable());
         } catch (Exception e) {
             this.logOutputFromProcess();
             throw new DumpException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
@@ -56,7 +57,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
         }
     }
 
-    private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName) {
+    private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName, boolean isDumpShowable) {
         SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
         Date today = new Date();
         try {
@@ -64,7 +65,17 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
         } catch (ParseException e) { // should have no error
         }
         if (this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRef, today) == null) {
-            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, databaseRef));
+            String user = this.generateUser();
+            String password = this.generatePassword();
+            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, databaseRef, user, password, isDumpShowable));
         }
+    }
+
+    private String generateUser() {
+        return UUID.randomUUID().toString();
+    }
+
+    private String generatePassword() {
+        return UUID.randomUUID().toString();
     }
 }

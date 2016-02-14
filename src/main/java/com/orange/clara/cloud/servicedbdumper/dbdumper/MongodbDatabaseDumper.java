@@ -44,6 +44,11 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
     }
 
     @Override
+    public Boolean isDumpShowable() {
+        return false;
+    }
+
+    @Override
     public String getFileExtension() {
         return ".bson";
     }

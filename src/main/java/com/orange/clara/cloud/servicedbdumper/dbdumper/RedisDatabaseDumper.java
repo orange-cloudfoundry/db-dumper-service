@@ -38,6 +38,11 @@ public class RedisDatabaseDumper extends AbstractDatabaseDumper implements Datab
         ).split(" ");
     }
 
+    @Override
+    public Boolean isDumpShowable() {
+        return false;
+    }
+
     private String getPassword() {
         String password = "";
         if (!this.databaseRef.getUser().isEmpty()) {

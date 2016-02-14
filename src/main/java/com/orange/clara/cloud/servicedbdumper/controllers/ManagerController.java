@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,10 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Base64;
 
 /**
  * Copyright (C) 2015 Orange
@@ -47,6 +49,9 @@ public class ManagerController {
     private DatabaseRefRepo databaseRefRepo;
 
     @Autowired
+    private AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    @Autowired
     @Qualifier(value = "filer")
     private Filer filer;
 
@@ -62,10 +67,17 @@ public class ManagerController {
     @Qualifier(value = "deleter")
     private Deleter deleter;
 
-    @RequestMapping("/raw/{databaseName}/{fileName:.*}")
+    @RequestMapping("/raw/{dumpFileId:[0-9]+}")
     @ResponseBody
-    public String raw(@PathVariable String databaseName, @PathVariable String fileName) throws IOException, UserAccessRightException {
-        this.checkDatabase(databaseName);
+    public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException {
+        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
+        if (databaseDumpFile == null) {
+            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
+        }
+        this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
+        this.checkDumpShowable(databaseDumpFile);
+        String databaseName = databaseDumpFile.getDatabaseRef().getName();
+        String fileName = databaseDumpFile.getFileName();
         fileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(fileName);
 
@@ -80,22 +92,35 @@ public class ManagerController {
         return content;
     }
 
-    private void checkDatabase(String databaseName) throws UserAccessRightException {
-        DatabaseRef databaseRef = this.databaseRefRepo.findOne(databaseName);
-        if (databaseRef == null) {
-            throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
-        }
+    private void checkDatabaseWithAccessRight(DatabaseRef databaseRef) throws UserAccessRightException {
+        this.checkDatabase(databaseRef);
         if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
             throw new UserAccessRightException("You don't have access to this instance");
         }
+    }
+
+    private void checkDatabase(DatabaseRef databaseRef) throws UserAccessRightException {
         if (databaseRef.isDeleted()) {
-            throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", databaseName));
+            throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", databaseRef.getName()));
         }
     }
 
-    @RequestMapping("/show/{databaseName}/{fileName:.*}")
-    public String show(@PathVariable String databaseName, @PathVariable String fileName, Model model) throws IOException, UserAccessRightException {
-        this.checkDatabase(databaseName);
+    private void checkDumpShowable(DatabaseDumpFile databaseDumpFile) throws DumpFileShowException {
+        if (!databaseDumpFile.isShowable()) {
+            throw new DumpFileShowException(databaseDumpFile);
+        }
+    }
+
+    @RequestMapping("/show/{dumpFileId:[0-9]+}")
+    public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException {
+        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
+        if (databaseDumpFile == null) {
+            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
+        }
+        this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
+        this.checkDumpShowable(databaseDumpFile);
+        String databaseName = databaseDumpFile.getDatabaseRef().getName();
+        String fileName = databaseDumpFile.getFileName();
         String finalFileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(finalFileName);
 
@@ -108,6 +133,7 @@ public class ManagerController {
         br.close();
         model.addAttribute("databaseName", databaseName);
         model.addAttribute("fileName", fileName);
+        model.addAttribute("id", dumpFileId);
         model.addAttribute("sql", content);
         return "show";
     }
@@ -118,21 +144,46 @@ public class ManagerController {
         if (databaseDumpFile == null) {
             throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
         }
-        this.checkDatabase(databaseDumpFile.getDatabaseRef().getName());
+        this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
         DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
         this.deleter.delete(databaseDumpFile);
         return String.format("redirect:/manage/list/database/%s", databaseRef.getName());
     }
 
 
-    @RequestMapping(value = "/download/{databaseName}/{fileName:.*}", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> download(@PathVariable String databaseName, @PathVariable String fileName)
+    @RequestMapping(value = "/download/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request)
             throws IOException, UserAccessRightException {
-        this.checkDatabase(databaseName);
-        fileName = databaseName + "/" + fileName;
-
+        String errorMessage = "401 Unauthorized";
+        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
+        if (databaseDumpFile == null) {
+            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
+        }
+        this.checkDatabase(databaseDumpFile.getDatabaseRef());
+        String userRequest = "";
+        String passwordRequest = "";
+        String authorization = request.getHeader("Authorization");
         HttpHeaders respHeaders = new HttpHeaders();
-
+        if (authorization != null && authorization.startsWith("Basic")) {
+            // Authorization: Basic base64credentials
+            String base64Credentials = authorization.substring("Basic".length()).trim();
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials),
+                    Charset.forName("UTF-8"));
+            // credentials = username:password
+            String[] values = credentials.split(":", 2);
+            userRequest = values[0];
+            passwordRequest = values[1];
+        } else {
+            respHeaders.set("WWW-Authenticate", "Basic realm=\"Download Realm\"");
+            InputStream inputStream = new ByteArrayInputStream(errorMessage.getBytes());
+            return new ResponseEntity<>(new InputStreamResource(inputStream), respHeaders, HttpStatus.UNAUTHORIZED);
+        }
+        if (!userRequest.equals(databaseDumpFile.getUser()) || !passwordRequest.equals(databaseDumpFile.getPassword())) {
+            respHeaders.set("WWW-Authenticate", "Basic realm=\"Download Realm\"");
+            InputStream inputStream = new ByteArrayInputStream(errorMessage.getBytes());
+            return new ResponseEntity<>(new InputStreamResource(inputStream), respHeaders, HttpStatus.UNAUTHORIZED);
+        }
+        String fileName = databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         respHeaders.setContentLength(this.filer.getContentLength(fileName));
         respHeaders.setContentDispositionFormData("attachment", fileName);

@@ -1,6 +1,8 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
 
+import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
+
 import javax.persistence.*;
 import java.io.File;
 import java.util.Calendar;
@@ -18,29 +20,42 @@ import java.util.Date;
  */
 @Entity
 public class DatabaseDumpFile {
+
+    protected String user;
+    @Convert(converter = CryptoConverter.class)
+    protected String password;
+    protected Boolean showable;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-
     private String fileName;
-
     @Column(name = "created_at")
     private Date createdAt;
-
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
     private DatabaseRef databaseRef;
 
     public DatabaseDumpFile() {
         this.createdAt = Calendar.getInstance().getTime();
+        this.showable = true;
+        this.user = "";
+        this.password = "";
     }
 
-    public DatabaseDumpFile(String fileName, DatabaseRef databaseRef) {
+    public DatabaseDumpFile(String fileName, DatabaseRef databaseRef, String user, String password, boolean showable) {
+        this();
         this.fileName = fileName;
+        this.user = user;
+        this.password = password;
+        this.showable = showable;
         this.setDatabaseRef(databaseRef);
     }
 
-    public DatabaseDumpFile(File file, DatabaseRef databaseRef) {
+    public DatabaseDumpFile(File file, DatabaseRef databaseRef, String user, String password, boolean showable) {
+        this();
+        this.user = user;
+        this.password = password;
+        this.showable = showable;
         this.setFileName(file);
         this.setDatabaseRef(databaseRef);
     }
@@ -84,6 +99,34 @@ public class DatabaseDumpFile {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getShowable() {
+        return showable;
+    }
+
+    public void setShowable(Boolean showable) {
+        this.showable = showable;
+    }
+
+    public Boolean isShowable() {
+        return showable;
     }
 
     @PrePersist

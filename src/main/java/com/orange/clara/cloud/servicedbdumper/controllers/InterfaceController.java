@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
+import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
@@ -33,7 +34,8 @@ public class InterfaceController {
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
-
+    @Autowired
+    private UrlForge urlForge;
     @Autowired
     private DbDumperServiceInstanceRepo instanceRepository;
 
@@ -45,6 +47,7 @@ public class InterfaceController {
     public String list(Model model) throws IOException, UserAccessRightException {
         List<DatabaseRef> databaseRefs = Lists.newArrayList(this.databaseRefRepo.findAll());
         model.addAttribute("databaseRefs", this.filteringDatabaseRef(databaseRefs));
+        model.addAttribute("urlForge", urlForge);
         return "listfiles";
     }
 
@@ -71,6 +74,7 @@ public class InterfaceController {
             databaseRefs.add(serviceInstance.getDatabaseRef());
         }
         model.addAttribute("databaseRefs", databaseRefs);
+        model.addAttribute("urlForge", urlForge);
         return "listfiles";
     }
 
@@ -88,6 +92,7 @@ public class InterfaceController {
             databaseRefs.add(databaseRef);
         }
         model.addAttribute("databaseRefs", databaseRefs);
+        model.addAttribute("urlForge", urlForge);
         return "listfiles";
     }
 }

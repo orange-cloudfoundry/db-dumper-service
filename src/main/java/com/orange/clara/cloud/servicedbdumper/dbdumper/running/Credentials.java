@@ -15,5 +15,5 @@ import java.util.Map;
  * Date: 26/11/2015
  */
 public interface Credentials {
-    Map<String, String> getCredentials(DbDumperServiceInstance dbDumperServiceInstance);
+    Map<String, Object> getCredentials(DbDumperServiceInstance dbDumperServiceInstance);
 }

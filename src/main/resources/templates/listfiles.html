@@ -8,6 +8,7 @@
     <!--@thymesVar id="databaseRef" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseRef"-->
     <!--@thymesVar id="databaseDumpFiles" type="List<DatabaseDumpFile>"-->
     <!--@thymesVar id="databaseDumpFile" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile"-->
+    <!--@thymesVar id="urlForge" type="com.orange.clara.cloud.servicedbdumper.helper.UrlForge"-->
     <h5>Database dump files</h5>
 
     <div th:if="${databaseRefs == null or databaseRefs.isEmpty()}">
@@ -19,12 +20,14 @@
                 <ul class="collection with-header">
                     <li class="collection-header"><h4 th:text="${databaseRef.name}">No name</h4></li>
                     <li class="collection-item" th:each="databaseDumpFile : ${databaseRef.databaseDumpFiles}">
-                        Created At: <span th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
+                        Created At: <span
+                            th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
                         <a class="btn waves-effect waves-light orange"
-                           th:href="@{/manage/show/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
+                           th:if="${databaseDumpFile.isShowable()}"
+                           th:href="@{/manage/show/{databaseDumpFileId}(databaseDumpFileId=${databaseDumpFile.id})}"><i
                                 class="material-icons left">description</i> Show</a>
                         <a class="btn waves-effect waves-light orange"
-                           th:href="@{/manage/download/{databaseRefName}/{databaseDumpFileName}(databaseRefName=${databaseRef.name},databaseDumpFileName=${databaseDumpFile.fileName})}"><i
+                           th:href="@{{url}(url=${urlForge.createDownloadLink(databaseDumpFile)})}"><i
                                 class="material-icons left">import_export</i>
                             Download</a>
                         <a class="btn waves-effect waves-light orange"

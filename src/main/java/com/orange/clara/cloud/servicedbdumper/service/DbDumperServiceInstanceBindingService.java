@@ -13,7 +13,6 @@ import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceBindingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -31,7 +30,8 @@ import java.util.Map;
 @Service
 public class DbDumperServiceInstanceBindingService implements ServiceInstanceBindingService {
 
-    @Value("#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}")
+    @Autowired
+    @Qualifier("appUri")
     private String appUri;
     @Autowired
     private DbDumperServiceInstanceBindingRepo repositoryInstanceBinding;
@@ -67,14 +67,12 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                 request.getAppGuid()
         );
 
-        Map<String, String> credentials = this.credentials.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
-        serviceInstanceBinding.setCredentials(credentials);
+        Map<String, Object> credentials = this.credentials.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
         repositoryInstanceBinding.save(serviceInstanceBinding);
-        Map<String, Object> credentialsObject = (Map) credentials;
         return new ServiceInstanceBinding(
                 request.getBindingId(),
                 request.getServiceInstanceId(),
-                credentialsObject,
+                credentials,
                 null,
                 request.getAppGuid()
         );
@@ -86,7 +84,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         if (dbDumperServiceInstanceBinding == null) {
             throw new ServiceBrokerException("Cannot find binding instance: " + request.getBindingId());
         }
-        Map<String, Object> credentials = (Map) dbDumperServiceInstanceBinding.getCredentials();
+        Map<String, Object> credentials = this.credentials.getCredentials(dbDumperServiceInstanceBinding.getDbDumperServiceInstance());
 
         ServiceInstanceBinding serviceInstanceBinding = new ServiceInstanceBinding(
                 dbDumperServiceInstanceBinding.getId(),

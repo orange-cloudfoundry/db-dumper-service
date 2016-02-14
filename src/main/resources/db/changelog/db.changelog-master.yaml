@@ -283,3 +283,27 @@ databaseChangeLog:
           columnName: created_at
           newDataType: datetime
           tableName: database_dump_file
+      - addColumn:
+          tableName: database_dump_file
+          columns:
+          - column:
+              name: user
+              type: varchar(255)
+              constraints:
+                nullable: false
+          - column:
+              name: password
+              type: varchar(600)
+              constraints:
+                nullable: false
+          - column:
+              name: showable
+              type: boolean
+              defaultValueBoolean: false
+              constraints:
+                nullable: false
+          - dropForeignKeyConstraint:
+              baseTableName: db_dumper_service_instance_binding_credentials
+              constraintName: fk_credentials_service_instance_binding
+          - dropTable:
+              tableName: db_dumper_service_instance_binding_credentials

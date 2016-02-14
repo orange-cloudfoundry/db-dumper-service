@@ -88,6 +88,20 @@ public class SecurityConfig {
 
     @Configuration
     @Order(2)
+    public static class DownloadSecurity extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .antMatcher("/manage/download/**")
+                    .authorizeRequests()
+                    .anyRequest()
+                    .permitAll();
+        }
+    }
+
+    @Configuration
+    @Order(3)
     public static class AdminSecurity extends WebSecurityConfigurerAdapter {
 
         @Override
@@ -105,7 +119,7 @@ public class SecurityConfig {
     }
 
     @Configuration
-    @Order(3)
+    @Order(4)
     public static class AdminManagerSecurity extends WebSecurityConfigurerAdapter {
 
         @Override
@@ -123,7 +137,7 @@ public class SecurityConfig {
     }
 
     @Configuration
-    @Order(4)
+    @Order(5)
     public static class AdminMonitorSecurity extends WebSecurityConfigurerAdapter {
 
         @Override
