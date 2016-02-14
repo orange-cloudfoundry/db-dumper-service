@@ -54,6 +54,7 @@ public class CoreCredentials implements Credentials {
             dumpFile = Maps.newHashMap();
             dumpFile.put("download_url", urlForge.createDownloadLink(databaseDumpFile));
             dumpFile.put("show_url", urlForge.createShowLink(databaseDumpFile));
+            dumpFile.put("filename", databaseDumpFile.getFileName());
             dumpFile.put("created_at", dateFormater.format(databaseDumpFile.getCreatedAt()));
             dumpFiles.add(dumpFile);
         }
