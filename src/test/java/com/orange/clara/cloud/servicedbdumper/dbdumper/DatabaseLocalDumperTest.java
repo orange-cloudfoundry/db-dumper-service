@@ -10,11 +10,11 @@ import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'MIT'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'http://opensource.org/licenses/MIT'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
@@ -33,6 +33,7 @@ public class DatabaseLocalDumperTest {
     private MysqlDatabaseDumper mysqlDatabaseDumper;
     private PostgresqlDatabaseDumper postgresqlDatabaseDumper;
     private MongodbDatabaseDumper mongodbDatabaseDumper;
+    private RedisDatabaseDumper redisDatabaseDumper;
 
     @Before
     public void init() {
@@ -53,6 +54,9 @@ public class DatabaseLocalDumperTest {
 
         this.mongodbDatabaseDumper = new MongodbDatabaseDumper(this.dumpBinaries, this.restoreBinaries);
         mongodbDatabaseDumper.setDatabaseRef(this.databaseRef);
+
+        this.redisDatabaseDumper = new RedisDatabaseDumper(this.dumpBinaries);
+        redisDatabaseDumper.setDatabaseRef(this.databaseRef);
     }
 
     @Test
@@ -97,6 +101,7 @@ public class DatabaseLocalDumperTest {
                 this.password,
                 "--db",
                 this.databaseName,
+                "--archive"
         };
         assertThat(mongodbDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
     }
@@ -114,9 +119,42 @@ public class DatabaseLocalDumperTest {
                 "--password",
                 this.password,
                 "--db",
-                this.databaseName
+                this.databaseName,
+                "--archive"
         };
         assertThat(mongodbDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
+    }
+
+    @Test
+    public void create_command_line_for_dump_redis() throws Exception {
+        String[] expected = {
+                dumpBinaries.getAbsolutePath(),
+                "dump",
+                "-s",
+                this.host,
+                "-p",
+                this.port.toString(),
+                "-a",
+                this.password,
+                "-o"
+        };
+        assertThat(redisDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
+    }
+
+    @Test
+    public void create_command_line_for_restore_redis() throws Exception {
+        String[] expected = {
+                dumpBinaries.getAbsolutePath(),
+                "restore",
+                "-s",
+                this.host,
+                "-p",
+                this.port.toString(),
+                "-a",
+                this.password,
+                "-i"
+        };
+        assertThat(redisDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
     }
 
     @Test
@@ -128,7 +166,7 @@ public class DatabaseLocalDumperTest {
                 "--port=" + this.port,
                 "--user=" + this.user,
                 "--password=" + this.password,
-                this.databaseName
+                this.databaseName,
         };
         assertThat(mysqlDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
     }
