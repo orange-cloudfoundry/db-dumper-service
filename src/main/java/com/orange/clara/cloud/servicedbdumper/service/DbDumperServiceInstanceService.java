@@ -50,7 +50,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private final static String ACTION_PARAMETER = "action";
     private final static String CREATED_AT_PARAMETER = "created_at";
     private final static String TARGET_URL_PARAMETER = "target_url";
-    private final static String DASHBOARD_ROUTE = "/manage";
+    private final static String DASHBOARD_ROUTE = "/manage/list/database/";
     private final static String[] VALID_DATES_FORMAT = {
             "dd-MM-yyyy HH:mm:ss",
             "dd/MM/yyyy HH:mm:ss",
@@ -112,8 +112,10 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 request.getOrganizationGuid(),
                 request.getSpaceGuid(),
                 appUri + DASHBOARD_ROUTE);
-        this.createDump(request.getParameters(), dbDumperServiceInstance);
-        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE).withAsync(true);
+        String srcUrl = this.getParameter(request.getParameters(), SRC_URL_PARAMETER);
+        String dbRefName = this.generateDatabaseRefName(srcUrl);
+        this.createDump(dbDumperServiceInstance, srcUrl, dbRefName);
+        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbRefName).withAsync(true);
     }
 
     @Override
@@ -139,7 +141,8 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             default:
                 serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
         }
-        return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true).withDashboardUrl(appUri + DASHBOARD_ROUTE).withLastOperation(serviceInstanceLastOperation);
+        return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true)
+                .withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName()).withLastOperation(serviceInstanceLastOperation);
     }
 
     @Override
@@ -149,6 +152,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         if (dbDumperServiceInstance == null) {
             return new ServiceInstance(request);
         }
+        String dbRefName = dbDumperServiceInstance.getDatabaseRef().getName();
         this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
         DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
         databaseRef.removeDbDumperServiceInstance(dbDumperServiceInstance);
@@ -159,7 +163,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             databaseRef.setDeleted(true);
         }
         this.jobFactory.createJobDeleteDatabaseRef(databaseRef);
-        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE).withAsync(false);
+        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbRefName).withAsync(false);
     }
 
     @Override
@@ -187,7 +191,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
             }
         }
-        serviceInstance.withDashboardUrl(appUri + DASHBOARD_ROUTE).withAsync(true);
+        serviceInstance.withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName()).withAsync(true);
         return serviceInstance;
     }
 
@@ -195,11 +199,9 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         this.jobFactory.createJobCreateDump(dbDumperServiceInstance);
     }
 
-    private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
+    private void createDump(DbDumperServiceInstance dbDumperServiceInstance, String srcUrl, String dbRefName) throws ServiceBrokerException {
 
-        String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
-        UUID dbRefName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
-        DatabaseRef databaseRef = this.getDatabaseRefFromUrl(srcUrl, dbRefName.toString());
+        DatabaseRef databaseRef = this.getDatabaseRefFromUrl(srcUrl, dbRefName);
         if (databaseRef.isDeleted()) {
             databaseRef.setDeleted(false);
             databaseRefRepo.save(databaseRef);
@@ -232,8 +234,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER);
         String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
 
-        UUID dbTargetName = UUID.nameUUIDFromBytes(targetUrl.getBytes());
-        DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(targetUrl, dbTargetName.toString());
+        DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(targetUrl, this.generateDatabaseRefName(targetUrl));
         if (createdAtString == null || createdAtString.isEmpty()) {
             SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
             Date today = new Date();
@@ -267,6 +268,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         databaseRef = databaseRefDao;
 
         return databaseRef;
+    }
+
+    private String generateDatabaseRefName(String srcUrl) {
+        UUID dbRefName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
+        return dbRefName.toString();
     }
 
     private void updateDatabaseRef(DatabaseRef databaseRefTemp, DatabaseRef databaseRefDao) {

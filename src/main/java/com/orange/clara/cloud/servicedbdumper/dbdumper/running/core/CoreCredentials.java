@@ -53,6 +53,7 @@ public class CoreCredentials implements Credentials {
         for (DatabaseDumpFile databaseDumpFile : dbDumperServiceInstance.getDatabaseRef().getDatabaseDumpFiles()) {
             dumpFile = Maps.newHashMap();
             dumpFile.put("download_url", urlForge.createDownloadLink(databaseDumpFile));
+            dumpFile.put("show_url", urlForge.createShowLink(databaseDumpFile));
             dumpFile.put("created_at", dateFormater.format(databaseDumpFile.getCreatedAt()));
             dumpFiles.add(dumpFile);
         }

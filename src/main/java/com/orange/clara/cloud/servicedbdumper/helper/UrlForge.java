@@ -9,11 +9,11 @@ import java.net.URI;
 
 /**
  * Copyright (C) 2016 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 14/02/2016
  */
@@ -25,14 +25,31 @@ public class UrlForge {
 
     public String createDownloadLink(DatabaseDumpFile databaseDumpFile) {
         URI appInUri = URI.create(appUri);
-        String port = "";
-        if (appInUri.getPort() != -1) {
-            port = ":" + appInUri.getPort();
-        }
+        String port = this.getPortInString();
         return appInUri.getScheme() + "://" +
                 databaseDumpFile.getUser() + ":" +
                 databaseDumpFile.getPassword() + "@" +
                 appInUri.getHost() + port + "/manage/download/" +
+                databaseDumpFile.getId();
+    }
+
+    private String getPortInString() {
+        URI appInUri = URI.create(appUri);
+        String port = "";
+        if (appInUri.getPort() != -1) {
+            port = ":" + appInUri.getPort();
+        }
+        return port;
+    }
+
+    public String createShowLink(DatabaseDumpFile databaseDumpFile) {
+        if (!databaseDumpFile.isShowable()) {
+            return "";
+        }
+        URI appInUri = URI.create(appUri);
+        String port = this.getPortInString();
+        return appInUri.getScheme() + "://" +
+                appInUri.getHost() + port + "/manage/show/" +
                 databaseDumpFile.getId();
     }
 }
