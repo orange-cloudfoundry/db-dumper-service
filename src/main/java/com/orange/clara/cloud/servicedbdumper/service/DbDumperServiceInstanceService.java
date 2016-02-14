@@ -66,11 +66,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             "yyyy/MM/dd",
             "MM/yyyy",
             "MM-yyyy",
-            "yyyy/MM",
-            "dd-MM",
-            "dd/MM",
-            "MM/dd",
-            "dd",
+            "yyyy/MM"
     };
     private Logger logger = LoggerFactory.getLogger(DbDumperServiceInstanceService.class);
     @Autowired
