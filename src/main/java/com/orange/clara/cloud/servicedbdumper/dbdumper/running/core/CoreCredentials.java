@@ -26,7 +26,6 @@ import java.util.Map;
  */
 public class CoreCredentials implements Credentials {
 
-    private static final String LIST_URL = "/manage/list/%s";
     @Autowired
     @Qualifier(value = "bucketName")
     protected String bucketName;
