@@ -33,11 +33,11 @@ import java.util.Base64;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 14/10/2015
  */
@@ -154,7 +154,6 @@ public class ManagerController {
     @RequestMapping(value = "/download/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request)
             throws IOException, UserAccessRightException {
-        String errorMessage = "401 Unauthorized";
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
         if (databaseDumpFile == null) {
             throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
@@ -163,7 +162,6 @@ public class ManagerController {
         String userRequest = "";
         String passwordRequest = "";
         String authorization = request.getHeader("Authorization");
-        HttpHeaders respHeaders = new HttpHeaders();
         if (authorization != null && authorization.startsWith("Basic")) {
             // Authorization: Basic base64credentials
             String base64Credentials = authorization.substring("Basic".length()).trim();
@@ -174,15 +172,12 @@ public class ManagerController {
             userRequest = values[0];
             passwordRequest = values[1];
         } else {
-            respHeaders.set("WWW-Authenticate", "Basic realm=\"Download Realm\"");
-            InputStream inputStream = new ByteArrayInputStream(errorMessage.getBytes());
-            return new ResponseEntity<>(new InputStreamResource(inputStream), respHeaders, HttpStatus.UNAUTHORIZED);
+            return this.getErrorResponseEntityBasicAuth();
         }
         if (!userRequest.equals(databaseDumpFile.getUser()) || !passwordRequest.equals(databaseDumpFile.getPassword())) {
-            respHeaders.set("WWW-Authenticate", "Basic realm=\"Download Realm\"");
-            InputStream inputStream = new ByteArrayInputStream(errorMessage.getBytes());
-            return new ResponseEntity<>(new InputStreamResource(inputStream), respHeaders, HttpStatus.UNAUTHORIZED);
+            return this.getErrorResponseEntityBasicAuth();
         }
+        HttpHeaders respHeaders = new HttpHeaders();
         String fileName = databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         respHeaders.setContentLength(this.filer.getContentLength(fileName));
@@ -192,5 +187,13 @@ public class ManagerController {
 
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+    }
+
+    private ResponseEntity<InputStreamResource> getErrorResponseEntityBasicAuth() {
+        String errorMessage = "401 Unauthorized";
+        HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.set("WWW-Authenticate", "Basic realm=\"Download Realm\"");
+        InputStream inputStream = new ByteArrayInputStream(errorMessage.getBytes());
+        return new ResponseEntity<>(new InputStreamResource(inputStream), respHeaders, HttpStatus.UNAUTHORIZED);
     }
 }

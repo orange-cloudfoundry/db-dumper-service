@@ -127,7 +127,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         ServiceInstanceLastOperation serviceInstanceLastOperation = null;
 
         Job lastJob = this.jobRepo.findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(instance);
-
+        ServiceInstance serviceInstance = new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s))
+                .withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName());
+        if (lastJob == null) {
+            return serviceInstance;
+        }
         switch (lastJob.getJobEvent()) {
             case ERRORED:
                 serviceInstanceLastOperation = new ServiceInstanceLastOperation("Error: " + lastJob.getErrorMessage(), OperationState.FAILED);
@@ -141,8 +145,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             default:
                 serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
         }
-        return new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s)).withAsync(true)
-                .withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName()).withLastOperation(serviceInstanceLastOperation);
+        return serviceInstance.withAsync(true).withLastOperation(serviceInstanceLastOperation);
     }
 
     @Override
@@ -236,14 +239,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromUrl(targetUrl, this.generateDatabaseRefName(targetUrl));
         if (createdAtString == null || createdAtString.isEmpty()) {
-            SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
-            Date today = new Date();
-            try {
-                today = form.parse(form.format(new Date()));
-            } catch (ParseException e) { // should have no error
-            }
-            this.jobFactory.createJobRestoreDump(databaseRefTarget, today, dbDumperServiceInstance);
-
+            this.jobFactory.createJobRestoreDump(databaseRefTarget, null, dbDumperServiceInstance);
             return;
         }
         Date createdAt;

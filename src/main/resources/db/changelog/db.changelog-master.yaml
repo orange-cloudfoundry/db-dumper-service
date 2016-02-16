@@ -302,8 +302,12 @@ databaseChangeLog:
               defaultValueBoolean: false
               constraints:
                 nullable: false
-          - dropForeignKeyConstraint:
-              baseTableName: db_dumper_service_instance_binding_credentials
-              constraintName: fk_credentials_service_instance_binding
-          - dropTable:
-              tableName: db_dumper_service_instance_binding_credentials
+      - dropForeignKeyConstraint:
+          baseTableName: db_dumper_service_instance_binding_credentials
+          constraintName: fk_credentials_service_instance_binding
+      - dropTable:
+          tableName: db_dumper_service_instance_binding_credentials
+      - dropNotNullConstraint:
+          tableName: db_dumper_service_instance_binding
+          columnName: app_guid
+          columnDataType: varchar(255)
