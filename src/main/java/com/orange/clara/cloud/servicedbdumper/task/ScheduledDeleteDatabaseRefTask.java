@@ -54,8 +54,11 @@ public class ScheduledDeleteDatabaseRefTask {
     @Scheduled(fixedDelay = 5000)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteDatabaseRef() {
-        logger.info("Running: delete database reference scheduled task ...");
-        for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DATABASE_REF, JobEvent.START)) {
+        List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DATABASE_REF, JobEvent.START);
+        if (!jobs.isEmpty()) {
+            logger.info("Running: delete database reference scheduled task ...");
+        }
+        for (Job job : jobs) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
             DatabaseRef databaseRef = job.getDatabaseRefSrc();
@@ -83,6 +86,8 @@ public class ScheduledDeleteDatabaseRefTask {
             job.setJobEvent(JobEvent.FINISHED);
             jobRepo.save(job);
         }
-        logger.info("Finished: delete database reference scheduled task ...");
+        if (!jobs.isEmpty()) {
+            logger.info("Finished: delete database reference scheduled task ...");
+        }
     }
 }

@@ -54,8 +54,10 @@ public class ScheduledManagingJobTask {
 
     @Scheduled(fixedDelay = 3000)
     public void startScheduledJobs() {
-        logger.info("Running: starting scheduled jobs ...");
         List<Job> jobs = this.jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.SCHEDULED);
+        if (!jobs.isEmpty()) {
+            logger.info("Running: starting scheduled jobs ...");
+        }
         for (Job job : jobs) {
             if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(
                     job.getJobType(),
@@ -73,6 +75,8 @@ public class ScheduledManagingJobTask {
             job.setJobEvent(JobEvent.START);
             this.jobRepo.save(job);
         }
-        logger.info("Finished: starting scheduled jobs ...");
+        if (!jobs.isEmpty()) {
+            logger.info("Finished: starting scheduled jobs ...");
+        }
     }
 }

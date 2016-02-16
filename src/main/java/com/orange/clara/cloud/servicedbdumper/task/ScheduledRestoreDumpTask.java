@@ -37,12 +37,17 @@ public class ScheduledRestoreDumpTask {
 
     @Scheduled(fixedDelay = 5000)
     public void restoreDump() {
-        logger.info("Running: restore dump scheduled task ...");
-        for (Job job : jobRepo.findByJobTypeAndJobEvent(JobType.RESTORE_DUMP, JobEvent.START)) {
+        List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.RESTORE_DUMP, JobEvent.START);
+        if (!jobs.isEmpty()) {
+            logger.info("Running: restore dump scheduled task ...");
+        }
+        for (Job job : jobs) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
             this.restoreDumpTask.runRestoreDump(job.getId());
         }
-        logger.info("Finished: restore dump scheduled task ...");
+        if (!jobs.isEmpty()) {
+            logger.info("Finished: restore dump scheduled task ...");
+        }
     }
 }
