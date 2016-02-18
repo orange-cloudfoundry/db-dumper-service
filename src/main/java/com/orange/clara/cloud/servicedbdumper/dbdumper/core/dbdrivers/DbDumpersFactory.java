@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
 
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
@@ -21,7 +21,7 @@ import java.util.Map;
  * Date: 08/09/2015
  */
 public class DbDumpersFactory {
-    private Map<DatabaseType, DatabaseDumper> dbDumpers;
+    private Map<DatabaseType, DatabaseDriver> dbDumpers;
 
     @Value("${mysql.dump.bin.path:classpath:binaries/mysql/bin/mysqldump}")
     private File mysqlBinaryDump;
@@ -41,22 +41,22 @@ public class DbDumpersFactory {
     @PostConstruct
     public void dbDumpers() {
         dbDumpers = new HashMap<>();
-        dbDumpers.put(DatabaseType.MYSQL, new MysqlDatabaseDumper(this.mysqlBinaryDump, this.mysqlBinaryRestore));
-        dbDumpers.put(DatabaseType.POSTGRESQL, new PostgresqlDatabaseDumper(this.postgresBinaryDump, this.postgresBinaryRestore));
-        dbDumpers.put(DatabaseType.MONGODB, new MongodbDatabaseDumper(this.mongodbBinaryDump, this.mongodbBinaryRestore));
-        dbDumpers.put(DatabaseType.REDIS, new RedisDatabaseDumper(this.redisRutilBinary));
+        dbDumpers.put(DatabaseType.MYSQL, new MysqlDatabaseDriver(this.mysqlBinaryDump, this.mysqlBinaryRestore));
+        dbDumpers.put(DatabaseType.POSTGRESQL, new PostgresqlDatabaseDriver(this.postgresBinaryDump, this.postgresBinaryRestore));
+        dbDumpers.put(DatabaseType.MONGODB, new MongodbDatabaseDriver(this.mongodbBinaryDump, this.mongodbBinaryRestore));
+        dbDumpers.put(DatabaseType.REDIS, new RedisDatabaseDriver(this.redisRutilBinary));
     }
 
-    public DatabaseDumper getDatabaseDumper(DatabaseType databaseType) {
+    public DatabaseDriver getDatabaseDumper(DatabaseType databaseType) {
         return this.dbDumpers.get(databaseType);
     }
 
-    public DatabaseDumper getDatabaseDumper(DatabaseRef databaseRef) throws CannotFindDatabaseDumperException {
-        DatabaseDumper databaseDumper = this.dbDumpers.get(databaseRef.getType());
-        if (databaseDumper == null) {
+    public DatabaseDriver getDatabaseDumper(DatabaseRef databaseRef) throws CannotFindDatabaseDumperException {
+        DatabaseDriver databaseDriver = this.dbDumpers.get(databaseRef.getType());
+        if (databaseDriver == null) {
             throw new CannotFindDatabaseDumperException(databaseRef);
         }
-        databaseDumper.setDatabaseRef(databaseRef);
-        return databaseDumper;
+        databaseDriver.setDatabaseRef(databaseRef);
+        return databaseDriver;
     }
 }

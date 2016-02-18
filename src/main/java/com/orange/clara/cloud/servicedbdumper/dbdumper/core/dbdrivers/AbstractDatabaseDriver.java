@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
 
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.springframework.beans.factory.annotation.Required;
@@ -15,16 +15,16 @@ import java.io.File;
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
-public abstract class AbstractDatabaseDumper implements DatabaseDumper {
+public abstract class AbstractDatabaseDriver implements DatabaseDriver {
     protected File binaryDump;
     protected File binaryRestore;
     protected DatabaseRef databaseRef;
 
-    public AbstractDatabaseDumper() {
+    public AbstractDatabaseDriver() {
 
     }
 
-    public AbstractDatabaseDumper(File binaryDump, File binaryRestore) {
+    public AbstractDatabaseDriver(File binaryDump, File binaryRestore) {
         this.binaryDump = binaryDump;
         this.binaryRestore = binaryRestore;
     }

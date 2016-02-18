@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.running;
+package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;

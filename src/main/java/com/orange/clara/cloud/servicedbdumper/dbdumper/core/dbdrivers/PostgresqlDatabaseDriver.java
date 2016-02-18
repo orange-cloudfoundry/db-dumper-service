@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
 
 import java.io.File;
 
@@ -12,8 +12,8 @@ import java.io.File;
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
-public class PostgresqlDatabaseDumper extends AbstractDatabaseDumper implements DatabaseDumper {
-    public PostgresqlDatabaseDumper(File binaryDump, File binaryRestore) {
+public class PostgresqlDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
+    public PostgresqlDatabaseDriver(File binaryDump, File binaryRestore) {
         super(binaryDump, binaryRestore);
     }
 

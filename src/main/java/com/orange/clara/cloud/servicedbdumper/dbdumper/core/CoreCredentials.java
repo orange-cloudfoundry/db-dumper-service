@@ -1,7 +1,7 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import com.google.common.collect.Maps;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Credentials;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
 import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;

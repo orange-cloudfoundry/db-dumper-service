@@ -14,7 +14,7 @@ See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with l
 
 ## Requirement
 
-- [Cloud Foundry](http://cloudfoundry.org/) with service broker api 2.6 at least
+- [Cloud Foundry](http://cloudfoundry.org/) (>=192) with service broker api 2.6 at least
 - A s3 service to store dump (e.g: [p-riakcs](http://docs.pivotal.io/p-riakcs/), [s3-cf-service-broker](https://github.com/cloudfoundry-community/s3-cf-service-broker) or aws s3 given with cups)
 - A database service to store model (e.g: [p-mysql](http://docs.pivotal.io/p-mysql/), [cleardb](http://docs.pivotal.io/p-mysql/))
 

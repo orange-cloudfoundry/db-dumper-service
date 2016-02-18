@@ -1,7 +1,7 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseDumper;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
@@ -35,11 +35,11 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
     @Transactional
     public void dump(DatabaseRef databaseRef) throws DumpException {
         try {
-            DatabaseDumper databaseDumper = dbDumpersFactory.getDatabaseDumper(databaseRef);
-            String fileName = this.generateFileName(databaseDumper);
+            DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseRef);
+            String fileName = this.generateFileName(databaseDriver);
             logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
-            this.runDump(databaseDumper, databaseRef.getName() + "/" + fileName);
-            this.createDatabaseDumpFile(databaseRef, fileName, databaseDumper.isDumpShowable());
+            this.runDump(databaseDriver, databaseRef.getName() + "/" + fileName);
+            this.createDatabaseDumpFile(databaseRef, fileName, databaseDriver.isDumpShowable());
         } catch (Exception e) {
             this.logOutputFromProcess();
             throw new DumpException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
@@ -47,8 +47,8 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
         logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary finished.");
     }
 
-    private void runDump(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException, RunProcessException {
-        String[] commandLine = databaseDumper.getDumpCommandLine();
+    private void runDump(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
+        String[] commandLine = databaseDriver.getDumpCommandLine();
         Process p = this.runCommandLine(commandLine);
         this.filer.store(p.getInputStream(), fileName);
         if (p.exitValue() != 0) {

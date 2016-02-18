@@ -27,13 +27,7 @@ public class CloudFoundryUserAccessRight implements UserAccessRight {
 
     @Override
     public Boolean haveAccessToServiceInstance(String serviceInstanceId) throws UserAccessRightException {
-        List<CloudService> cloudServices = this.cloudFoundryClient.getServices();
-        for (CloudService cloudService : cloudServices) {
-            if (cloudService.getMeta().getGuid().toString().equals(serviceInstanceId)) {
-                return true;
-            }
-        }
-        return false;
+        return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
     }
 
     @Override

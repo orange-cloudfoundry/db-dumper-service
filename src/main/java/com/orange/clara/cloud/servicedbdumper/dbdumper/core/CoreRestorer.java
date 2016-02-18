@@ -1,7 +1,7 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseDumper;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
@@ -40,8 +40,8 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         }
         String fileName = this.getFileName(dumpFile);
         try {
-            DatabaseDumper databaseDumper = findAndCheckDatabaseDumper(databaseRefSource, databaseRefTarget);
-            this.runRestore(databaseDumper, fileName);
+            DatabaseDriver databaseDriver = findAndCheckDatabaseDumper(databaseRefSource, databaseRefTarget);
+            this.runRestore(databaseDriver, fileName);
         } catch (Exception e) {
             this.logOutputFromProcess();
             e.printStackTrace();
@@ -56,9 +56,9 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
     }
 
 
-    protected void runRestore(DatabaseDumper databaseDumper, String fileName) throws IOException, InterruptedException, RunProcessException {
+    protected void runRestore(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
 
-        Process p = this.runCommandLine(databaseDumper.getRestoreCommandLine());
+        Process p = this.runCommandLine(databaseDriver.getRestoreCommandLine());
         this.filer.retrieve(p.getOutputStream(), fileName);
         p.waitFor();
         if (p.exitValue() != 0) {
@@ -67,7 +67,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         }
     }
 
-    protected DatabaseDumper findAndCheckDatabaseDumper(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws CannotFindDatabaseDumperException, RestoreException {
+    protected DatabaseDriver findAndCheckDatabaseDumper(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws CannotFindDatabaseDumperException, RestoreException {
         if (!databaseRefSource.getType().equals(databaseRefTarget.getType())) {
             throw new RestoreException("Database " + databaseRefTarget.getName() + " should be a " + databaseRefSource.getType() + " database");
         }

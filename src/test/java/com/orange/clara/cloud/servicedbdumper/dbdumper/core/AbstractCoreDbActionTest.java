@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.running.core;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
 
 import java.io.File;
 
@@ -10,17 +10,17 @@ import java.io.File;
  * or at 'https://opensource.org/licenses/Apache-2.0'.
  * <p/>
  * Author: Arthur Halet
- * Date: 03/06/2015
+ * Date: 21/05/2015
  */
-public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements DatabaseDumper {
-    public MongodbDatabaseDumper(File binaryDump, File binaryRestore) {
+public class MysqlDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
+    public MysqlDatabaseDriver(File binaryDump, File binaryRestore) {
         super(binaryDump, binaryRestore);
     }
 
+
     @Override
     public String[] getDumpCommandLine() {
-        return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s --archive",
+        return String.format("%s --routines --host=%s --port=%s --user=%s --password=%s %s",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
@@ -32,24 +32,18 @@ public class MongodbDatabaseDumper extends AbstractDatabaseDumper implements Dat
 
     @Override
     public String[] getRestoreCommandLine() {
-        return String.format(
-                "%s --host %s --port %s --username %s --password %s --db %s --archive",
+        return new String[]{
                 this.binaryRestore.getAbsolutePath(),
-                this.databaseRef.getHost(),
-                this.databaseRef.getPort(),
-                this.databaseRef.getUser(),
-                this.databaseRef.getPassword(),
+                "--host=" + this.databaseRef.getHost(),
+                "--port=" + this.databaseRef.getPort(),
+                "--user=" + this.databaseRef.getUser(),
+                "--password=" + this.databaseRef.getPassword(),
                 this.databaseRef.getDatabaseName()
-        ).split(" ");
+        };
     }
 
     @Override
     public Boolean isDumpShowable() {
-        return false;
-    }
-
-    @Override
-    public String getFileExtension() {
-        return ".bson";
+        return true;
     }
 }

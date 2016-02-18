@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 
 /**
@@ -10,17 +11,10 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
  * or at 'https://opensource.org/licenses/Apache-2.0'.
  * <p/>
  * Author: Arthur Halet
- * Date: 03/06/2015
+ * Date: 25/11/2015
  */
-public interface DatabaseDumper {
+public interface Deleter {
+    void deleteAll(DatabaseRef databaseRef);
 
-    void setDatabaseRef(DatabaseRef databaseRef);
-
-    String[] getDumpCommandLine();
-
-    String[] getRestoreCommandLine();
-
-    String getFileExtension();
-
-    Boolean isDumpShowable();
+    void delete(DatabaseDumpFile databaseDumpFile);
 }

@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
 
 import java.io.File;
 
@@ -12,9 +12,9 @@ import java.io.File;
  * Author: Arthur Halet
  * Date: 14/02/2016
  */
-public class RedisDatabaseDumper extends AbstractDatabaseDumper implements DatabaseDumper {
+public class RedisDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
 
-    public RedisDatabaseDumper(File rutilBinary) {
+    public RedisDatabaseDriver(File rutilBinary) {
         super(rutilBinary, rutilBinary);
     }
 

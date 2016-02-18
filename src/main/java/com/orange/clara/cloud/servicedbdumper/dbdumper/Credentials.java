@@ -1,9 +1,8 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.s3;
+package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
-import org.jclouds.blobstore.domain.Blob;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Copyright (C) 2015 Orange
@@ -13,8 +12,8 @@ import java.io.InputStream;
  * or at 'https://opensource.org/licenses/Apache-2.0'.
  * <p/>
  * Author: Arthur Halet
- * Date: 01/10/2015
+ * Date: 26/11/2015
  */
-public interface UploadS3Stream {
-    String upload(InputStream content, Blob blob) throws IOException;
+public interface Credentials {
+    Map<String, Object> getCredentials(DbDumperServiceInstance dbDumperServiceInstance);
 }
