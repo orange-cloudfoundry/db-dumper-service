@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.dbdrivers.DatabaseDriver;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.dbdrivers.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;

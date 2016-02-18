@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;

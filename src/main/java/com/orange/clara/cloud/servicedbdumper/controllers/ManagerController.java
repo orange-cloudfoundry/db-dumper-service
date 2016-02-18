@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;

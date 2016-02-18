@@ -1,16 +1,16 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Credentials;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreCredentials;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDeleter;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreDumper;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.core.CoreRestorer;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3StreamImpl;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.CoreCredentials;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.CoreDeleter;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.CoreDumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.CoreRestorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.filer.s3uploader.UploadS3Stream;
+import com.orange.clara.cloud.servicedbdumper.filer.s3uploader.UploadS3StreamImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

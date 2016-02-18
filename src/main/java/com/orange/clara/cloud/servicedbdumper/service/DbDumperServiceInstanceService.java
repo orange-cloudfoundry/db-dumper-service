@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;

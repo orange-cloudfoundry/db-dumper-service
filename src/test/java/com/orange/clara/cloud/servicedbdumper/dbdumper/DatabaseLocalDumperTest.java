@@ -1,5 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.MongodbDatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.MysqlDatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.PostgresqlDatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.RedisDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +34,10 @@ public class DatabaseLocalDumperTest {
     private final File restoreBinaries = new File("restoreBinaries");
     private final String dumpFileName = "dump.sql";
     private DatabaseRef databaseRef;
-    private MysqlDatabaseDumper mysqlDatabaseDumper;
-    private PostgresqlDatabaseDumper postgresqlDatabaseDumper;
-    private MongodbDatabaseDumper mongodbDatabaseDumper;
-    private RedisDatabaseDumper redisDatabaseDumper;
+    private MysqlDatabaseDriver mysqlDatabaseDumper;
+    private PostgresqlDatabaseDriver postgresqlDatabaseDumper;
+    private MongodbDatabaseDriver mongodbDatabaseDumper;
+    private RedisDatabaseDriver redisDatabaseDumper;
 
     @Before
     public void init() {
@@ -46,16 +50,16 @@ public class DatabaseLocalDumperTest {
         databaseRef.setHost(host);
         databaseRef.setName(serviceName);
 
-        this.mysqlDatabaseDumper = new MysqlDatabaseDumper(this.dumpBinaries, this.restoreBinaries);
+        this.mysqlDatabaseDumper = new MysqlDatabaseDriver(this.dumpBinaries, this.restoreBinaries);
         mysqlDatabaseDumper.setDatabaseRef(this.databaseRef);
 
-        this.postgresqlDatabaseDumper = new PostgresqlDatabaseDumper(this.dumpBinaries, this.restoreBinaries);
+        this.postgresqlDatabaseDumper = new PostgresqlDatabaseDriver(this.dumpBinaries, this.restoreBinaries);
         postgresqlDatabaseDumper.setDatabaseRef(this.databaseRef);
 
-        this.mongodbDatabaseDumper = new MongodbDatabaseDumper(this.dumpBinaries, this.restoreBinaries);
+        this.mongodbDatabaseDumper = new MongodbDatabaseDriver(this.dumpBinaries, this.restoreBinaries);
         mongodbDatabaseDumper.setDatabaseRef(this.databaseRef);
 
-        this.redisDatabaseDumper = new RedisDatabaseDumper(this.dumpBinaries);
+        this.redisDatabaseDumper = new RedisDatabaseDriver(this.dumpBinaries);
         redisDatabaseDumper.setDatabaseRef(this.databaseRef);
     }
 

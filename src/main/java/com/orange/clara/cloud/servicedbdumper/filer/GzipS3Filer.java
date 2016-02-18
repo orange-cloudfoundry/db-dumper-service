@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.filer;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.s3.UploadS3Stream;
+import com.orange.clara.cloud.servicedbdumper.filer.s3uploader.UploadS3Stream;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

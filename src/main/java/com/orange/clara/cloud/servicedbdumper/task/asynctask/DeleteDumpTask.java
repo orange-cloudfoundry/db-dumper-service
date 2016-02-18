@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Deleter;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;

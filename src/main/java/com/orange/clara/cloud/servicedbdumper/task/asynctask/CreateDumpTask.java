@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;

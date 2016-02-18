@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.running.Credentials;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
