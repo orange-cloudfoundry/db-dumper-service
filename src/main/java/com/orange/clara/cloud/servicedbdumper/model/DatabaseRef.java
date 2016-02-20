@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
+import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
 
 import javax.persistence.*;
@@ -160,6 +161,26 @@ public class DatabaseRef {
 
     public void setDatabaseDumpFiles(List<DatabaseDumpFile> databaseDumpFiles) {
         this.databaseDumpFiles = databaseDumpFiles;
+    }
+
+    public List<DatabaseDumpFile> getDatabaseDumpFilesDeleted() {
+        List<DatabaseDumpFile> databaseDumpFilesDeleted = Lists.newArrayList();
+        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {
+            if (databaseDumpFile.isDeleted()) {
+                databaseDumpFilesDeleted.add(databaseDumpFile);
+            }
+        }
+        return databaseDumpFilesDeleted;
+    }
+
+    public List<DatabaseDumpFile> getDatabaseDumpFilesNotDeleted() {
+        List<DatabaseDumpFile> databaseDumpFilesNotDeleted = Lists.newArrayList();
+        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {
+            if (!databaseDumpFile.isDeleted()) {
+                databaseDumpFilesNotDeleted.add(databaseDumpFile);
+            }
+        }
+        return databaseDumpFilesNotDeleted;
     }
 
     public void addDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {

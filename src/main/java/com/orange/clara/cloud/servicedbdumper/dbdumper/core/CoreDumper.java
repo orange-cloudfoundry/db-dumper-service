@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
@@ -18,11 +18,11 @@ import java.util.UUID;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 09/09/2015
  */
@@ -67,7 +67,8 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
         if (this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRef, today) == null) {
             String user = this.generateUser();
             String password = this.generatePassword();
-            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, databaseRef, user, password, isDumpShowable));
+            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, databaseRef, user, password, isDumpShowable,
+                    this.filer.getContentLength(databaseRef.getName() + "/" + fileName)));
         }
     }
 

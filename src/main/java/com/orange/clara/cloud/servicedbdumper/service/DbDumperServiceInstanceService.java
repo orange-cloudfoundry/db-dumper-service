@@ -1,7 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
@@ -46,9 +45,11 @@ import java.util.Map;
 @Service
 public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
+    private final static String NEW_SRC_URL_PARAMETER = "source";
     private final static String SRC_URL_PARAMETER = "src_url";
     private final static String ACTION_PARAMETER = "action";
     private final static String CREATED_AT_PARAMETER = "created_at";
+    private final static String NEW_TARGET_URL_PARAMETER = "target";
     private final static String TARGET_URL_PARAMETER = "target_url";
     private final static String CF_USER_TOKEN_PARAMETER = "cf_user_token";
     private final static String ORG_PARAMETER = "org";
@@ -72,15 +73,9 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             "yyyy/MM"
     };
     private Logger logger = LoggerFactory.getLogger(DbDumperServiceInstanceService.class);
-    @Autowired
-    @Qualifier(value = "dateFormat")
-    private String dateFormat;
 
     @Autowired
     private DatabaseRefManager databaseRefManager;
-    @Autowired
-    @Qualifier(value = "restorer")
-    private Restorer restorer;
     @Autowired
     private DbDumperServiceInstanceRepo repository;
 
@@ -210,7 +205,10 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
-        String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER);
+        String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER, null);
+        if (srcUrl == null) {
+            srcUrl = this.getParameter(parameters, NEW_SRC_URL_PARAMETER);
+        }
         DatabaseRef databaseRef = this.getDatabaseRefFromParams(parameters, srcUrl);
         if (databaseRef.isDeleted()) {
             databaseRef.setDeleted(false);
@@ -252,7 +250,10 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
-        String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER);
+        String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER, null);
+        if (targetUrl == null) {
+            targetUrl = this.getParameter(parameters, NEW_TARGET_URL_PARAMETER, null);
+        }
         String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromParams(parameters, targetUrl);
         try {

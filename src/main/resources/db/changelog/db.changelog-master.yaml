@@ -302,6 +302,17 @@ databaseChangeLog:
               defaultValueBoolean: false
               constraints:
                 nullable: false
+          - column:
+              name: deleted
+              type: boolean
+              defaultValueBoolean: false
+              constraints:
+                nullable: false
+          - column:
+              name: size
+              type: bigint
+              constraints:
+                nullable: false
       - addColumn:
           tableName: database_ref
           columns:

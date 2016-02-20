@@ -48,7 +48,9 @@ public class CoreCredentials implements Credentials {
                     databaseDumpFile.getCreatedAt(),
                     urlForge.createDownloadLink(databaseDumpFile),
                     urlForge.createShowLink(databaseDumpFile),
-                    databaseDumpFile.getFileName()
+                    databaseDumpFile.getFileName(),
+                    databaseDumpFile.getSize(),
+                    databaseDumpFile.getDeleted()
             ));
         }
         return dbDumperCredentials;

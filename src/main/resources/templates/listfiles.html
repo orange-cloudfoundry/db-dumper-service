@@ -16,16 +16,19 @@
     </div>
     <div th:if="${databaseRefs != null and databaseRefs.isEmpty() == false}">
         <div th:each="databaseRef : ${databaseRefs}">
-            <div th:if="${databaseRef.databaseDumpFiles.isEmpty() == false}">
+            <div th:if="${databaseRef.getDatabaseDumpFilesNotDeleted().isEmpty() == false}">
                 <ul class="collection with-header">
                     <li class="collection-header">
                         <h4 th:if="${databaseRef.databaseService == null}"
                             th:text="${databaseRef.name}">No name</h4>
                         <h4 th:if="${databaseRef.databaseService != null}"
                             th:text="${databaseRef.databaseService.name}">No name</h4></li>
-                    <li class="collection-item" th:each="databaseDumpFile : ${databaseRef.databaseDumpFiles}">
-                        Created At: <span
+                    <li class="collection-item"
+                        th:each="databaseDumpFile : ${databaseRef.getDatabaseDumpFilesNotDeleted()}">
+                        <span class="blue-grey-text">Created At:</span> <span
                             th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
+                        - <span class="blue-grey-text">Size:</span> <span
+                            th:text="${T(humanize.Humanize).binaryPrefix(databaseDumpFile.size)}"></span>
                         <a class="btn waves-effect waves-light orange"
                            th:if="${databaseDumpFile.isShowable()}"
                            th:href="@{/manage/show/{databaseDumpFileId}(databaseDumpFileId=${databaseDumpFile.id})}"><i

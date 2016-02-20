@@ -19,7 +19,7 @@
         <cloudfoundry-client.version>1.1.5.ORANGEv21</cloudfoundry-client.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
         <protobuf-java.version>2.6.1</protobuf-java.version>
-
+        <humanize.version>1.2.2</humanize.version>
     </properties>
     <distributionManagement>
         <snapshotRepository>
@@ -29,6 +29,11 @@
         </snapshotRepository>
     </distributionManagement>
     <dependencies>
+        <dependency>
+            <groupId>com.github.mfornos</groupId>
+            <artifactId>humanize-slim</artifactId>
+            <version>${humanize.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.orange.clara.cloudfoundry.client.lib</groupId>
             <artifactId>cloudfoundry-client-lib</artifactId>

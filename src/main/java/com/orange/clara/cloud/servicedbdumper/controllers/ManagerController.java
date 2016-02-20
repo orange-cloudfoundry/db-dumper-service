@@ -1,13 +1,13 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.security.UserAccessRight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,11 +44,6 @@ import java.util.Base64;
 @RequestMapping(value = "/manage")
 public class ManagerController {
     private Logger logger = LoggerFactory.getLogger(ManagerController.class);
-    @Autowired
-    private DatabaseRefRepo databaseRefRepo;
-
-    @Autowired
-    private AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Autowired
     @Qualifier(value = "filer")
@@ -69,7 +63,7 @@ public class ManagerController {
 
     @RequestMapping("/raw/{dumpFileId:[0-9]+}")
     @ResponseBody
-    public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException {
+    public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
         if (databaseDumpFile == null) {
             throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
@@ -105,14 +99,17 @@ public class ManagerController {
         }
     }
 
-    private void checkDumpShowable(DatabaseDumpFile databaseDumpFile) throws DumpFileShowException {
+    private void checkDumpShowable(DatabaseDumpFile databaseDumpFile) throws DumpFileShowException, DumpFileDeletedException {
         if (!databaseDumpFile.isShowable()) {
             throw new DumpFileShowException(databaseDumpFile);
+        }
+        if (databaseDumpFile.isDeleted()) {
+            throw new DumpFileDeletedException(databaseDumpFile);
         }
     }
 
     @RequestMapping("/show/{dumpFileId:[0-9]+}")
-    public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException {
+    public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
         if (databaseDumpFile == null) {
             throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));

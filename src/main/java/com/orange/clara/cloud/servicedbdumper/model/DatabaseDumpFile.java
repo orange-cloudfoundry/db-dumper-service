@@ -34,28 +34,33 @@ public class DatabaseDumpFile {
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
     private DatabaseRef databaseRef;
+    private Boolean deleted;
+    private Long size;
 
     public DatabaseDumpFile() {
         this.createdAt = Calendar.getInstance().getTime();
         this.showable = true;
+        this.deleted = false;
         this.user = "";
         this.password = "";
     }
 
-    public DatabaseDumpFile(String fileName, DatabaseRef databaseRef, String user, String password, boolean showable) {
+    public DatabaseDumpFile(String fileName, DatabaseRef databaseRef, String user, String password, boolean showable, long size) {
         this();
         this.fileName = fileName;
         this.user = user;
         this.password = password;
         this.showable = showable;
+        this.size = size;
         this.setDatabaseRef(databaseRef);
     }
 
-    public DatabaseDumpFile(File file, DatabaseRef databaseRef, String user, String password, boolean showable) {
+    public DatabaseDumpFile(File file, DatabaseRef databaseRef, String user, String password, boolean showable, long size) {
         this();
         this.user = user;
         this.password = password;
         this.showable = showable;
+        this.size = size;
         this.setFileName(file);
         this.setDatabaseRef(databaseRef);
     }
@@ -129,6 +134,18 @@ public class DatabaseDumpFile {
         return showable;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
     @PrePersist
     void createdAt() {
         this.createdAt = new Date();
@@ -158,5 +175,13 @@ public class DatabaseDumpFile {
                 ", createdAt=" + createdAt +
                 ", databaseRef=" + databaseRef +
                 '}';
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
     }
 }

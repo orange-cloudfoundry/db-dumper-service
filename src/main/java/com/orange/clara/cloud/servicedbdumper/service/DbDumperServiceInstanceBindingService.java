@@ -123,6 +123,8 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
             dumpFile.put("filename", dbDumperCredential.getFilename());
             dumpFile.put("created_at", dateFormater.format(dbDumperCredential.getCreatedAt()));
             dumpFile.put("dump_id", dbDumperCredential.getId());
+            dumpFile.put("size", dbDumperCredential.getSize());
+            dumpFile.put("deleted", dbDumperCredential.getDeleted());
             dumpFiles.add(dumpFile);
         }
         credentials.put("dumps", dumpFiles);

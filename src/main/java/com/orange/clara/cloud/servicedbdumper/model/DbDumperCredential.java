@@ -18,16 +18,20 @@ public class DbDumperCredential {
     private String downloadUrl;
     private String showUrl;
     private String filename;
+    private Long size;
+    private Boolean deleted;
 
     public DbDumperCredential() {
     }
 
-    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename) {
+    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted) {
         this.id = id;
         this.createdAt = createdAt;
         this.downloadUrl = downloadUrl;
         this.showUrl = showUrl;
         this.filename = filename;
+        this.size = size;
+        this.deleted = deleted;
     }
 
     public Integer getId() {
@@ -68,5 +72,21 @@ public class DbDumperCredential {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 }

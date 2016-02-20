@@ -25,6 +25,8 @@ public interface DatabaseDumpFileRepo extends
 
     List<DatabaseDumpFile> findByDatabaseRefOrderByCreatedAtDesc(DatabaseRef databaseRef);
 
+    List<DatabaseDumpFile> findByDeletedTrueOrderByCreatedAtAsc();
+
     DatabaseDumpFile findByDatabaseRefAndCreatedAt(DatabaseRef databaseRef, Date date);
 
     DatabaseDumpFile findFirstByDatabaseRefAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(DatabaseRef databaseRef, Date date);
