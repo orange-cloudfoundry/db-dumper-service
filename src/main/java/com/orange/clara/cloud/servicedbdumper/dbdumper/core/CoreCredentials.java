@@ -1,19 +1,16 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
 import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Copyright (C) 2015 Orange
@@ -33,9 +30,6 @@ public class CoreCredentials implements Credentials {
     @Autowired
     @Qualifier(value = "blobStoreContext")
     protected BlobStoreContext blobStoreContext;
-    @Autowired
-    @Qualifier("appUri")
-    private String appUri;
 
     @Autowired
     @Qualifier(value = "dateFormat")
@@ -45,24 +39,18 @@ public class CoreCredentials implements Credentials {
     private UrlForge urlForge;
 
     @Override
-    public Map<String, Object> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
-        SimpleDateFormat dateFormater = new SimpleDateFormat(this.dateFormat);
-        Map<String, Object> credentials = Maps.newHashMap();
-        List<Map<String, Object>> dumpFiles = new ArrayList<>();
-        Map<String, Object> dumpFile;
+    public List<DbDumperCredential> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
+        List<DbDumperCredential> dbDumperCredentials = new ArrayList<>();
         List<DatabaseDumpFile> databaseDumpFiles = dbDumperServiceInstance.getDatabaseRef().getDatabaseDumpFiles();
-        Comparator<DatabaseDumpFile> comparator = (d1, d2) -> d1.getCreatedAt().compareTo(d2.getCreatedAt());
-        databaseDumpFiles.sort(comparator.reversed());
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
-            dumpFile = Maps.newHashMap();
-            dumpFile.put("download_url", urlForge.createDownloadLink(databaseDumpFile));
-            dumpFile.put("show_url", urlForge.createShowLink(databaseDumpFile));
-            dumpFile.put("filename", databaseDumpFile.getFileName());
-            dumpFile.put("created_at", dateFormater.format(databaseDumpFile.getCreatedAt()));
-            dumpFile.put("dump_id", databaseDumpFile.getId());
-            dumpFiles.add(dumpFile);
+            dbDumperCredentials.add(new DbDumperCredential(
+                    databaseDumpFile.getId(),
+                    databaseDumpFile.getCreatedAt(),
+                    urlForge.createDownloadLink(databaseDumpFile),
+                    urlForge.createShowLink(databaseDumpFile),
+                    databaseDumpFile.getFileName()
+            ));
         }
-        credentials.put("dumps", dumpFiles);
-        return credentials;
+        return dbDumperCredentials;
     }
 }

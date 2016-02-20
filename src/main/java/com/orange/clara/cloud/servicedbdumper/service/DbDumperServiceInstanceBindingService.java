@@ -1,8 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
+import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
@@ -15,15 +17,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 12/10/2015
  */
@@ -39,12 +45,14 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
     @Autowired
     private DbDumperServiceInstanceRepo repositoryInstance;
 
-    @Autowired
-    private DatabaseDumpFileRepo databaseDumpFileRepo;
 
     @Autowired
     @Qualifier(value = "credentials")
     private Credentials credentials;
+
+    @Autowired
+    @Qualifier(value = "dateFormat")
+    private String dateFormat;
 
     @Override
     public ServiceInstanceBinding createServiceInstanceBinding(CreateServiceInstanceBindingRequest request) throws ServiceInstanceBindingExistsException, ServiceBrokerException {
@@ -67,7 +75,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                 request.getAppGuid()
         );
 
-        Map<String, Object> credentials = this.credentials.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
+        Map<String, Object> credentials = this.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
         repositoryInstanceBinding.save(serviceInstanceBinding);
         return new ServiceInstanceBinding(
                 request.getBindingId(),
@@ -84,7 +92,7 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         if (dbDumperServiceInstanceBinding == null) {
             throw new ServiceBrokerException("Cannot find binding instance: " + request.getBindingId());
         }
-        Map<String, Object> credentials = this.credentials.getCredentials(dbDumperServiceInstanceBinding.getDbDumperServiceInstance());
+        Map<String, Object> credentials = this.getCredentials(dbDumperServiceInstanceBinding.getDbDumperServiceInstance());
 
         ServiceInstanceBinding serviceInstanceBinding = new ServiceInstanceBinding(
                 dbDumperServiceInstanceBinding.getId(),
@@ -95,5 +103,29 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         );
         repositoryInstanceBinding.delete(dbDumperServiceInstanceBinding);
         return serviceInstanceBinding;
+    }
+
+    private Map<String, Object> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
+        return this.extractCredentials(this.credentials.getCredentials(dbDumperServiceInstance));
+    }
+
+    private Map<String, Object> extractCredentials(List<DbDumperCredential> dbDumperCredentials) {
+        SimpleDateFormat dateFormater = new SimpleDateFormat(this.dateFormat);
+        Map<String, Object> credentials = Maps.newHashMap();
+        List<Map<String, Object>> dumpFiles = new ArrayList<>();
+        Map<String, Object> dumpFile;
+        Comparator<DbDumperCredential> comparator = (d1, d2) -> d1.getCreatedAt().compareTo(d2.getCreatedAt());
+        dbDumperCredentials.sort(comparator.reversed());
+        for (DbDumperCredential dbDumperCredential : dbDumperCredentials) {
+            dumpFile = Maps.newHashMap();
+            dumpFile.put("download_url", dbDumperCredential.getDownloadUrl());
+            dumpFile.put("show_url", dbDumperCredential.getShowUrl());
+            dumpFile.put("filename", dbDumperCredential.getFilename());
+            dumpFile.put("created_at", dateFormater.format(dbDumperCredential.getCreatedAt()));
+            dumpFile.put("dump_id", dbDumperCredential.getId());
+            dumpFiles.add(dumpFile);
+        }
+        credentials.put("dumps", dumpFiles);
+        return credentials;
     }
 }
