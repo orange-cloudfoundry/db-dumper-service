@@ -39,25 +39,25 @@ public class ScheduledManagingJobTask {
     @Scheduled(fixedDelay = 300000)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cleaningFinishedJobs() {
-        logger.info("Running: cleaning job scheduled task ...");
+        logger.debug("Running: cleaning job scheduled task ...");
         jobFactory.purgeJob();
-        logger.info("Finished: cleaning job scheduled task.");
+        logger.debug("Finished: cleaning job scheduled task.");
     }
 
     @Scheduled(fixedDelay = 1200000)
     public void alerting() {
         Integer numberJobsErrored = this.jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.ERRORED).size();
         if (numberJobsErrored > 0) {
-            logger.info("There is '" + numberJobsErrored + "' jobs in error.");
+            logger.warn("There is '" + numberJobsErrored + "' jobs in error.");
         }
     }
 
     @Scheduled(fixedDelay = 3000)
     public void startScheduledJobs() {
         List<Job> jobs = this.jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.SCHEDULED);
-        if (!jobs.isEmpty()) {
-            logger.info("Running: starting scheduled jobs ...");
-        }
+
+        logger.debug("Running: starting scheduled jobs ...");
+
         for (Job job : jobs) {
             if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(
                     job.getJobType(),
@@ -75,8 +75,8 @@ public class ScheduledManagingJobTask {
             job.setJobEvent(JobEvent.START);
             this.jobRepo.save(job);
         }
-        if (!jobs.isEmpty()) {
-            logger.info("Finished: starting scheduled jobs ...");
-        }
+
+        logger.debug("Finished: starting scheduled jobs ...");
+
     }
 }

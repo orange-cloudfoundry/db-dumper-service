@@ -302,6 +302,50 @@ databaseChangeLog:
               defaultValueBoolean: false
               constraints:
                 nullable: false
+      - addColumn:
+          tableName: database_ref
+          columns:
+          - column:
+              name: database_service_id
+              type: varchar(255)
+              constraints:
+                nullable: true
+      - createTable:
+          tableName: database_service
+          columns:
+            - column:
+                name: uuid
+                type: varchar(255)
+                autoIncrement: false
+                constraints:
+                  primaryKey: true
+                  nullable: false
+            - column:
+                name: name
+                type: varchar(255)
+                autoIncrement: false
+                constraints:
+                  nullable: false
+            - column:
+                name: space
+                type: varchar(255)
+                constraints:
+                  nullable: false
+            - column:
+                name: org
+                type: varchar(255)
+                constraints:
+                  nullable: true
+            - column:
+                name: service_key_guid
+                type: varchar(255)
+                constraints:
+                  nullable: true
+            - column:
+                name: database_ref_id
+                type: varchar(255)
+                constraints:
+                  nullable: false
       - dropForeignKeyConstraint:
           baseTableName: db_dumper_service_instance_binding_credentials
           constraintName: fk_credentials_service_instance_binding
@@ -311,3 +355,23 @@ databaseChangeLog:
           tableName: db_dumper_service_instance_binding
           columnName: app_guid
           columnDataType: varchar(255)
+      - addForeignKeyConstraint:
+          baseColumnNames: database_ref_id
+          baseTableName: database_service
+          constraintName: fk_database_service_database_ref
+          deferrable: false
+          initiallyDeferred: false
+          onDelete: RESTRICT
+          onUpdate: RESTRICT
+          referencedColumnNames: name
+          referencedTableName: database_ref
+      - addForeignKeyConstraint:
+          baseColumnNames: database_service_id
+          baseTableName: database_ref
+          constraintName: fk_database_ref_database_service
+          deferrable: false
+          initiallyDeferred: false
+          onDelete: CASCADE
+          onUpdate: CASCADE
+          referencedColumnNames: uuid
+          referencedTableName: database_service

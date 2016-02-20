@@ -9,11 +9,11 @@ import java.util.List;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 03/06/2015
  */
@@ -32,6 +32,11 @@ public class DatabaseRef {
     protected List<DatabaseDumpFile> databaseDumpFiles;
     protected Integer port;
     private Boolean deleted;
+
+    @OneToOne
+    @JoinColumn(name = "database_service_id")
+    private DatabaseService databaseService;
+
     @OneToMany(mappedBy = "databaseRef")
     private List<DbDumperServiceInstance> dbDumperServiceInstances;
 
@@ -195,6 +200,14 @@ public class DatabaseRef {
 
     public String getInUrlFormat() {
         return this.type.toString().toLowerCase() + "://" + this.user + "@" + this.host + ":" + this.port;
+    }
+
+    public DatabaseService getDatabaseService() {
+        return databaseService;
+    }
+
+    public void setDatabaseService(DatabaseService databaseService) {
+        this.databaseService = databaseService;
     }
 
     @Override

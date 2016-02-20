@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
+import com.orange.clara.cloud.servicedbdumper.exception.JobCreationException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
@@ -45,11 +46,10 @@ public class ScheduledDeleteDumpTask {
     private DeleteDumpTask deleteDumpTask;
 
     @Scheduled(fixedDelay = 5000)
-    public void deleteDump() {
+    public void deleteDump() throws JobCreationException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DUMPS, JobEvent.START);
-        if (!jobs.isEmpty()) {
-            logger.info("Running: delete all dump scheduled task ...");
-        }
+        logger.debug("Running: delete all dump scheduled task ...");
+
         LocalDateTime whenRemoveDateTime;
         for (Job job : jobs) {
             whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
@@ -60,8 +60,7 @@ public class ScheduledDeleteDumpTask {
             jobRepo.save(job);
             this.deleteDumpTask.runDeleteDump(job.getId());
         }
-        if (!jobs.isEmpty()) {
-            logger.info("Finished: delete all dump scheduled task.");
-        }
+
+        logger.debug("Finished: delete all dump scheduled task.");
     }
 }

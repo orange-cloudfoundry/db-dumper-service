@@ -131,6 +131,9 @@ public class ManagerController {
             content += "\n";
         }
         br.close();
+        if (databaseDumpFile.getDatabaseRef().getDatabaseService() != null) {
+            databaseName = databaseDumpFile.getDatabaseRef().getDatabaseService().getName();
+        }
         model.addAttribute("databaseName", databaseName);
         model.addAttribute("fileName", fileName);
         model.addAttribute("id", dumpFileId);

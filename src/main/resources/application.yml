@@ -3,7 +3,7 @@ logging.level.com.orange.clara.cloud.servicedbdumper: INFO
 ---
 endpoints:
   env:
-    keys-to-sanitize: jdbcurl,uri,DATABASE_URL,username,url,password,key_id,access_key,VCAP_SERVICES
+    keys-to-sanitize: jdbcurl,uri,DATABASE_URL,username,url,password,key_id,access_key,VCAP_SERVICES,encryption_key
 management:
   contextPath: /admin
 spring:

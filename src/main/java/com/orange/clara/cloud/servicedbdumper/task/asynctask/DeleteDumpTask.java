@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.JobCreationException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
@@ -20,11 +21,11 @@ import java.util.concurrent.Future;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
@@ -47,7 +48,7 @@ public class DeleteDumpTask {
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Future<Boolean> runDeleteDump(Integer jobId) {
+    public Future<Boolean> runDeleteDump(Integer jobId) throws JobCreationException {
         Job job = this.jobRepo.findOne(jobId);
         DatabaseRef databaseRef = job.getDatabaseRefSrc();
         this.deleter.deleteAll(databaseRef);

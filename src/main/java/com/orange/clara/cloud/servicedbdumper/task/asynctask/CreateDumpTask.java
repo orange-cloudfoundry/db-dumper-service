@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
+import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
@@ -18,11 +19,11 @@ import java.util.concurrent.Future;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
@@ -35,6 +36,9 @@ public class CreateDumpTask {
     @Autowired
     private JobRepo jobRepo;
 
+    @Autowired
+    private DatabaseRefManager databaseRefManager;
+
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Boolean> runCreateDump(Integer jobId) {
@@ -45,10 +49,12 @@ public class CreateDumpTask {
             logger.error(String.format("Cannot create dump for '%s': %s", job.getDatabaseRefSrc().getName(), e.getMessage()));
             job.setJobEvent(JobEvent.ERRORED);
             job.setErrorMessage(e.getMessage());
+            this.databaseRefManager.deleteServiceKey(job);
             jobRepo.save(job);
             return new AsyncResult<Boolean>(false);
         }
         job.setJobEvent(JobEvent.FINISHED);
+        this.databaseRefManager.deleteServiceKey(job);
         jobRepo.save(job);
         return new AsyncResult<Boolean>(true);
     }

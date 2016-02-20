@@ -38,16 +38,12 @@ public class ScheduledCreateDumpTask {
     @Scheduled(fixedDelay = 5000)
     public void createDump() {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.CREATE_DUMP, JobEvent.START);
-        if (!jobs.isEmpty()) {
-            logger.info("Running: create dump scheduled task ...");
-        }
+        logger.debug("Running: create dump scheduled task ...");
         for (Job job : jobs) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
             this.createDumpTask.runCreateDump(job.getId());
         }
-        if (!jobs.isEmpty()) {
-            logger.info("Finished: create dump scheduled task .");
-        }
+        logger.debug("Finished: create dump scheduled task .");
     }
 }

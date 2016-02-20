@@ -17,11 +17,11 @@ import java.net.URL;
 
 /**
  * Copyright (C) 2016 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 11/02/2016
  */
@@ -32,6 +32,7 @@ public class UaaConfig {
     private static Logger LOGGER = LoggerFactory.getLogger(UaaConfig.class);
     @Value("${cloud.controller.url}")
     private String cloudControllerUrl;
+
 
     @Bean
     @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -48,4 +49,5 @@ public class UaaConfig {
         CloudCredentials credentials = new CloudCredentials(getOAuth2AccessToken(), false);
         return new CloudFoundryClient(credentials, new URL(this.cloudControllerUrl));
     }
+
 }

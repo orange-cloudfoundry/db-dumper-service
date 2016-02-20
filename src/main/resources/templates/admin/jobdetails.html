@@ -17,6 +17,11 @@
 
                 <p th:text="${job.dbDumperServiceInstance.serviceInstanceId}"></p>
             </li>
+            <li class="collection-item" th:if="${job.databaseRefSrc.databaseService != null}">
+                <span class="title">Service name</span>
+
+                <p th:text="${job.databaseRefSrc.databaseService.name}"></p>
+            </li>
             <li class="collection-item" th:if="${job.databaseRefSrc != null}">
                 <span class="title">Database source name</span>
 

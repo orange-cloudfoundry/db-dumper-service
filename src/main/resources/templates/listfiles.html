@@ -18,7 +18,11 @@
         <div th:each="databaseRef : ${databaseRefs}">
             <div th:if="${databaseRef.databaseDumpFiles.isEmpty() == false}">
                 <ul class="collection with-header">
-                    <li class="collection-header"><h4 th:text="${databaseRef.name}">No name</h4></li>
+                    <li class="collection-header">
+                        <h4 th:if="${databaseRef.databaseService == null}"
+                            th:text="${databaseRef.name}">No name</h4>
+                        <h4 th:if="${databaseRef.databaseService != null}"
+                            th:text="${databaseRef.databaseService.name}">No name</h4></li>
                     <li class="collection-item" th:each="databaseDumpFile : ${databaseRef.databaseDumpFiles}">
                         Created At: <span
                             th:text="${#dates.format(databaseDumpFile.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
