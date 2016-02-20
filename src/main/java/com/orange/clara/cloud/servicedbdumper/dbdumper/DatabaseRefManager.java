@@ -56,7 +56,7 @@ public class DatabaseRefManager {
             return this.getDatabaseRefFromUrl(uriOrServiceName, this.generateDatabaseRefName(uriOrServiceName));
         }
         if (token == null || token.isEmpty()) {
-            throw new ServiceKeyException("You must pass your token (param: token)");
+            throw new ServiceKeyException("You must pass your token (param: cf_user_token)");
         }
         CloudServiceKey cloudServiceKey = this.serviceKeyManager.createServiceKey(uriOrServiceName, token, org, space);
         return this.getDatabaseRefFromServiceKey(cloudServiceKey, org, space);
@@ -112,11 +112,7 @@ public class DatabaseRefManager {
         }
         DatabaseService databaseService = databaseRef.getDatabaseService();
         logger.info(String.format("Remove service key for service '%s' ...", databaseService.getName()));
-        try {
-            this.serviceKeyManager.deleteServiceKey(databaseService);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.serviceKeyManager.deleteServiceKey(databaseService);
         logger.info(String.format("Removed service key for service '%s'.", databaseService.getName()));
     }
 
@@ -152,9 +148,27 @@ public class DatabaseRefManager {
         return databaseServiceDao;
     }
 
-    private DatabaseType extractDatabaseTypeFromLabel(String label) {
+    private DatabaseType extractDatabaseType(CloudService cloudService) {
+        return this.extractDatabaseType(cloudService.getLabel(), cloudService.getName());
+    }
+
+    private DatabaseType extractDatabaseType(String... values) {
+        DatabaseType databaseType;
+        for (String value : values) {
+            databaseType = this.extractDatabaseType(value);
+            if (databaseType != null) {
+                return databaseType;
+            }
+        }
+        return null;
+    }
+
+    private DatabaseType extractDatabaseType(String value) {
+        if (value == null) {
+            return null;
+        }
         for (DatabaseType databaseType : DatabaseType.values()) {
-            if (label.matches(databaseType.getMatcher())) {
+            if (value.matches(databaseType.getMatcher())) {
                 return databaseType;
             }
         }
@@ -166,7 +180,7 @@ public class DatabaseRefManager {
         logger.debug("Service found: " + cloudService.getMeta() + " with label: " + cloudService.getLabel());
         Map<String, Object> credentials = cloudServiceKey.getCredentials();
 
-        DatabaseType databaseType = this.extractDatabaseTypeFromLabel(cloudService.getLabel());
+        DatabaseType databaseType = this.extractDatabaseType(cloudService);
         if (databaseType == null) {
             throw new DatabaseExtractionException("Database type cannot be extracted '" + cloudService.getName() + "'");
         }
