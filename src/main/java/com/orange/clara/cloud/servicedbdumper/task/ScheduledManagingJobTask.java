@@ -64,7 +64,7 @@ public class ScheduledManagingJobTask {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cleaningDeletedDumpFile() {
         logger.debug("Running: cleaning deleted dump task ...");
-        List<DatabaseDumpFile> databaseDumpFiles = this.databaseDumpFileRepo.findByDeletedTrueOrderByCreatedAtAsc();
+        List<DatabaseDumpFile> databaseDumpFiles = this.databaseDumpFileRepo.findByDeletedTrueOrderByDeletedAtAsc();
         LocalDateTime whenRemoveDateTime;
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
             whenRemoveDateTime = LocalDateTime.from(databaseDumpFile.getDeletedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
