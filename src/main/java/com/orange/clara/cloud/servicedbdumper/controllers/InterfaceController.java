@@ -64,7 +64,8 @@ public class InterfaceController {
     private List<DatabaseRef> filteringDatabaseRef(List<DatabaseRef> databaseRefs) throws UserAccessRightException {
         List<DatabaseRef> databaseRefsFinal = Lists.newArrayList();
         for (DatabaseRef databaseRef : databaseRefs) {
-            if (databaseRef.isDeleted() || databaseRef.getDbDumperServiceInstances() == null
+            if (databaseRef.isDeleted()
+                    || databaseRef.getDbDumperServiceInstances() == null
                     || !this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
                 continue;
             }

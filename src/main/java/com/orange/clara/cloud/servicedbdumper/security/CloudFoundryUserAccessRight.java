@@ -5,7 +5,13 @@ import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -26,6 +32,21 @@ public class CloudFoundryUserAccessRight implements UserAccessRight {
 
     @Override
     public Boolean haveAccessToServiceInstance(String serviceInstanceId) throws UserAccessRightException {
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null) {
+            return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
+        }
+
+        Authentication authentication = context.getAuthentication();
+        if (authentication == null) {
+            return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
+        }
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+
+        if (authorities.contains(new SimpleGrantedAuthority("ADMIN"))) {
+            return true;
+        }
         return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
     }
 
