@@ -31,8 +31,8 @@ import java.util.List;
  * Date: 25/11/2015
  */
 @Component
-public class ScheduledDeleteDumpTask {
-    private Logger logger = LoggerFactory.getLogger(ScheduledDeleteDumpTask.class);
+public class ScheduledDeleteAllDumpsTask {
+    private Logger logger = LoggerFactory.getLogger(ScheduledDeleteAllDumpsTask.class);
     @Value("${dump.delete.expiration.days:5}")
     private Integer dumpDeleteExpirationDays;
     @Autowired
@@ -46,7 +46,7 @@ public class ScheduledDeleteDumpTask {
     private DeleteDumpTask deleteDumpTask;
 
     @Scheduled(fixedDelay = 5000)
-    public void deleteDump() throws JobCreationException {
+    public void deleteAllDumps() throws JobCreationException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DUMPS, JobEvent.START);
         logger.debug("Running: delete all dump scheduled task ...");
 

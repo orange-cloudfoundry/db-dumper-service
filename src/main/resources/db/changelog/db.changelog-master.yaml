@@ -309,6 +309,11 @@ databaseChangeLog:
               constraints:
                 nullable: false
           - column:
+              name: deleted_at
+              type: date
+              constraints:
+                nullable: true
+          - column:
               name: size
               type: bigint
               constraints:
@@ -321,6 +326,40 @@ databaseChangeLog:
               type: varchar(255)
               constraints:
                 nullable: true
+      - addColumn:
+          tableName: db_dumper_service_instance
+          columns:
+          - column:
+              name: db_dumper_plan_id
+              type: varchar(255)
+              constraints:
+                nullable: false
+      - createTable:
+          tableName: db_dumper_plan
+          columns:
+            - column:
+                name: id
+                type: varchar(255)
+                autoIncrement: false
+                constraints:
+                  primaryKey: true
+                  nullable: false
+            - column:
+                name: name
+                type: varchar(255)
+                autoIncrement: false
+                constraints:
+                  nullable: false
+            - column:
+                name: size
+                type: bigint
+                constraints:
+                  nullable: true
+            - column:
+                name: cost
+                type: float
+                constraints:
+                  nullable: false
       - createTable:
           tableName: database_service
           columns:

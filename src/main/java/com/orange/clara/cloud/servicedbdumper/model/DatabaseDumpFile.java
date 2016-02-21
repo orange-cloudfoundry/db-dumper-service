@@ -31,6 +31,10 @@ public class DatabaseDumpFile {
     private String fileName;
     @Column(name = "created_at")
     private Date createdAt;
+
+    @Column(name = "deleted_at")
+    private Date deletedAt;
+
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
     private DatabaseRef databaseRef;
@@ -139,11 +143,24 @@ public class DatabaseDumpFile {
     }
 
     public void setDeleted(Boolean deleted) {
+        if (deleted) {
+            this.deletedAt = new Date();
+        } else {
+            this.deleted = null;
+        }
         this.deleted = deleted;
     }
 
     public Boolean isDeleted() {
         return deleted;
+    }
+
+    public Date getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
     }
 
     @PrePersist

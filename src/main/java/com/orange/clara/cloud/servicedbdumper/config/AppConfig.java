@@ -17,9 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
@@ -41,8 +38,6 @@ public class AppConfig {
     @Value("${file.date.format:dd-MM-yyyy HH:mm}")
     private String dateFormat;
 
-    @Value("classpath:binaries")
-    private File binariesPath;
 
     @Value("${cf.admin.user:#{null}}")
     private String cfAdminUser;
@@ -143,17 +138,4 @@ public class AppConfig {
         return null;
     }
 
-    private void makeBinariesExecutable() throws IOException, InterruptedException {
-        String[] commands = {"/bin/chmod", "-R", "+x", binariesPath.getAbsolutePath()};
-        logger.debug("Running command: " + String.join(" ", commands) + " ...");
-        ProcessBuilder pb = new ProcessBuilder(commands);
-        Process p = pb.start();
-        p.waitFor();
-        logger.debug("Finished Command: " + String.join(" ", commands) + ".");
-    }
-
-    @PostConstruct
-    public void postConstruct() throws IOException, InterruptedException {
-        this.makeBinariesExecutable();
-    }
 }

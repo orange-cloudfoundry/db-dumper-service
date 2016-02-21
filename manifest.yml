@@ -23,6 +23,16 @@ env:
   security_oauth2_client_clientId: your-client-id-uaa
   security_oauth2_client_clientSecret: your-client-secret-uaa
   service_definition_id: db-dumper-service # your service broker id for multi-db-dumper-service instances
+  # Cost definitions
+  service_definition_is_free: true # set it to false to use calculated cost after
+  service_definition_currency: usd # change to your local currency
+  service_definition_cost_mb: 0.1 # how much cost to save 1mb by month following your currency (here 1 cents)
+  service_definition_quota: 100mb,1gb # add any quota you want (e.g: 10gb or 12ko).
+  ## Formulas
+  # (`quota` is for quota*service_definition_cost_mb price) formulas corresponding to each quota to calculate price
+  # in following for 100mb the price will be 100mb*service_definition_cost_mb and for 1gb it will be 90% of 1gb*service_definition_cost_mb
+  # If you set only one formula this formula will be played for all quota
+  service_definition_cost_formulas: quota,0.90*quota
   # uncomment if you want to plug to a spring-boot-admin app (see: https://github.com/codecentric/spring-boot-admin)
   #spring_boot_admin_url: http://spring-boot-admin.your.url.com
   #spring_boot_admin_username: spring-boot-admin-user

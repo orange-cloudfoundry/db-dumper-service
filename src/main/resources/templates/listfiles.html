@@ -22,7 +22,21 @@
                         <h4 th:if="${databaseRef.databaseService == null}"
                             th:text="${databaseRef.name}">No name</h4>
                         <h4 th:if="${databaseRef.databaseService != null}"
-                            th:text="${databaseRef.databaseService.name}">No name</h4></li>
+                            th:text="${databaseRef.databaseService.name}">No name</h4>
+
+                        <div class="progress">
+                            <div class="determinate"
+                                 th:style="'width: '+ ${T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateQuotaUsedInPercent(databaseRef)}+'%'"></div>
+                        </div>
+                        <div>
+                            <h5 class="center-align">( <span class="blue-grey-text">Quota usage details:</span> <span
+                                    th:text="${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateDumpFullSize(databaseRef))} +' / '+ ${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateFullQuota(databaseRef))}"></span>
+                                <span th:if="${!isFree}"> - <span class="blue-grey-text">Price by month: </span> <span
+                                        th:text="${T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateFullPrice(databaseRef)} +' '+ ${currency}"></span> </span>)
+                            </h5>
+                        </div>
+                    </li>
+
                     <li class="collection-item"
                         th:each="databaseDumpFile : ${databaseRef.getDatabaseDumpFilesNotDeleted()}">
                         <span class="blue-grey-text">Created At:</span> <span

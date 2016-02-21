@@ -5,14 +5,8 @@ import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionExcept
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
-import com.orange.clara.cloud.servicedbdumper.model.Job;
-import com.orange.clara.cloud.servicedbdumper.model.UpdateAction;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
+import com.orange.clara.cloud.servicedbdumper.model.*;
+import com.orange.clara.cloud.servicedbdumper.repo.*;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -95,6 +89,8 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
+    @Autowired
+    private DbDumperPlanRepo dbDumperPlanRepo;
 
     @Override
     public ServiceInstance createServiceInstance(CreateServiceInstanceRequest request) throws ServiceInstanceExistsException, ServiceBrokerException {
@@ -102,12 +98,17 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         if (dbDumperServiceInstance != null) {
             throw new ServiceInstanceExistsException(new ServiceInstance(request));
         }
+        DbDumperPlan dbDumperPlan = dbDumperPlanRepo.findOne(request.getPlanId());
+        if (dbDumperPlan == null) {
+            throw new ServiceBrokerException("Plan '" + request.getPlanId() + "' is not available.");
+        }
         dbDumperServiceInstance = new DbDumperServiceInstance(
                 request.getServiceInstanceId(),
                 request.getPlanId(),
                 request.getOrganizationGuid(),
                 request.getSpaceGuid(),
-                appUri + DASHBOARD_ROUTE);
+                appUri + DASHBOARD_ROUTE,
+                dbDumperPlan);
         this.createDump(request.getParameters(), dbDumperServiceInstance);
         return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbDumperServiceInstance.getDatabaseRef().getName()).withAsync(true);
     }

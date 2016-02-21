@@ -1,18 +1,25 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -32,6 +39,15 @@ public class ScheduledManagingJobTask {
     @Autowired
     private JobRepo jobRepo;
 
+    @Value("${dump.delete.expiration.days:5}")
+    private Integer dumpDeleteExpirationDays;
+
+    @Autowired
+    private DatabaseDumpFileRepo databaseDumpFileRepo;
+
+    @Autowired
+    private Deleter deleter;
+
     @Autowired
     @Qualifier("jobFactory")
     private JobFactory jobFactory;
@@ -42,6 +58,22 @@ public class ScheduledManagingJobTask {
         logger.debug("Running: cleaning job scheduled task ...");
         jobFactory.purgeJob();
         logger.debug("Finished: cleaning job scheduled task.");
+    }
+
+    @Scheduled(fixedDelay = 1200000)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void cleaningDeletedDumpFile() {
+        logger.debug("Running: cleaning deleted dump task ...");
+        List<DatabaseDumpFile> databaseDumpFiles = this.databaseDumpFileRepo.findByDeletedTrueOrderByCreatedAtAsc();
+        LocalDateTime whenRemoveDateTime;
+        for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
+            whenRemoveDateTime = LocalDateTime.from(databaseDumpFile.getDeletedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
+                break;
+            }
+            this.deleter.delete(databaseDumpFile);
+        }
+        logger.debug("Finished: ccleaning deleted dump task.");
     }
 
     @Scheduled(fixedDelay = 1200000)

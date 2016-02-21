@@ -20,11 +20,11 @@ import java.util.List;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 15/10/2015
  */
@@ -40,6 +40,14 @@ public class InterfaceController {
     private DbDumperServiceInstanceRepo instanceRepository;
 
     @Autowired
+    @Qualifier("currency")
+    private String currency;
+
+    @Autowired
+    @Qualifier("isFree")
+    private Boolean isFree;
+
+    @Autowired
     @Qualifier("userAccessRight")
     private UserAccessRight userAccessRight;
 
@@ -48,6 +56,8 @@ public class InterfaceController {
         List<DatabaseRef> databaseRefs = Lists.newArrayList(this.databaseRefRepo.findAll());
         model.addAttribute("databaseRefs", this.filteringDatabaseRef(databaseRefs));
         model.addAttribute("urlForge", urlForge);
+        model.addAttribute("currency", currency);
+        model.addAttribute("isFree", isFree);
         return "listfiles";
     }
 
@@ -75,6 +85,8 @@ public class InterfaceController {
         }
         model.addAttribute("databaseRefs", databaseRefs);
         model.addAttribute("urlForge", urlForge);
+        model.addAttribute("currency", currency);
+        model.addAttribute("isFree", isFree);
         return "listfiles";
     }
 
@@ -93,6 +105,8 @@ public class InterfaceController {
         }
         model.addAttribute("databaseRefs", databaseRefs);
         model.addAttribute("urlForge", urlForge);
+        model.addAttribute("currency", currency);
+        model.addAttribute("isFree", isFree);
         return "listfiles";
     }
 }

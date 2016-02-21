@@ -1,5 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
+import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.helper.ByteFormat;
 import org.cloudfoundry.community.servicebroker.model.Catalog;
 import org.cloudfoundry.community.servicebroker.model.Plan;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
@@ -8,6 +10,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +21,11 @@ import java.util.Map;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 13/10/2015
  */
@@ -34,13 +40,40 @@ public class CatalogConfig {
 
     private Map<String, Object> sdMetadata = new HashMap<String, Object>();
 
+    @Value("#{'${service.definition.quota:experimental}'.split(',')}")
+    private List<String> quotas;
+
+    @Value("${service.definition.currency:usd}")
+    private String currency;
+
+    @Value("#{'${service.definition.cost.formulas:quota}'.split(',')}")
+    private List<String> formulas;
+
+
+    @Value("${service.definition.cost.mb:0.1}")
+    private Float costOneMega;
+
+    @Value("${service.definition.is.free:true}")
+    private Boolean isFree;
+
     @Bean
     public String appUri() {
         return this.appUri;
     }
 
     @Bean
-    public Catalog catalog() {
+    public Boolean isFree() {
+        return this.isFree;
+    }
+
+    @Bean
+    public String currency() {
+        return this.currency;
+    }
+
+    @Bean
+    public Catalog catalog() throws ScriptException, ParseException {
+
         return new Catalog(Arrays.asList(
                 new ServiceDefinition(
                         this.serviceDefinitionId,
@@ -48,19 +81,54 @@ public class CatalogConfig {
                         "Dump and restore data from your database",
                         true,
                         true,
-                        Arrays.asList(
-                                new Plan(this.serviceDefinitionId + "-plan-experimental",
-                                        "experimental",
-                                        "This is a default db-dumper-service plan.  All services are created equally.",
-                                        getPlanMetadata(),
-                                        true)), //TODO: change it cause set to free
+                        this.getPlans(), //TODO: change it cause set to free
                         Arrays.asList("db-dumper-service", "dump", "restore"),
                         getServiceDefinitionMetadata(),
                         null,
                         null)));
     }
 
-/* Used by Pivotal CF console */
+    private float getDefaultCost() {
+        return this.costOneMega / 1024 / 1024;
+    }
+
+    private float getCostFromQuota(String quota, String formula) throws ParseException, ScriptException {
+        long size = ByteFormat.parse(quota);
+        formula = formula.replaceAll("quota", String.valueOf(size * this.getDefaultCost()));
+        ScriptEngineManager factory = new ScriptEngineManager();
+        ScriptEngine engine = factory.getEngineByName("JavaScript");
+        Object eval = engine.eval(formula);
+        if (eval instanceof Integer) {
+            return new Float((Integer) eval);
+        }
+        if (eval instanceof Float) {
+            return (Float) eval;
+        }
+        return Math.round((Double) eval);
+    }
+
+    public List<Plan> getPlans() throws ScriptException, ParseException {
+        if (this.quotas.size() == 1 && this.quotas.get(0).equals("experimental")) {
+            return Arrays.asList(
+                    new Plan(this.serviceDefinitionId + "-plan-experimental",
+                            "experimental",
+                            "This is a default db-dumper-service plan.  All services are created equally.",
+                            getPlanMetadata(0),
+                            true));
+        }
+        List<Plan> plans = Lists.newArrayList();
+        int formulasSize = this.formulas.size();
+        for (int i = 0; i < this.quotas.size(); i++) {
+            String quota = this.quotas.get(i);
+            String formula = this.formulas.get(i % formulasSize);
+            plans.add(new Plan(this.serviceDefinitionId + "-plan-" + quota,
+                    quota,
+                    "This is a db-dumper-service plan.  All services are created equally.",
+                    getPlanMetadata(this.getCostFromQuota(quota, formula)),
+                    this.isFree));
+        }
+        return plans;
+    }
 
     private Map<String, Object> getServiceDefinitionMetadata() {
         sdMetadata.put("displayName", "db-dumper-service");
@@ -71,18 +139,18 @@ public class CatalogConfig {
         return sdMetadata;
     }
 
-    private Map<String, Object> getPlanMetadata() {
+    private Map<String, Object> getPlanMetadata(float cost) {
         Map<String, Object> planMetadata = new HashMap<String, Object>();
-        planMetadata.put("costs", getCosts());
+        planMetadata.put("costs", getCosts(cost));
         planMetadata.put("bullets", getBullets());
         return planMetadata;
     }
 
-    private List<Map<String, Object>> getCosts() {
+    private List<Map<String, Object>> getCosts(float cost) {
         Map<String, Object> costsMap = new HashMap<String, Object>();
 
         Map<String, Object> amount = new HashMap<String, Object>();
-        amount.put("usd", new Double(0.0));
+        amount.put(this.currency, cost);
 
         costsMap.put("amount", amount);
         costsMap.put("unit", "MONTHLY");
@@ -92,8 +160,7 @@ public class CatalogConfig {
 
     private List<String> getBullets() {
         return Arrays.asList("db-dumper-service",
-                "Unlimited storage",
-                "Stored in riakcs");
+                "Stored in S3 filer");
     }
 
     @PostConstruct

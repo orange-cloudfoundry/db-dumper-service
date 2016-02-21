@@ -23,6 +23,9 @@ public class DbDumperServiceInstance {
     private String spaceGuid;
     private String dashboardUrl;
 
+    @ManyToOne
+    @JoinColumn(name = "db_dumper_plan_id")
+    private DbDumperPlan dbDumperPlan;
 
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
@@ -35,17 +38,18 @@ public class DbDumperServiceInstance {
         this.dbDumperServiceInstanceBindings = new ArrayList<>();
     }
 
-    public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl) {
+    public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DbDumperPlan dbDumperPlan) {
         this();
         this.serviceInstanceId = serviceInstanceId;
         this.planId = planId;
         this.organizationGuid = organizationGuid;
         this.spaceGuid = spaceGuid;
         this.dashboardUrl = dashboardUrl;
+        this.dbDumperPlan = dbDumperPlan;
     }
 
-    public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DatabaseRef databaseRef) {
-        this(serviceInstanceId, planId, organizationGuid, spaceGuid, dashboardUrl);
+    public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DbDumperPlan dbDumperPlan, DatabaseRef databaseRef) {
+        this(serviceInstanceId, planId, organizationGuid, spaceGuid, dashboardUrl, dbDumperPlan);
         this.databaseRef = databaseRef;
     }
 
@@ -110,6 +114,14 @@ public class DbDumperServiceInstance {
     public void setDatabaseRef(DatabaseRef databaseRef) {
         this.databaseRef = databaseRef;
         this.databaseRef.addDbDumperServiceInstance(this);
+    }
+
+    public DbDumperPlan getDbDumperPlan() {
+        return dbDumperPlan;
+    }
+
+    public void setDbDumperPlan(DbDumperPlan dbDumperPlan) {
+        this.dbDumperPlan = dbDumperPlan;
     }
 
     public List<DbDumperServiceInstanceBinding> getDbDumperServiceInstanceBindings() {
