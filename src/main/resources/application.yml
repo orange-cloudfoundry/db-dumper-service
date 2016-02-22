@@ -16,6 +16,7 @@ spring:
     hibernate:
       ddl-auto: none
 security:
+  require-ssl: ${use.ssl:false}
   user:
     password: none
   oauth2:
