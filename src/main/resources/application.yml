@@ -25,7 +25,7 @@ security:
       clientAuthenticationScheme: header
       scope:
       - openid
-      - cloud_controller.read
+      - cloud_controller_service_permissions.read
     resource:
       userInfoUri: ${CF_TARGET:http://fake.uaa.com}/userinfo
       preferTokenInfo: false

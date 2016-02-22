@@ -26,7 +26,7 @@ See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with l
 3. Create a s3 service instance in your cloud foundry instance (e.g for [p-riakcs](http://docs.pivotal.io/p-riakcs/): `cf cs p-riakcs developer riak-db-dumper-service`)
 4. Create a database service instance in your cloud foundry instance (e.g for [p-mysql](http://docs.pivotal.io/p-mysql/): `cf cs p-mysql 100mb mysql-db-dumper-service`)
 5. Update the manifest (`manifest.yml`) file in the unzipped folder (**Note**: If you don't want to use uaa to login into dashboard, remove *uaa* profile in `spring_profiles_active`
-6. Add cloudfoundry user with admin role for db-dumper-service following `cf_admin_user` and `cf_admin_password` var in manifest (This required to find database by their service name)
+6. Add cloudfoundry user which has access role for db-dumper-service following `cf_admin_user` and `cf_admin_password` var in manifest (This required to find database by their service name)
 7. Push to your Cloud Foundry (in the manifest.yml folder: `cf push`)
 8. Enable service broker by doing:
 ```
@@ -39,7 +39,7 @@ $ cf enable-service-access db-dumper-service
 
 You need to create a new uaa client if you want to use UAA to authenticate user in the dashboard, here the steps you need to do:
 
-1. use uaa-cli and run: `uaac client add db-dumper-service --name "db-dumper-service" --scope "openid,cloud_controller.read" --authorities "openid" -s "mysupersecretkey" --signup_redirect_url "http://your.db-dumper-service.url"` (**Note**: `--signup_redirect_url`is optional but highly recommended for security)
+1. use uaa-cli and run: `uaac client add db-dumper-service --name "db-dumper-service" --scope "openid,cloud_controller_service_permissions.read" --authorities "openid" -s "mysupersecretkey" --signup_redirect_url "http://your.db-dumper-service.url"` (**Note**: `--signup_redirect_url`is optional but highly recommended for security)
 2. Update your `manifest.yml` (see: `CF_TARGET`, `security_oauth2_client_clientId` and `security_oauth2_client_clientSecret` keys)
 
 

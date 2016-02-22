@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +32,8 @@ import java.util.List;
 @Component
 public class ScheduledDeleteAllDumpsTask {
     private Logger logger = LoggerFactory.getLogger(ScheduledDeleteAllDumpsTask.class);
-    @Value("${dump.delete.expiration.days:5}")
+    @Autowired
+    @Qualifier("dumpDeleteExpirationDays")
     private Integer dumpDeleteExpirationDays;
     @Autowired
     private JobRepo jobRepo;

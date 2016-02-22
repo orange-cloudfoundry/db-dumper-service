@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.config;
 import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.helper.ByteFormat;
 import org.cloudfoundry.community.servicebroker.model.Catalog;
+import org.cloudfoundry.community.servicebroker.model.DashboardClient;
 import org.cloudfoundry.community.servicebroker.model.Plan;
 import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,9 +35,15 @@ public class CatalogConfig {
 
     @Value("#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}")
     private String appUri;
-
+    @Value("${security.oauth2.client.clientSecret:fakeClientSecret}")
+    private String clientSecret;
+    @Value("${security.oauth2.client.clientId:fakeClientId}")
+    private String clientId;
     @Value("${service.definition.id:db-dumper-service}")
     private String serviceDefinitionId;
+
+    @Value("${dump.delete.expiration.days:5}")
+    private Integer dumpDeleteExpirationDays;
 
     private Map<String, Object> sdMetadata = new HashMap<String, Object>();
 
@@ -59,6 +66,11 @@ public class CatalogConfig {
     @Bean
     public String appUri() {
         return this.appUri;
+    }
+
+    @Bean
+    public Integer dumpDeleteExpirationDays() {
+        return this.dumpDeleteExpirationDays;
     }
 
     @Bean
@@ -85,7 +97,11 @@ public class CatalogConfig {
                         Arrays.asList("db-dumper-service", "dump", "restore"),
                         getServiceDefinitionMetadata(),
                         null,
-                        null)));
+                        this.getDashboardClient())));
+    }
+
+    private DashboardClient getDashboardClient() {
+        return new DashboardClient(this.clientId, this.clientSecret, this.appUri + "/login");
     }
 
     private float getDefaultCost() {
@@ -108,13 +124,9 @@ public class CatalogConfig {
     }
 
     public List<Plan> getPlans() throws ScriptException, ParseException {
-        if (this.quotas.size() == 1 && this.quotas.get(0).equals("experimental")) {
-            return Arrays.asList(
-                    new Plan(this.serviceDefinitionId + "-plan-experimental",
-                            "experimental",
-                            "This is a default db-dumper-service plan.  All services are created equally.",
-                            getPlanMetadata(0),
-                            true));
+        if (this.quotas.size() == 1
+                && (this.quotas.get(0).equals("experimental") || this.quotas.get(0).equals("unlimited"))) {
+            return Arrays.asList(this.createDefaultPlan(this.quotas.get(0)));
         }
         List<Plan> plans = Lists.newArrayList();
         int formulasSize = this.formulas.size();
@@ -128,6 +140,14 @@ public class CatalogConfig {
                     this.isFree));
         }
         return plans;
+    }
+
+    private Plan createDefaultPlan(String name) {
+        return new Plan(this.serviceDefinitionId + "-plan-" + name,
+                name,
+                "This is a default db-dumper-service plan.  All services are created equally.",
+                getPlanMetadata(0),
+                true);
     }
 
     private Map<String, Object> getServiceDefinitionMetadata() {
@@ -160,7 +180,8 @@ public class CatalogConfig {
 
     private List<String> getBullets() {
         return Arrays.asList("db-dumper-service",
-                "Stored in S3 filer");
+                "Stored in S3 filer",
+                "Deleted dumps are stored during " + this.dumpDeleteExpirationDays + "days before really deleted");
     }
 
     @PostConstruct
