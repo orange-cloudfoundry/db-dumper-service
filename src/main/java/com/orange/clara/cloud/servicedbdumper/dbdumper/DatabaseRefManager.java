@@ -71,6 +71,27 @@ public class DatabaseRefManager {
         return this.getDatabaseRefFromServiceKey(cloudServiceKey, databaseService.getOrg(), databaseService.getSpace());
     }
 
+    public void deleteServiceKey(Job job) {
+        if (job.getDatabaseRefSrc() != null) {
+            this.deleteServiceKey(job.getDatabaseRefSrc());
+        }
+        if (job.getDatabaseRefTarget() != null) {
+            this.deleteServiceKey(job.getDatabaseRefTarget());
+        }
+    }
+
+    public void deleteServiceKey(DatabaseRef databaseRef) {
+        if (databaseRef.getDatabaseService() == null
+                || databaseRef.getDatabaseService().getServiceKeyGuid() == null) {
+            return;
+        }
+        DatabaseService databaseService = databaseRef.getDatabaseService();
+        logger.info(String.format("Removing service key for service '%s' ...", databaseService.getName()));
+        this.serviceKeyManager.deleteServiceKey(databaseService);
+        databaseService.setServiceKeyGuid(null);
+        this.databaseServiceRepo.save(databaseService);
+        logger.info(String.format("Removed service key for service '%s'.", databaseService.getName()));
+    }
 
     private boolean isUri(String possibleUri) {
         try {
@@ -97,24 +118,6 @@ public class DatabaseRefManager {
         return databaseRefDao;
     }
 
-    public void deleteServiceKey(Job job) {
-        if (job.getDatabaseRefSrc() != null) {
-            this.deleteServiceKey(job.getDatabaseRefSrc());
-        }
-        if (job.getDatabaseRefTarget() != null) {
-            this.deleteServiceKey(job.getDatabaseRefTarget());
-        }
-    }
-
-    public void deleteServiceKey(DatabaseRef databaseRef) {
-        if (databaseRef.getDatabaseService() == null) {
-            return;
-        }
-        DatabaseService databaseService = databaseRef.getDatabaseService();
-        logger.info(String.format("Remove service key for service '%s' ...", databaseService.getName()));
-        this.serviceKeyManager.deleteServiceKey(databaseService);
-        logger.info(String.format("Removed service key for service '%s'.", databaseService.getName()));
-    }
 
     private DatabaseRef getDatabaseRefFromServiceKey(CloudServiceKey cloudServiceKey, String org, String space) throws DatabaseExtractionException {
         String dbUrl = this.extractUriFromCredentialKey(cloudServiceKey.getCredentials());

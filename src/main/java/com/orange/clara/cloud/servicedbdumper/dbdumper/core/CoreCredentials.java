@@ -31,9 +31,6 @@ public class CoreCredentials implements Credentials {
     @Qualifier(value = "blobStoreContext")
     protected BlobStoreContext blobStoreContext;
 
-    @Autowired
-    @Qualifier(value = "dateFormat")
-    private String dateFormat;
 
     @Autowired
     private UrlForge urlForge;

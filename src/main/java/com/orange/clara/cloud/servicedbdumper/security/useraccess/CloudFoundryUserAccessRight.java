@@ -1,7 +1,8 @@
-package com.orange.clara.cloud.servicedbdumper.security;
+package com.orange.clara.cloud.servicedbdumper.security.useraccess;
 
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.security;
+package com.orange.clara.cloud.servicedbdumper.security.useraccess;
 
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;

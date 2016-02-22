@@ -1,8 +1,8 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
-import com.orange.clara.cloud.servicedbdumper.security.CloudFoundryUserAccessRight;
-import com.orange.clara.cloud.servicedbdumper.security.DefaultUserAccessRight;
-import com.orange.clara.cloud.servicedbdumper.security.UserAccessRight;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.CloudFoundryUserAccessRight;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.DefaultUserAccessRight;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.CloudFoundryServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.NullServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.ServiceKeyManager;

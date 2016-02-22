@@ -59,7 +59,11 @@ public class CalculateQuota {
         if (fullQuota == null) {
             return 0L;
         }
-        return calculateDumpFullSize(databaseRef) * 100 / fullQuota;
+        Long percent = calculateDumpFullSize(databaseRef) * 100 / fullQuota;
+        if (percent > 100) {
+            return 100L;
+        }
+        return percent;
     }
 
     public static Long calculateDumpFullSize(DbDumperServiceInstance dbDumperServiceInstance) {

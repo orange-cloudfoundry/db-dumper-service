@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
@@ -78,7 +78,6 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         if (date == null) {
             return this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
         }
-        logger.debug(date.toString());
         return this.databaseDumpFileRepo.findFirstByDatabaseRefAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(databaseRefSource, date);
     }
 }

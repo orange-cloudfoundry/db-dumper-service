@@ -25,8 +25,11 @@ public class ByteFormat {
         }
         final Matcher m = Pattern.compile("([\\d.,]+)\\s*(\\w)").matcher(in);
         m.find();
-        int scale = 1;
+        long scale = 1;
         switch (m.group(2).charAt(0)) {
+            case 't':
+                scale = 1024 * 1024 * 1024 * 1024;
+                break;
             case 'g':
                 scale = 1024 * 1024 * 1024;
                 break;

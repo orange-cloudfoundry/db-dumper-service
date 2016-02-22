@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedOutputStream;
 import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -41,14 +40,14 @@ public class GzipCompressing {
     }
 
     @Async
-    public Future<Boolean> gziptIt(InputStream inputStream, PipedOutputStream outputPipe) throws IOException {
+    public Future<Boolean> gziptIt(InputStream inputStream, OutputStream outputStream) throws IOException {
         logger.debug("Start compressing...");
-        GZIPOutputStream gout = new GZIPOutputStream(outputPipe);
+        GZIPOutputStream gout = new GZIPOutputStream(outputStream);
         ByteStreams.copy(inputStream, gout);
         gout.flush();
         gout.close();
-        outputPipe.flush();
-        outputPipe.close();
+        outputStream.flush();
+        outputStream.close();
         logger.debug("Finish compressing");
         return new AsyncResult<Boolean>(true);
     }

@@ -257,11 +257,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
         String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromParams(parameters, targetUrl);
-        try {
-            dbDumperServiceInstance.setDatabaseRef(this.databaseRefManager.updateDatabaseRef(dbDumperServiceInstance.getDatabaseRef()));
-        } catch (ServiceKeyException | DatabaseExtractionException e) {
-            throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
-        }
+        /*try {
+         dbDumperServiceInstance.setDatabaseRef(this.databaseRefManager.updateDatabaseRef(dbDumperServiceInstance.getDatabaseRef()));
+         } catch (ServiceKeyException | DatabaseExtractionException e) {
+         throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
+         }*/
         if (createdAtString == null || createdAtString.isEmpty()) {
             this.jobFactory.createJobRestoreDump(databaseRefTarget, null, dbDumperServiceInstance);
             return;
