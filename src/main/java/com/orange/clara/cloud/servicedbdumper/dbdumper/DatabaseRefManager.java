@@ -105,7 +105,7 @@ public class DatabaseRefManager {
         return true;
     }
 
-    private DatabaseRef getDatabaseRefFromUrl(String dbUrl, String name) {
+    private DatabaseRef getDatabaseRefFromUrl(String dbUrl, String name) throws DatabaseExtractionException {
         DatabaseRef databaseRef = new DatabaseRef(name, URI.create(dbUrl));
         DatabaseRef databaseRefDao = null;
         if (!this.databaseRefRepo.exists(name)) {
