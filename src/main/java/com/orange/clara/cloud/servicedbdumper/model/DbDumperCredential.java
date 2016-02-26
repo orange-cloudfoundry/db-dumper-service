@@ -89,4 +89,20 @@ public class DbDumperCredential {
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DbDumperCredential)) return false;
+
+        DbDumperCredential that = (DbDumperCredential) o;
+
+        return id != null ? id.equals(that.id) : that.id == null;
+
+    }
 }

@@ -3,7 +3,6 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,6 @@ import java.util.List;
  */
 public class CoreDeleter extends AbstractCoreDbAction implements Deleter {
 
-    @Autowired
-    private DatabaseDumpFileRepo databaseDumpFileRepo;
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;

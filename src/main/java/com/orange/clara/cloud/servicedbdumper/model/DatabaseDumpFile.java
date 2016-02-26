@@ -90,12 +90,12 @@ public class DatabaseDumpFile {
         return this.fileName;
     }
 
-    public void setFileName(File file) {
-        this.fileName = file.getName();
-    }
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void setFileName(File file) {
+        this.fileName = file.getName();
     }
 
     public File getFile() {
@@ -190,7 +190,6 @@ public class DatabaseDumpFile {
                 "id=" + id +
                 ", fileName='" + fileName + '\'' +
                 ", createdAt=" + createdAt +
-                ", databaseRef=" + databaseRef +
                 '}';
     }
 

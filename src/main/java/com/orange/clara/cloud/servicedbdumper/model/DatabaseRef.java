@@ -264,4 +264,20 @@ public class DatabaseRef {
 
     }
 
+    @Override
+    public String toString() {
+        return "DatabaseRef{" +
+                "name='" + name + '\'' +
+                ", user='" + user + '\'' +
+                ", password='" + password + '\'' +
+                ", host='" + host + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", type=" + type +
+                ", databaseDumpFiles=" + databaseDumpFiles +
+                ", port=" + port +
+                ", deleted=" + deleted +
+                ", databaseService=" + databaseService +
+                ", dbDumperServiceInstances=" + dbDumperServiceInstances +
+                '}';
+    }
 }

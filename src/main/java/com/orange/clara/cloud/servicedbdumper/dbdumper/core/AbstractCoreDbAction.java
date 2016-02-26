@@ -4,16 +4,16 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDr
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -28,7 +28,6 @@ import java.util.Date;
  * Date: 03/06/2015
  */
 public abstract class AbstractCoreDbAction {
-    public final static String TMPFOLDER = System.getProperty("java.io.tmpdir");
     protected Logger logger = LoggerFactory.getLogger(AbstractCoreDbAction.class);
 
     @Autowired
@@ -39,13 +38,14 @@ public abstract class AbstractCoreDbAction {
     @Autowired
     @Qualifier(value = "dbDumpersFactory")
     protected DbDumpersFactory dbDumpersFactory;
+
     @Autowired
     @Qualifier(value = "filer")
     protected Filer filer;
+
     @Autowired
     protected DatabaseDumpFileRepo databaseDumpFileRepo;
-    @PersistenceContext
-    protected EntityManager em;
+
     protected InputStream errorProcess;
     protected InputStream outputProcess;
 
@@ -128,13 +128,6 @@ public abstract class AbstractCoreDbAction {
             outputFromProcess += line + "\n";
         }
         return outputFromProcess;
-    }
-
-    protected File createNewDumpFile(DatabaseRef databaseRef, String fileName) throws IOException {
-        File dumpFileOutput = new File(TMPFOLDER + "/" + fileName);
-        dumpFileOutput.getParentFile().mkdirs();
-        dumpFileOutput.createNewFile();
-        return dumpFileOutput;
     }
 
     protected String getFileName(DatabaseDumpFile databaseDumpFile) {

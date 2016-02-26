@@ -44,7 +44,6 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
             this.runRestore(databaseDriver, fileName);
         } catch (Exception e) {
             this.logOutputFromProcess();
-            e.printStackTrace();
             throw new RestoreException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
         }
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " finished.");
