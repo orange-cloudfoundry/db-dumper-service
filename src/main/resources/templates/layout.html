@@ -16,9 +16,11 @@
     <link href="/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
 </head>
 <body>
+<!--/*@thymesVar id="mappedRequests" type="java.util.List<com.orange.clara.cloud.servicedbdumper.model.MappedRequestInfo>"*/-->
 <div id="wrapper">
     <ul id="adminDropdown" class="dropdown-content" sec:authorize="hasRole('ROLE_ADMIN')">
         <li th:each="mappedRequest : ${mappedRequests}">
+            <!--/*@thymesVar id="mappedRequest" type="com.orange.clara.cloud.servicedbdumper.model.MappedRequestInfo"*/-->
             <a th:href="@{{request}(request=${mappedRequest.url})}"><span
                     th:text="${mappedRequest.name}"></span></a>
         </li>

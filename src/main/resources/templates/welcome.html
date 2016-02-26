@@ -4,6 +4,8 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorator="layout">
 <body>
+<!--/*@thymesVar id="mappedRequests" type="java.util.List<com.orange.clara.cloud.servicedbdumper.model.MappedRequestInfo>"*/-->
+<!--/*@thymesVar id="mappedRequest" type="com.orange.clara.cloud.servicedbdumper.model.MappedRequestInfo"*/-->
 <div layout:fragment="banner">
     <ul id="adminDropdownWelcome" class="dropdown-content" sec:authorize="hasRole('ROLE_ADMIN')">
         <li th:each="mappedRequest : ${mappedRequests}">

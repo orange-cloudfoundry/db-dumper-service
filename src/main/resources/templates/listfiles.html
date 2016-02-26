@@ -4,18 +4,18 @@
       layout:decorator="layout">
 <body>
 <div layout:fragment="content">
-    <!--@thymesVar id="databaseRefs" type="List<DatabaseRef>"-->
-    <!--@thymesVar id="databaseRef" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseRef"-->
-    <!--@thymesVar id="databaseDumpFiles" type="List<DatabaseDumpFile>"-->
-    <!--@thymesVar id="databaseDumpFile" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile"-->
-    <!--@thymesVar id="urlForge" type="com.orange.clara.cloud.servicedbdumper.helper.UrlForge"-->
+
     <h5>Database dump files</h5>
 
+    <!--/*@thymesVar id="databaseRefs" type="java.util.List<com.orange.clara.cloud.servicedbdumper.model.DatabaseRef>"*/-->
+    <!--/*@thymesVar id="isFree" type="java.lang.Boolean"*/-->
+    <!--/*@thymesVar id="urlForge" type="com.orange.clara.cloud.servicedbdumper.helper.UrlForge"*/-->
     <div th:if="${databaseRefs == null or databaseRefs.isEmpty()}">
         <h6>There is no databases reference inside db-dumper-service</h6>
     </div>
     <div th:if="${databaseRefs != null and databaseRefs.isEmpty() == false}">
         <div th:each="databaseRef : ${databaseRefs}">
+            <!--/*@thymesVar id="databaseRef" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseRef"*/-->
             <div th:if="${databaseRef.getDatabaseDumpFilesNotDeleted().isEmpty() == false}">
                 <ul class="collection with-header">
                     <li class="collection-header">

@@ -22,7 +22,7 @@ public class CalculateQuota {
         for (DbDumperServiceInstance dbDumperServiceInstance : databaseRef.getDbDumperServiceInstances()) {
             DbDumperPlan dbDumperPlan = dbDumperServiceInstance.getDbDumperPlan();
             if (dbDumperPlan.getSize() == null) {
-                return null;
+                return 0L;
             }
             size += dbDumperPlan.getSize();
         }
@@ -45,7 +45,7 @@ public class CalculateQuota {
     public static Long calculateQuotaUsed(DatabaseRef databaseRef) {
         Long fullQuota = calculateFullQuota(databaseRef);
         if (fullQuota == null) {
-            return null;
+            return 0L;
         }
         return fullQuota - calculateDumpFullSize(databaseRef);
     }

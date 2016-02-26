@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
 import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
 
 import javax.persistence.*;
@@ -47,7 +48,7 @@ public class DatabaseRef {
         this.dbDumperServiceInstances = new ArrayList<>();
     }
 
-    public DatabaseRef(String serviceName, URI databaseUri) {
+    public DatabaseRef(String serviceName, URI databaseUri) throws DatabaseExtractionException {
         this();
         this.extractDatabaseType(databaseUri.getScheme());
         this.name = serviceName;
@@ -78,12 +79,15 @@ public class DatabaseRef {
         this.name = name;
     }
 
-    private void extractDatabaseType(String databaseTypeName) {
+    private void extractDatabaseType(String databaseTypeName) throws DatabaseExtractionException {
         for (DatabaseType databaseType : DatabaseType.values()) {
             if (databaseTypeName.matches(databaseType.getMatcher())) {
                 this.type = databaseType;
                 break;
             }
+        }
+        if (this.type == null) {
+            throw new DatabaseExtractionException("The database driver '" + databaseTypeName + "' is not supported.");
         }
     }
 

@@ -39,15 +39,17 @@ import java.util.Map;
 @Service
 public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
-    private final static String NEW_SRC_URL_PARAMETER = "source";
+    private final static String NEW_SRC_URL_PARAMETER = "db";
     private final static String SRC_URL_PARAMETER = "src_url";
     private final static String ACTION_PARAMETER = "action";
     private final static String CREATED_AT_PARAMETER = "created_at";
-    private final static String NEW_TARGET_URL_PARAMETER = "target";
+    private final static String NEW_TARGET_URL_PARAMETER = "db";
     private final static String TARGET_URL_PARAMETER = "target_url";
     private final static String CF_USER_TOKEN_PARAMETER = "cf_user_token";
     private final static String ORG_PARAMETER = "org";
     private final static String SPACE_PARAMETER = "space";
+
+
     private final static String DASHBOARD_ROUTE = "/manage/list/database/";
     private final static String[] VALID_DATES_FORMAT = {
             "dd-MM-yyyy HH:mm:ss",
