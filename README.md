@@ -45,7 +45,9 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 
 ## Running locally
 
-**Note**: Default user to access to dashboard is user/password
+**Note**:
+- Default user to access to dashboard is user/password
+- By default when you activate profile it use a filesystem filer, to use a S3 filer instead activate the profile `s3` (e.g. `spring_profiles_default=local,s3` ) and set the uri of your s3 in `config/spring-cloud.properties` file (change the value of `spring.cloud.mys3`).
 
 ### Linux 64 bits users
 
@@ -66,26 +68,44 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 
 ## How to use
 
-**Note**: The service broker will run task asynchronously.
+**Note**:
+- The service broker will run task asynchronously.
+- The user token is needed when you want to dump or/and restore a database by its service name to check if your user is able to access to this service (We are waiting for token delegation implementation to not mandatory the user token)
 
-### Create a dump 
+### Create a dump by passing a database uri
 
-**NOTE**: For the moment you need to pass your database uri but in next release you could just pass a database service to db-dumper-service
 This command will create a dump for you: 
 ```
-cf cs db-dumper-service experimental service-name -c '{"src_url":"mysql://user:password@nameorip.of.your.db:port/database-name"}'
+cf cs db-dumper-service experimental service-name -c '{"db":"mysql://user:password@nameorip.of.your.db:port/database-name"}'
 ```
 
-### Restore a dump
+### Create a dump by passing a service name
 
-To restore a dump you will need to pass 2 databases, the one you want to retrieve the dump, the second one to restore the retrieved dump (**Note**: the second database can be the same):
+For example you have a `p-mysql` service instance named `my-mysql-db`, you can create a dump with these parameters:
+
 ```
-cf update-service test -c '{"action": "restore", "target_url": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
+cf cs db-dumper-service experimental service-name -c '{"db":"my-mysql-db", "cf_user_token": "token retrieve from cf oauth-token", "org": "org of the service", "space": "space of the service"}'
 ```
+
+### Restore a dump by passing a database uri
+
+```
+cf update-service test -c '{"action": "restore", "db": "mysql://user:password@nameorip.of.your.second.db:port/database-second-name"}'
+```
+
+### Restore a dump by passing a service name
+
+For example you have a `p-mysql` service instance named `my-mysql-restore-db`, you can restore a dump with these parameters:
+
+```
+cf update-service test -c '{"action": "restore", "db":"my-mysql-restore-db", "cf_user_token": "token retrieve from cf oauth-token", "org": "org of the service", "space": "space of the service"}'
+```
+
 
 ### Update a dump
 
 If you want to update a dump you can use this command but it will replace your actual dump:
+
 ```
 cf update-service test -c '{"action": "dump"}'
 ```
@@ -93,6 +113,7 @@ cf update-service test -c '{"action": "dump"}'
 ### Delete a dump
 
 This is equivalent to delete the service, your dumps will be deleted after 5 days to prevent mistake (set by `dump_delete_expiration_days` in manifest):
+
 ```
 cf ds db-dumper-service experimental service-name
 ```
