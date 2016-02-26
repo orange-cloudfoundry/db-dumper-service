@@ -126,7 +126,7 @@ cf ds db-dumper-service experimental service-name
 Users can see their dumps by using dashboard, you can found it to this address: https://db-dumper-service.my.domain/manage
 
 Preview:
-![Screenshot user](https://rawgit.com/Orange-OpenSource/db-dumper-service/master/src/main/resources/static/images/preview/user-page.png)
+![Screenshot user](https://rawgit.com/Orange-OpenSource/db-dumper-service/master/src/main/resources/static/images/preview/user-page.png?refresh)
 
 ### Admin access
 
