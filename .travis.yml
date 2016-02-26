@@ -6,7 +6,7 @@ after_success:
 - bin/install-binaries
 - mvn clean install -DskipTests=true
 - mkdir -p db-dumper-service/target
-- cp target/db-dumper-service-1.1.0.war db-dumper-service/target
+- cp target/db-dumper-service-1.2.0.war db-dumper-service/target
 - cp manifest.yml db-dumper-service/
 - zip -r db-dumper-service ./db-dumper-service/*
 deploy:
