@@ -3,7 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.filer.s3uploader;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.net.MediaType;
-import org.jclouds.blobstore.BlobStoreContext;
+import com.orange.spring.cloud.connector.s3.core.jcloudswrappers.SpringCloudBlobStoreContext;
 import org.jclouds.blobstore.KeyNotFoundException;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.io.ContentMetadata;
@@ -22,11 +22,11 @@ import java.util.SortedMap;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 28/09/2015
  */
@@ -36,11 +36,8 @@ public class UploadS3StreamImpl implements UploadS3Stream {
 
     @Autowired
     @Qualifier(value = "blobStoreContext")
-    protected BlobStoreContext blobStoreContext;
+    protected SpringCloudBlobStoreContext blobStoreContext;
 
-    @Autowired
-    @Qualifier(value = "bucketName")
-    protected String bucketName;
 
     protected S3Client s3Client;
 
@@ -52,6 +49,7 @@ public class UploadS3StreamImpl implements UploadS3Stream {
     @Override
     public String upload(InputStream content, Blob blob) throws IOException {
         String key = blob.getMetadata().getName();
+        String bucketName = this.blobStoreContext.getBucketName();
         ContentMetadata metadata = blob.getMetadata().getContentMetadata();
         ObjectMetadataBuilder builder = ObjectMetadataBuilder.create().key(key)
                 .contentType(MediaType.OCTET_STREAM.toString())

@@ -58,6 +58,7 @@ public class DatabaseRefManager {
         if (token == null || token.isEmpty()) {
             throw new ServiceKeyException("You must pass your token (param: cf_user_token)");
         }
+        token = this.sanitizeToken(token);
         CloudServiceKey cloudServiceKey = this.serviceKeyManager.createServiceKey(uriOrServiceName, token, org, space);
         return this.getDatabaseRefFromServiceKey(cloudServiceKey, org, space);
     }
@@ -91,6 +92,12 @@ public class DatabaseRefManager {
         databaseService.setServiceKeyGuid(null);
         this.databaseServiceRepo.save(databaseService);
         logger.info(String.format("Removed service key for service '%s'.", databaseService.getName()));
+    }
+
+    private String sanitizeToken(String token) {
+        token = token.replaceAll("(?i)^bearer", "");
+        token = token.trim();
+        return token;
     }
 
     private boolean isUri(String possibleUri) {

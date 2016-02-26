@@ -20,6 +20,7 @@
         <commons-lang3.version>3.3.2</commons-lang3.version>
         <protobuf-java.version>2.6.1</protobuf-java.version>
         <humanize.version>1.2.2</humanize.version>
+        <s3.connectors.version>2.0.15</s3.connectors.version>
     </properties>
     <distributionManagement>
         <snapshotRepository>
@@ -116,9 +117,14 @@
             <artifactId>liquibase-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.Orange-OpenSource</groupId>
-            <artifactId>cloudfoundry-s3-service-connector</artifactId>
-            <version>1.0.0</version>
+            <groupId>com.orange.spring.cloud.connectors</groupId>
+            <artifactId>spring-cloud-s3-connectors-cloudfoundry</artifactId>
+            <version>${s3.connectors.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.orange.spring.cloud.connectors</groupId>
+            <artifactId>spring-cloud-s3-connectors-localconfig</artifactId>
+            <version>${s3.connectors.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -181,15 +187,20 @@
             <url>https://jitpack.io</url>
         </repository>
         <repository>
-            <id>jcenter</id>
-            <name>JCenter-Bintray</name>
-            <url>http://jcenter.bintray.com</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+            <id>bintray-elpaaso-maven</id>
+            <name>bintray</name>
+            <url>http://dl.bintray.com/elpaaso/maven</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>bintray</name>
+            <url>http://jcenter.bintray.com</url>
         </repository>
         <repository>
             <id>spring-snapshots</id>

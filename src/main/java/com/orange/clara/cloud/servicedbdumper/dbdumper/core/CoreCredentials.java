@@ -5,9 +5,7 @@ import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
-import org.jclouds.blobstore.BlobStoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,14 +21,6 @@ import java.util.List;
  * Date: 26/11/2015
  */
 public class CoreCredentials implements Credentials {
-
-    @Autowired
-    @Qualifier(value = "bucketName")
-    protected String bucketName;
-    @Autowired
-    @Qualifier(value = "blobStoreContext")
-    protected BlobStoreContext blobStoreContext;
-
 
     @Autowired
     private UrlForge urlForge;
