@@ -6,7 +6,7 @@ if [ $# -ne 1 ];then
     exit 1
 fi
 BASEDIR=$(dirname $0)
-service_broker_name="db-dumper-service-acceptance"
+service_broker_name="db-dumper-service-dev"
 service_name="acceptance_test"
 filepath="fakedata_$1.sql"
 WD=`pwd`
@@ -56,7 +56,7 @@ echo "Registering a temporary service of db-dumper-service..."
 $BASEDIR/target
 source $BASEDIR/user
 cf create-service-broker $service_broker_name myUs3r myPasssw0rd $SERVICE_URL
-cf enable-service-access db-dumper-service -o $AVAILABLE_ON_ORG
+cf enable-service-access $service_broker_name -o $AVAILABLE_ON_ORG
 echo "Registered."
 echo ""
 
@@ -123,7 +123,7 @@ echo "Data have been pushed."
 echo ""
 
 echo "Dumping with db-dumper-service..."
-cf cs db-dumper-service experimental "$service_name" -c "{\"src_url\": ${uri_database_source}}"
+cf cs $service_broker_name experimental "$service_name" -c "{\"src_url\": ${uri_database_source}}"
 printf "Wait for dump with db-dumper-service..."
 while :
 do
