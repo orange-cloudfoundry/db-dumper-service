@@ -21,7 +21,7 @@ See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with l
 
 ## Installation in 5 Minutes
 
-1. Download latest release.zip in [releases](/releases) (current: https://github.com/Orange-OpenSource/db-dumper-service/releases/download/v1.0.1/db-dumper-service.zip )
+1. Download latest release.zip in [releases](/releases) (current: https://github.com/Orange-OpenSource/db-dumper-service/releases/download/v1.1.0/db-dumper-service.zip )
 2. Unzip the latest downloaded file
 3. Create a s3 service instance in your cloud foundry instance (e.g for [p-riakcs](http://docs.pivotal.io/p-riakcs/): `cf cs p-riakcs developer riak-db-dumper-service`)
 4. Create a database service instance in your cloud foundry instance (e.g for [p-mysql](http://docs.pivotal.io/p-mysql/): `cf cs p-mysql 100mb mysql-db-dumper-service`)
