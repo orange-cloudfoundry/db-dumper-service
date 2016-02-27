@@ -39,9 +39,15 @@ public class EchoFiler implements Filer {
     public void retrieve(OutputStream outputStream, String filename) throws IOException {
         InputStream is = new ByteArrayInputStream(this.text.getBytes());
         ByteStreams.copy(is, outputStream);
-        outputStream.flush();
+        try {
+            outputStream.flush();
+        } catch (IOException e) {
+        }
         is.close();
-        outputStream.close();
+        try {
+            outputStream.close();
+        } catch (IOException e) {
+        }
     }
 
     @Override
