@@ -97,9 +97,9 @@ sudo cp "bin/pg_dump" "${WD}/src/main/resources/binaries/postgresql/bin"
 sudo cp "bin/pg_restore" "${WD}/src/main/resources/binaries/postgresql/bin"
 sudo cp "bin/psql" "${WD}/src/main/resources/binaries/postgresql/bin"
 sudo cp "bin/pg_dumpall" "${WD}/src/main/resources/binaries/postgresql/bin"
+cd -
 rm -Rf "$finalfile"
 rm "$filepath"
-cd -
 echo "Done installing postgresql binaries."
 
 #####################################################################################
