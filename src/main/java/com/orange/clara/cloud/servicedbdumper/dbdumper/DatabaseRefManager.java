@@ -42,6 +42,7 @@ public class DatabaseRefManager {
     private final static String DATABASE_NAME_KEY_REGEX = ".*name.*";
 
     private Logger logger = LoggerFactory.getLogger(DatabaseRefManager.class);
+
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
 
@@ -89,12 +90,15 @@ public class DatabaseRefManager {
         DatabaseService databaseService = databaseRef.getDatabaseService();
         logger.info(String.format("Removing service key for service '%s' ...", databaseService.getName()));
         this.serviceKeyManager.deleteServiceKey(databaseService);
+        databaseRef.setUser("");
+        databaseRef.setPassword("");
+        this.databaseRefRepo.save(databaseRef);
         databaseService.setServiceKeyGuid(null);
         this.databaseServiceRepo.save(databaseService);
         logger.info(String.format("Removed service key for service '%s'.", databaseService.getName()));
     }
 
-    private String sanitizeToken(String token) {
+    protected String sanitizeToken(String token) {
         token = token.replaceAll("(?i)^bearer", "");
         token = token.trim();
         return token;
@@ -147,13 +151,13 @@ public class DatabaseRefManager {
                 space,
                 cloudServiceKey.getMeta().getGuid().toString()
         );
-        DatabaseService databaseServiceDao = null;
+
         if (!this.databaseServiceRepo.exists(cloudService.getMeta().getGuid().toString())) {
             databaseService.setDatabaseRef(databaseRef);
             this.databaseServiceRepo.save(databaseService);
             return databaseService;
         }
-        databaseServiceDao = this.databaseServiceRepo.findOne(cloudService.getMeta().getGuid().toString());
+        DatabaseService databaseServiceDao = this.databaseServiceRepo.findOne(cloudService.getMeta().getGuid().toString());
         this.updateDatabaseService(databaseService, databaseServiceDao);
         return databaseServiceDao;
     }
@@ -203,7 +207,7 @@ public class DatabaseRefManager {
         String username = this.extractUsernameFromCredentials(credentials);
         String password = this.extractPasswordFromCredentials(credentials);
         String portString = this.extractPortFromCredentials(credentials);
-        int port = -1;
+        int port = databaseType.getDefaultPort();
         if (!portString.isEmpty()) {
             port = Integer.parseInt(portString);
         }
@@ -274,7 +278,7 @@ public class DatabaseRefManager {
         this.databaseServiceRepo.save(databaseServiceDao);
     }
 
-    private String generateDatabaseRefName(String srcUrl) {
+    protected String generateDatabaseRefName(String srcUrl) {
         UUID dbRefName = UUID.nameUUIDFromBytes(srcUrl.getBytes());
         return dbRefName.toString();
     }

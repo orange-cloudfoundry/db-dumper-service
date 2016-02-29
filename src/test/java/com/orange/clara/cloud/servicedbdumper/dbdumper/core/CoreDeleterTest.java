@@ -2,7 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.EchoFiler;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.filer.EchoFiler;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.databasedrivers.EchoDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;

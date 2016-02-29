@@ -2,14 +2,13 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.EchoFiler;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.databasedrivers.EchoDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.databasedrivers.ErroredDatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.filer.EchoFiler;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
-import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
@@ -37,21 +36,16 @@ import static org.mockito.MockitoAnnotations.initMocks;
  */
 public class CoreRestorerTest extends AbstractCoreTester {
     public static final String DB_URI = "mysql://mydb.com/database";
-
+    private final static String textToEcho = "testit";
     @InjectMocks
     CoreRestorer coreRestorer;
-
-
     @Mock
     DbDumpersFactory dbDumpersFactory;
-
-
     @Mock
     DatabaseDumpFileRepo databaseDumpFileRepo;
-
     DatabaseRef databaseRef;
-
     DatabaseDumpFile databaseDumpFile;
+    EchoFiler echoFiler;
 
     @Before
     public void init() throws DatabaseExtractionException, CannotFindDatabaseDumperException {
@@ -61,9 +55,9 @@ public class CoreRestorerTest extends AbstractCoreTester {
         DatabaseDriver databaseDriver = new EchoDatabaseDriver();
 
         databaseDriver.setDatabaseRef(databaseRef);
-        Filer filer = new EchoFiler("testit");
+        echoFiler = new EchoFiler(textToEcho);
         this.coreRestorer.dateFormat = "dd-MM-yyyy HH:mm";
-        this.coreRestorer.filer = filer;
+        this.coreRestorer.filer = echoFiler;
         when(dbDumpersFactory.getDatabaseDumper(databaseRef)).thenReturn(databaseDriver);
 
     }
@@ -73,6 +67,7 @@ public class CoreRestorerTest extends AbstractCoreTester {
         when(databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRef)).thenReturn(databaseDumpFile);
 
         this.coreRestorer.restore(databaseRef, databaseRef);
+        assertThat(this.echoFiler.getLastTextInStream()).isEqualTo(textToEcho);
     }
 
     @Test
@@ -80,6 +75,7 @@ public class CoreRestorerTest extends AbstractCoreTester {
         Date date = new Date();
         when(databaseDumpFileRepo.findFirstByDatabaseRefAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(databaseRef, date)).thenReturn(databaseDumpFile);
         this.coreRestorer.restore(databaseRef, databaseRef, date);
+        assertThat(this.echoFiler.getLastTextInStream()).isEqualTo(textToEcho);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.filer;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
@@ -24,6 +24,8 @@ public class EchoFiler implements Filer {
     private String text;
     private Logger logger = LoggerFactory.getLogger(EchoFiler.class);
 
+    private String lastTextInStream;
+
     public EchoFiler(String text) {
         this.text = text;
     }
@@ -31,6 +33,7 @@ public class EchoFiler implements Filer {
     @Override
     public void store(InputStream inputStream, String filename) throws IOException {
         String echoed = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+        this.lastTextInStream = echoed;
         logger.info("Echo filer stored: " + echoed);
         inputStream.close();
     }
@@ -39,14 +42,17 @@ public class EchoFiler implements Filer {
     public void retrieve(OutputStream outputStream, String filename) throws IOException {
         InputStream is = new ByteArrayInputStream(this.text.getBytes());
         ByteStreams.copy(is, outputStream);
+        this.lastTextInStream = this.text;
         try {
             outputStream.flush();
         } catch (IOException e) {
+            this.lastTextInStream = "";
         }
         is.close();
         try {
             outputStream.close();
         } catch (IOException e) {
+            this.lastTextInStream = "";
         }
     }
 
@@ -73,5 +79,10 @@ public class EchoFiler implements Filer {
     @Override
     public String getAppendedFileExtension() {
         return "";
+    }
+
+
+    public String getLastTextInStream() {
+        return lastTextInStream;
     }
 }

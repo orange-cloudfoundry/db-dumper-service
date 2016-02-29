@@ -2,14 +2,13 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.EchoFiler;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.databasedrivers.EchoDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.databasedrivers.ErroredDatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.filer.EchoFiler;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
-import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
@@ -53,7 +52,7 @@ public class CoreDumperTest extends AbstractCoreTester {
 
     DatabaseDriver databaseDriver;
 
-    Filer filer;
+    EchoFiler filer;
 
     @Before
     public void init() throws DatabaseExtractionException, CannotFindDatabaseDumperException {
@@ -78,7 +77,7 @@ public class CoreDumperTest extends AbstractCoreTester {
 
         String expectedFileName = this.coreDumper.generateFileName(databaseDriver);
         long expectedSize = filer.getContentLength(null);
-
+        String expectedStringInFiler = databaseRef.toString();
         this.coreDumper.dump(databaseRef);
         assertThat(databaseRef.getDatabaseDumpFiles()).hasSize(1);
 
@@ -91,7 +90,7 @@ public class CoreDumperTest extends AbstractCoreTester {
         assertThat(databaseDumpFile.getFileName()).isEqualTo(expectedFileName);
         assertThat(databaseDumpFile.getDeletedAt()).isNull();
         assertThat(databaseDumpFile.getSize()).isEqualTo(expectedSize);
-
+        assertThat(filer.getLastTextInStream().trim()).isEqualTo(expectedStringInFiler);
     }
 
     @Test

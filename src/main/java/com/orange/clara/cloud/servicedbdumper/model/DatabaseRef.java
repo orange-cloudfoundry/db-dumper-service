@@ -80,6 +80,9 @@ public class DatabaseRef {
     }
 
     private void extractDatabaseType(String databaseTypeName) throws DatabaseExtractionException {
+        if (databaseTypeName == null) {
+            throw new DatabaseExtractionException("Uri is malformed.");
+        }
         for (DatabaseType databaseType : DatabaseType.values()) {
             if (databaseTypeName.matches(databaseType.getMatcher())) {
                 this.type = databaseType;

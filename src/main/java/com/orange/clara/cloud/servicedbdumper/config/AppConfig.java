@@ -4,7 +4,7 @@ import com.orange.clara.cloud.servicedbdumper.security.useraccess.CloudFoundryUs
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.DefaultUserAccessRight;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.CloudFoundryServiceKeyManager;
-import com.orange.clara.cloud.servicedbdumper.service.servicekey.NullServiceKeyManager;
+import com.orange.clara.cloud.servicedbdumper.service.servicekey.NoServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.ServiceKeyManager;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
@@ -61,7 +61,7 @@ public class AppConfig {
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
                 || this.cloudControllerUrl.isEmpty()) {
-            return new NullServiceKeyManager();
+            return new NoServiceKeyManager();
         }
         return new CloudFoundryServiceKeyManager();
     }

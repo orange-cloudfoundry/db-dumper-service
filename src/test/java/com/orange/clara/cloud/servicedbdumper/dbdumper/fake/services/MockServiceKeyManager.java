@@ -1,7 +1,8 @@
-package com.orange.clara.cloud.servicedbdumper.service.servicekey;
+package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.services;
 
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseService;
+import com.orange.clara.cloud.servicedbdumper.service.servicekey.ServiceKeyManager;
 import org.cloudfoundry.client.lib.domain.CloudServiceKey;
 
 /**
@@ -12,19 +13,28 @@ import org.cloudfoundry.client.lib.domain.CloudServiceKey;
  * or at 'https://opensource.org/licenses/Apache-2.0'.
  * <p>
  * Author: Arthur Halet
- * Date: 19/02/2016
+ * Date: 29/02/2016
  */
-public class NullServiceKeyManager implements ServiceKeyManager {
+public class MockServiceKeyManager implements ServiceKeyManager {
+
+    private CloudServiceKey cloudServiceKey;
+
+    public MockServiceKeyManager(CloudServiceKey cloudServiceKey) {
+        this.cloudServiceKey = cloudServiceKey;
+    }
+
+    public MockServiceKeyManager() {
+
+    }
+
     @Override
     public CloudServiceKey createServiceKey(String serviceName, String token, String org, String space) throws ServiceKeyException {
-        this.throwError();
-        return null;
+        return cloudServiceKey;
     }
 
     @Override
     public CloudServiceKey createServiceKey(DatabaseService databaseService) throws ServiceKeyException {
-        this.throwError();
-        return null;
+        return cloudServiceKey;
     }
 
     @Override
@@ -37,9 +47,11 @@ public class NullServiceKeyManager implements ServiceKeyManager {
 
     }
 
-    private void throwError() throws ServiceKeyException {
-        throw new ServiceKeyException("You can't pass a service name if you don't provide a cloudfoundry " +
-                "admin user and password and the url of cloudfoundry api for db-dumper-service." +
-                "(see env var: cf_admin_user, cf_admin_password, cloud_controller_url )");
+    public CloudServiceKey getCloudServiceKey() {
+        return cloudServiceKey;
+    }
+
+    public void setCloudServiceKey(CloudServiceKey cloudServiceKey) {
+        this.cloudServiceKey = cloudServiceKey;
     }
 }
