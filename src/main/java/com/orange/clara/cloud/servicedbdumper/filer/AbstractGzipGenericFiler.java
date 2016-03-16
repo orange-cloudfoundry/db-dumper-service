@@ -9,11 +9,11 @@ import java.io.*;
 
 /**
  * Copyright (C) 2016 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 10/02/2016
  */
@@ -41,7 +41,8 @@ abstract public class AbstractGzipGenericFiler implements Filer {
     public void retrieve(OutputStream outputStream, String filename) throws IOException {
         PipedOutputStream outputPipe = new PipedOutputStream();
         PipedInputStream inputPipe = new PipedInputStream(outputPipe);
-        gzipCompressing.gunziptIt(outputStream, inputPipe);
+        InputStream inputStream = this.originalFiler.retrieveWithStream(filename);
+        gzipCompressing.gunziptIt(outputStream, inputStream);
         logger.debug("Gunziping file ...");
         this.originalFiler.retrieve(outputPipe, filename);
     }

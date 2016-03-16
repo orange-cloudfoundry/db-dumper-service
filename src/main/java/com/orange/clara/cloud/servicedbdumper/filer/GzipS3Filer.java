@@ -32,7 +32,7 @@ public class GzipS3Filer extends AbstractGzipGenericFiler implements Filer {
     }
 
     @PostConstruct
-    public void loadFilerDependances() {
+    public void loadFilerDependencies() {
         S3Filer s3Filer = (S3Filer) this.originalFiler;
         s3Filer.setBlobStore(this.blobStore);
         s3Filer.setUploadS3Stream(this.uploadS3Stream);

@@ -32,14 +32,15 @@ import java.util.SortedMap;
  */
 public class UploadS3StreamImpl implements UploadS3Stream {
 
-    public final static Integer CHUNK_SIZE = 5 * 1024 * 1024; //set a chunk to 5MB
+    public final static Integer DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024;//set a chunk to 5MB
 
     @Autowired
     @Qualifier(value = "blobStoreContext")
     protected SpringCloudBlobStoreContext blobStoreContext;
 
-
     protected S3Client s3Client;
+
+    private Integer chunkSize = DEFAULT_CHUNK_SIZE; //set a chunk to 5MB
 
     @PostConstruct
     private void injectS3Client() {
@@ -65,11 +66,14 @@ public class UploadS3StreamImpl implements UploadS3Stream {
         try {
             SortedMap<Integer, String> etags = Maps.newTreeMap();
             while (shouldContinue) {
-                byte[] chunk = new byte[CHUNK_SIZE];
+                byte[] chunk = new byte[chunkSize];
                 bytesRead = ByteStreams.read(content, chunk, 0, chunk.length);
                 if (bytesRead != chunk.length) {
                     shouldContinue = false;
                     chunk = Arrays.copyOf(chunk, bytesRead);
+                    if (chunk.length == 0) {
+                        break;
+                    }
                 }
                 part = new ByteArrayPayload(chunk);
                 prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);
@@ -82,7 +86,7 @@ public class UploadS3StreamImpl implements UploadS3Stream {
         }
     }
 
-    private void prepareUploadPart(String container, String key, String uploadId, int numPart, Payload chunkedPart, SortedMap<Integer, String> etags) {
+    protected void prepareUploadPart(String container, String key, String uploadId, int numPart, Payload chunkedPart, SortedMap<Integer, String> etags) {
         String eTag = null;
         try {
             eTag = s3Client.uploadPart(container, key, numPart, uploadId, chunkedPart);
@@ -96,5 +100,13 @@ public class UploadS3StreamImpl implements UploadS3Stream {
             eTag = s3Client.uploadPart(container, key, numPart, uploadId, chunkedPart);
             etags.put(Integer.valueOf(numPart), eTag);
         }
+    }
+
+    public Integer getChunkSize() {
+        return chunkSize;
+    }
+
+    public void setChunkSize(Integer chunkSize) {
+        this.chunkSize = chunkSize;
     }
 }

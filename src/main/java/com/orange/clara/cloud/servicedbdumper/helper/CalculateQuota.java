@@ -56,7 +56,7 @@ public class CalculateQuota {
 
     public static Long calculateQuotaUsedInPercent(DatabaseRef databaseRef) {
         Long fullQuota = calculateFullQuota(databaseRef);
-        if (fullQuota == null) {
+        if (fullQuota == null || fullQuota == 0L) {
             return 0L;
         }
         Long percent = calculateDumpFullSize(databaseRef) * 100 / fullQuota;
