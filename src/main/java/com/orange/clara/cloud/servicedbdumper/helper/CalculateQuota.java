@@ -38,13 +38,13 @@ public class CalculateQuota {
         return price;
     }
 
-    public static Long calculateQuotaUsed(DbDumperServiceInstance dbDumperServiceInstance) {
-        return calculateQuotaUsed(dbDumperServiceInstance.getDatabaseRef());
+    public static Long calculateQuotaFree(DbDumperServiceInstance dbDumperServiceInstance) {
+        return calculateQuotaFree(dbDumperServiceInstance.getDatabaseRef());
     }
 
-    public static Long calculateQuotaUsed(DatabaseRef databaseRef) {
+    public static Long calculateQuotaFree(DatabaseRef databaseRef) {
         Long fullQuota = calculateFullQuota(databaseRef);
-        if (fullQuota == null) {
+        if (fullQuota == null || fullQuota == 0L) {
             return 0L;
         }
         return fullQuota - calculateDumpFullSize(databaseRef);

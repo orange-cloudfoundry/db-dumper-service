@@ -1,8 +1,8 @@
 package com.orange.clara.cloud.servicedbdumper.security.useraccess;
 
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
-import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,7 +13,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Copyright (C) 2016 Orange
@@ -27,13 +26,15 @@ import java.util.List;
  */
 public class CloudFoundryUserAccessRight implements UserAccessRight {
 
+    public final static String AUTHORIZED_AUTHORITY = "ADMIN";
+    protected SecurityContext securityContext = SecurityContextHolder.getContext();
     @Autowired()
     @Qualifier("cloudFoundryClientAsUser")
     private CloudFoundryClient cloudFoundryClient;
 
     @Override
     public Boolean haveAccessToServiceInstance(String serviceInstanceId) throws UserAccessRightException {
-        SecurityContext context = SecurityContextHolder.getContext();
+        SecurityContext context = securityContext;
         if (context == null) {
             return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
         }
@@ -45,15 +46,20 @@ public class CloudFoundryUserAccessRight implements UserAccessRight {
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
-        if (authorities.contains(new SimpleGrantedAuthority("ADMIN"))) {
+        if (authorities.contains(new SimpleGrantedAuthority(AUTHORIZED_AUTHORITY))) {
             return true;
         }
         return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
     }
 
     @Override
-    public Boolean haveAccessToServiceInstance(List<DbDumperServiceInstance> dbDumperServiceInstances) throws UserAccessRightException {
-        for (DbDumperServiceInstance dbDumperServiceInstance : dbDumperServiceInstances) {
+    public Boolean haveAccessToServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) throws UserAccessRightException {
+        return this.haveAccessToServiceInstance(dbDumperServiceInstance.getServiceInstanceId());
+    }
+
+    @Override
+    public Boolean haveAccessToServiceInstance(DatabaseRef databaseRef) throws UserAccessRightException {
+        for (DbDumperServiceInstance dbDumperServiceInstance : databaseRef.getDbDumperServiceInstances()) {
             if (this.haveAccessToServiceInstance(dbDumperServiceInstance)) {
                 return true;
             }
@@ -61,8 +67,4 @@ public class CloudFoundryUserAccessRight implements UserAccessRight {
         return false;
     }
 
-    @Override
-    public Boolean haveAccessToServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) throws UserAccessRightException {
-        return this.haveAccessToServiceInstance(dbDumperServiceInstance.getServiceInstanceId());
-    }
 }

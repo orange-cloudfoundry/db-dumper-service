@@ -88,7 +88,7 @@ public class ManagerController {
 
     private void checkDatabaseWithAccessRight(DatabaseRef databaseRef) throws UserAccessRightException {
         this.checkDatabase(databaseRef);
-        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
+        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef)) {
             throw new UserAccessRightException("You don't have access to this instance");
         }
     }

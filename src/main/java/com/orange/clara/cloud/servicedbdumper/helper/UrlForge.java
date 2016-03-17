@@ -19,9 +19,11 @@ import java.net.URI;
  */
 @Service
 public class UrlForge {
+    public final static String DOWNLOAD_ROUTE = "/manage/download/";
+    public final static String SHOW_ROUTE = "/manage/show/";
     @Autowired
     @Qualifier("appUri")
-    private String appUri;
+    protected String appUri;
 
     public String createDownloadLink(DatabaseDumpFile databaseDumpFile) {
         URI appInUri = URI.create(appUri);
@@ -29,7 +31,7 @@ public class UrlForge {
         return appInUri.getScheme() + "://" +
                 databaseDumpFile.getUser() + ":" +
                 databaseDumpFile.getPassword() + "@" +
-                appInUri.getHost() + port + "/manage/download/" +
+                appInUri.getHost() + port + DOWNLOAD_ROUTE +
                 databaseDumpFile.getId();
     }
 
@@ -49,7 +51,7 @@ public class UrlForge {
         URI appInUri = URI.create(appUri);
         String port = this.getPortInString();
         return appInUri.getScheme() + "://" +
-                appInUri.getHost() + port + "/manage/show/" +
+                appInUri.getHost() + port + SHOW_ROUTE +
                 databaseDumpFile.getId();
     }
 }

@@ -1,24 +1,24 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
+import com.orange.clara.cloud.servicedbdumper.cloudfoundry.CloudFoundryClientFactory;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.CloudFoundryUserAccessRight;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.DefaultUserAccessRight;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.CloudFoundryServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.NoServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.service.servicekey.ServiceKeyManager;
-import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.domain.CloudOrganization;
 import org.cloudfoundry.client.lib.domain.CloudSpace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.regex.Pattern;
 
 /**
@@ -37,7 +37,8 @@ public class AppConfig {
     private Logger logger = LoggerFactory.getLogger(AppConfig.class);
     @Value("${file.date.format:dd-MM-yyyy HH:mm}")
     private String dateFormat;
-
+    @Autowired
+    private CloudFoundryClientFactory cloudFoundryClientFactory;
 
     @Value("${cf.admin.user:#{null}}")
     private String cfAdminUser;
@@ -96,8 +97,7 @@ public class AppConfig {
         CloudOrganization cloudOrganization = this.getOrg();
         CloudSpace cloudSpace = this.getSpace();
         logger.debug(String.format("Creating new CloudFoundry client using admin access with org '%s' and space '%s'", cloudOrganization.getName(), cloudSpace.getName()));
-        CloudCredentials credentials = new CloudCredentials(this.cfAdminUser, this.cfAdminPassword);
-        return new CloudFoundryClient(credentials, new URL(this.cloudControllerUrl), cloudOrganization.getName(), cloudSpace.getName());
+        return cloudFoundryClientFactory.createCloudFoundryClient(this.cfAdminUser, this.cfAdminPassword, this.cloudControllerUrl, cloudOrganization.getName(), cloudSpace.getName());
     }
 
     @Bean
@@ -111,8 +111,7 @@ public class AppConfig {
             return null;
         }
         logger.debug("Creating new CloudFoundry client using admin access");
-        CloudCredentials credentials = new CloudCredentials(this.cfAdminUser, this.cfAdminPassword);
-        return new CloudFoundryClient(credentials, new URL(this.cloudControllerUrl));
+        return cloudFoundryClientFactory.createCloudFoundryClient(this.cfAdminUser, this.cfAdminPassword, this.cloudControllerUrl);
     }
 
     @Bean

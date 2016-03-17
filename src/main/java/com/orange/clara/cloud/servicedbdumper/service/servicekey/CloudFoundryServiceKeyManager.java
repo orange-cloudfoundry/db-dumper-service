@@ -1,14 +1,13 @@
 package com.orange.clara.cloud.servicedbdumper.service.servicekey;
 
+import com.orange.clara.cloud.servicedbdumper.cloudfoundry.CloudFoundryClientFactory;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseService;
-import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.domain.CloudService;
 import org.cloudfoundry.client.lib.domain.CloudServiceKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 
 import java.util.UUID;
 
@@ -27,6 +26,9 @@ public class CloudFoundryServiceKeyManager implements ServiceKeyManager {
     @Autowired
     @Qualifier("cloudFoundryClientAsAdmin")
     private CloudFoundryClient cloudFoundryClient;
+
+    @Autowired
+    private CloudFoundryClientFactory cloudFoundryClientFactory;
 
     @Override
     public CloudServiceKey createServiceKey(String serviceName, String token, String org, String space) throws ServiceKeyException {
@@ -53,12 +55,11 @@ public class CloudFoundryServiceKeyManager implements ServiceKeyManager {
     }
 
     public CloudService getUserService(String serviceName, String token, String org, String space) {
-        CloudCredentials cloudCredentials = new CloudCredentials(new DefaultOAuth2AccessToken(token), false);
         CloudFoundryClient cloudFoundryClientUser;
         if (org != null && space != null) {
-            cloudFoundryClientUser = new CloudFoundryClient(cloudCredentials, this.cloudFoundryClient.getCloudControllerUrl(), org, space);
+            cloudFoundryClientUser = cloudFoundryClientFactory.createCloudFoundryClient(token, this.cloudFoundryClient.getCloudControllerUrl(), org, space);
         } else {
-            cloudFoundryClientUser = new CloudFoundryClient(cloudCredentials, this.cloudFoundryClient.getCloudControllerUrl());
+            cloudFoundryClientUser = cloudFoundryClientFactory.createCloudFoundryClient(token, this.cloudFoundryClient.getCloudControllerUrl());
         }
         return cloudFoundryClientUser.getService(serviceName);
     }

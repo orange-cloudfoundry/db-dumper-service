@@ -1,9 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.config;
 
-import org.cloudfoundry.client.lib.CloudCredentials;
+import com.orange.clara.cloud.servicedbdumper.cloudfoundry.CloudFoundryClientFactory;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,7 +14,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Copyright (C) 2016 Orange
@@ -28,8 +28,10 @@ import java.net.URL;
 @Configuration
 @Profile(value = "uaa")
 public class UaaConfig {
-
     private static Logger LOGGER = LoggerFactory.getLogger(UaaConfig.class);
+    @Autowired
+    private CloudFoundryClientFactory cloudFoundryClientFactory;
+
     @Value("${cloud.controller.url}")
     private String cloudControllerUrl;
 
@@ -46,8 +48,7 @@ public class UaaConfig {
     @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public CloudFoundryClient getCloudFoundryClientAsUser() throws MalformedURLException {
         LOGGER.debug("Creating new CloudFoundry client using access token");
-        CloudCredentials credentials = new CloudCredentials(getOAuth2AccessToken(), false);
-        return new CloudFoundryClient(credentials, new URL(this.cloudControllerUrl));
+        return cloudFoundryClientFactory.createCloudFoundryClient(getOAuth2AccessToken(), this.cloudControllerUrl);
     }
 
 }

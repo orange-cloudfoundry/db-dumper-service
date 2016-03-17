@@ -66,7 +66,7 @@ public class InterfaceController {
         for (DatabaseRef databaseRef : databaseRefs) {
             if (databaseRef.isDeleted()
                     || databaseRef.getDbDumperServiceInstances() == null
-                    || !this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
+                    || !this.userAccessRight.haveAccessToServiceInstance(databaseRef)) {
                 continue;
             }
             databaseRefsFinal.add(databaseRef);
@@ -97,7 +97,7 @@ public class InterfaceController {
         if (databaseRef == null) {
             throw new IllegalArgumentException(String.format("Cannot find database with name '%s'", databaseName));
         }
-        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef.getDbDumperServiceInstances())) {
+        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef)) {
             throw new UserAccessRightException("You don't have access to this instance");
         }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();

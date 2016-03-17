@@ -13,11 +13,11 @@ import java.util.Base64;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 08/12/2015
  */
@@ -25,7 +25,7 @@ import java.util.Base64;
 public class CryptoConverter implements AttributeConverter<String, String> {
     private static final String ALGORITHM = "AES/ECB/PKCS5Padding";
     private final static String ENCRYPTION_KEY_FILEPATH = "properties/encryption_key.txt";
-    private byte[] encryptionKey;
+    protected byte[] encryptionKey;
 
 
     @Override

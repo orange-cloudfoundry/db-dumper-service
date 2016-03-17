@@ -50,7 +50,7 @@ public class DbDumperServiceInstance {
 
     public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DbDumperPlan dbDumperPlan, DatabaseRef databaseRef) {
         this(serviceInstanceId, planId, organizationGuid, spaceGuid, dashboardUrl, dbDumperPlan);
-        this.databaseRef = databaseRef;
+        this.setDatabaseRef(databaseRef);
     }
 
     public void addDbDumperServiceInstanceBinding(DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding) {
