@@ -68,19 +68,20 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             "MM-yyyy",
             "yyyy/MM"
     };
+    @Autowired
+    @Qualifier("appUri")
+    protected String appUri;
+
     private Logger logger = LoggerFactory.getLogger(DbDumperServiceInstanceService.class);
 
     @Autowired
     private DatabaseRefManager databaseRefManager;
+
     @Autowired
     private DbDumperServiceInstanceRepo repository;
 
     @Autowired
     private DbDumperServiceInstanceBindingRepo serviceInstanceBindingRepo;
-
-    @Autowired
-    @Qualifier("appUri")
-    private String appUri;
 
     @Autowired
     @Qualifier("jobFactory")
@@ -91,6 +92,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
+
     @Autowired
     private DbDumperPlanRepo dbDumperPlanRepo;
 
@@ -197,7 +199,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
     private void createDumpFromdbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) throws ServiceInstanceDoesNotExistException, ServiceBrokerException {
         if (dbDumperServiceInstance.getDatabaseRef() == null) {
-            throw new ServiceInstanceDoesNotExistException("There is no databse set for this instance");
+            throw new ServiceInstanceDoesNotExistException("There is no database set for this instance");
         }
         try {
             dbDumperServiceInstance.setDatabaseRef(this.databaseRefManager.updateDatabaseRef(dbDumperServiceInstance.getDatabaseRef()));
@@ -225,7 +227,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private String getParameter(Map<String, Object> parameters, String parameter) throws ServiceBrokerException {
         String param = this.getParameter(parameters, parameter, null);
         if (param == null) {
-            throw new ServiceBrokerException("You need to set " + parameter + " parameter.");
+            throw new ServiceBrokerException("You need to set '" + parameter + "' parameter.");
         }
         return param;
     }
@@ -255,7 +257,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
         String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER, null);
         if (targetUrl == null) {
-            targetUrl = this.getParameter(parameters, NEW_TARGET_URL_PARAMETER, null);
+            targetUrl = this.getParameter(parameters, NEW_TARGET_URL_PARAMETER);
         }
         String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromParams(parameters, targetUrl);
@@ -278,7 +280,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
 
-    private Date parseDate(String date) throws ParseException {
+    protected Date parseDate(String date) throws ParseException {
         SimpleDateFormat simpleDateFormat;
         Date createdAt = null;
         for (String validDateFormat : VALID_DATES_FORMAT) {

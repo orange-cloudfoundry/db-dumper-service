@@ -37,22 +37,15 @@ import java.util.Map;
 public class DbDumperServiceInstanceBindingService implements ServiceInstanceBindingService {
 
     @Autowired
-    @Qualifier("appUri")
-    private String appUri;
+    @Qualifier(value = "dateFormat")
+    protected String dateFormat;
     @Autowired
     private DbDumperServiceInstanceBindingRepo repositoryInstanceBinding;
-
     @Autowired
     private DbDumperServiceInstanceRepo repositoryInstance;
-
-
     @Autowired
     @Qualifier(value = "credentials")
     private Credentials credentials;
-
-    @Autowired
-    @Qualifier(value = "dateFormat")
-    private String dateFormat;
 
     @Override
     public ServiceInstanceBinding createServiceInstanceBinding(CreateServiceInstanceBindingRequest request) throws ServiceInstanceBindingExistsException, ServiceBrokerException {
