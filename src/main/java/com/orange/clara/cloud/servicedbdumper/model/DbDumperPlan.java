@@ -16,10 +16,10 @@ import javax.persistence.Id;
 @Entity
 public class DbDumperPlan {
     @Id
-    public String id;
-    public String name;
-    public Long size;
-    public Float cost;
+    private String id;
+    private String name;
+    private Long size;
+    private Float cost;
 
     public DbDumperPlan() {
         this.cost = 0.0F;

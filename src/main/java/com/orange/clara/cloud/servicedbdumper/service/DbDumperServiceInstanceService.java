@@ -118,15 +118,15 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public ServiceInstance getServiceInstance(String s) {
-        DbDumperServiceInstance instance = repository.findOne(s);
+    public ServiceInstance getServiceInstance(String serviceInstanceId) {
+        DbDumperServiceInstance instance = repository.findOne(serviceInstanceId);
         if (instance == null) {
             return null;
         }
         ServiceInstanceLastOperation serviceInstanceLastOperation = null;
 
         Job lastJob = this.jobRepo.findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(instance);
-        ServiceInstance serviceInstance = new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(s))
+        ServiceInstance serviceInstance = new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(serviceInstanceId))
                 .withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName());
         if (lastJob == null) {
             return serviceInstance;

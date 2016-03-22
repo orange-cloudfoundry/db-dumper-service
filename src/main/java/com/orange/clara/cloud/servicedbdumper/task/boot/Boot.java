@@ -24,7 +24,7 @@ import java.util.List;
 public class Boot {
 
     @Autowired
-    private List<BootSequence> bootSequences;
+    protected List<BootSequence> bootSequences;
     private Logger logger = LoggerFactory.getLogger(Boot.class);
 
     @PostConstruct

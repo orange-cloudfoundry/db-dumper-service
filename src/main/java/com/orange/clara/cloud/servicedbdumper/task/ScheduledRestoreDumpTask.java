@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
+import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
@@ -36,7 +37,7 @@ public class ScheduledRestoreDumpTask {
     private RestoreDumpTask restoreDumpTask;
 
     @Scheduled(fixedDelay = 5000)
-    public void restoreDump() {
+    public void restoreDump() throws AsyncTaskException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.RESTORE_DUMP, JobEvent.START);
 
         logger.debug("Running: restore dump scheduled task ...");
@@ -44,7 +45,7 @@ public class ScheduledRestoreDumpTask {
         for (Job job : jobs) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
-            this.restoreDumpTask.runRestoreDump(job.getId());
+            this.restoreDumpTask.runTask(job.getId());
         }
 
         logger.debug("Finished: restore dump scheduled task ...");

@@ -1,6 +1,5 @@
 package com.orange.clara.cloud.servicedbdumper.task.job;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import org.slf4j.Logger;
@@ -29,16 +28,16 @@ import java.util.List;
 public class JobFactory {
 
     @Value("${job.errored.delete.expiration.days:2}")
-    private Integer jobErroredDeleteExpirationDays;
+    protected Integer jobErroredDeleteExpirationDays;
+
     @Value("${job.finished.delete.expiration.minutes:8}")
-    private Integer jobFinishedDeleteExpirationMinutes;
+    protected Integer jobFinishedDeleteExpirationMinutes;
 
     private Logger logger = LoggerFactory.getLogger(JobFactory.class);
+
     @Autowired
     private JobRepo jobRepo;
 
-    @Autowired
-    private DatabaseRefManager databaseRefManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
@@ -112,8 +111,8 @@ public class JobFactory {
         LocalDateTime whenRemoveDateTime;
         List<Job> jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.ERRORED);
         for (Job job : jobs) {
-            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.jobErroredDeleteExpirationDays);
-            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
+            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.systemDefault())).plusDays(this.jobErroredDeleteExpirationDays);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.systemDefault())).isBefore(whenRemoveDateTime)) {
                 continue;
             }
             this.jobRepo.delete(job);
@@ -125,8 +124,8 @@ public class JobFactory {
         LocalDateTime whenRemoveDateTime;
         List<Job> jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.FINISHED);
         for (Job job : jobs) {
-            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusMinutes(this.jobFinishedDeleteExpirationMinutes);
-            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)
+            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.systemDefault())).plusMinutes(this.jobFinishedDeleteExpirationMinutes);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.systemDefault())).isBefore(whenRemoveDateTime)
                     && (job.getDatabaseRefSrc() != null || job.getDbDumperServiceInstance() != null || job.getDatabaseRefTarget() != null)) {
                 continue;
             }

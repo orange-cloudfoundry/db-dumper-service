@@ -6,8 +6,6 @@ import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.slf4j.Logger;
@@ -38,12 +36,6 @@ public class ScheduledDeleteDatabaseRefTask {
 
     @Autowired
     private JobRepo jobRepo;
-
-    @Autowired
-    private DbDumperServiceInstanceBindingRepo serviceInstanceBindingRepository;
-
-    @Autowired
-    private DbDumperServiceInstanceRepo serviceInstanceRepo;
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;

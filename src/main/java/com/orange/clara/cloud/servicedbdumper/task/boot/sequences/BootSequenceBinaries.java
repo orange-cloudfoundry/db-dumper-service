@@ -24,7 +24,7 @@ import java.io.IOException;
 @Order(3)
 public class BootSequenceBinaries implements BootSequence {
     @Value("classpath:binaries")
-    private File binariesPath;
+    protected File binariesPath;
     private Logger logger = LoggerFactory.getLogger(BootSequenceBinaries.class);
 
     @Override

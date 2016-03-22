@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
+import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
@@ -27,7 +28,7 @@ import java.util.concurrent.Future;
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
-public class RestoreDumpTask {
+public class RestoreDumpTask implements AsyncTask {
     private Logger logger = LoggerFactory.getLogger(RestoreDumpTask.class);
     @Autowired
     @Qualifier("restorer")
@@ -41,7 +42,7 @@ public class RestoreDumpTask {
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Future<Boolean> runRestoreDump(Integer jobId) {
+    public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
         try {
             this.restorer.restore(job.getDatabaseRefSrc(), job.getDatabaseRefTarget(), job.getDumpDate());

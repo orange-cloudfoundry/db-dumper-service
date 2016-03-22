@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
+import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
@@ -27,7 +28,7 @@ import java.util.concurrent.Future;
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
-public class CreateDumpTask {
+public class CreateDumpTask implements AsyncTask {
     private Logger logger = LoggerFactory.getLogger(CreateDumpTask.class);
     @Autowired
     @Qualifier("dumper")
@@ -41,7 +42,7 @@ public class CreateDumpTask {
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Future<Boolean> runCreateDump(Integer jobId) {
+    public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
         try {
             this.dumper.dump(job.getDatabaseRefSrc());

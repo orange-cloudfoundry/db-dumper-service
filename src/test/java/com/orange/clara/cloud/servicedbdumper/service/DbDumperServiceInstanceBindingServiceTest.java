@@ -156,8 +156,8 @@ public class DbDumperServiceInstanceBindingServiceTest {
 
     private DbDumperCredential forgeDbDumperCredential(int id, boolean deleted) {
         Date date = new Date();
-        LocalDateTime localDateTime = LocalDateTime.from(date.toInstant().atZone(ZoneId.of("UTC"))).plusDays(id);
-        Instant instant = localDateTime.atZone(ZoneId.of("UTC")).toInstant();
+        LocalDateTime localDateTime = LocalDateTime.from(date.toInstant().atZone(ZoneId.systemDefault())).plusDays(id);
+        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         return new DbDumperCredential(
                 id,
                 Date.from(instant),

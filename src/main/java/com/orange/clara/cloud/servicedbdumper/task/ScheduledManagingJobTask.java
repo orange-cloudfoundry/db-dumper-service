@@ -33,14 +33,14 @@ import java.util.List;
  */
 @Component
 public class ScheduledManagingJobTask {
+    @Autowired
+    @Qualifier("dumpDeleteExpirationDays")
+    protected Integer dumpDeleteExpirationDays;
+
     private Logger logger = LoggerFactory.getLogger(ScheduledManagingJobTask.class);
 
     @Autowired
     private JobRepo jobRepo;
-
-    @Autowired
-    @Qualifier("dumpDeleteExpirationDays")
-    private Integer dumpDeleteExpirationDays;
 
     @Autowired
     private DatabaseDumpFileRepo databaseDumpFileRepo;
@@ -67,13 +67,13 @@ public class ScheduledManagingJobTask {
         List<DatabaseDumpFile> databaseDumpFiles = this.databaseDumpFileRepo.findByDeletedTrueOrderByDeletedAtAsc();
         LocalDateTime whenRemoveDateTime;
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
-            whenRemoveDateTime = LocalDateTime.from(databaseDumpFile.getDeletedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
-            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
-                break;
+            whenRemoveDateTime = LocalDateTime.from(databaseDumpFile.getDeletedAt().toInstant().atZone(ZoneId.systemDefault())).plusDays(this.dumpDeleteExpirationDays);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.systemDefault())).isBefore(whenRemoveDateTime)) {
+                continue;
             }
             this.deleter.delete(databaseDumpFile);
         }
-        logger.debug("Finished: ccleaning deleted dump task.");
+        logger.debug("Finished: cleaning deleted dump task.");
     }
 
     @Scheduled(fixedDelay = 1200000)
@@ -103,7 +103,7 @@ public class ScheduledManagingJobTask {
                             job.getDatabaseRefTarget()).size() > 0) {
                 continue;
             }
-            logger.info("starting scheduled job " + job.getId());
+            logger.info("starting job " + job.getId());
             job.setJobEvent(JobEvent.START);
             this.jobRepo.save(job);
         }

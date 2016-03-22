@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
-import com.orange.clara.cloud.servicedbdumper.exception.JobCreationException;
+import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,12 +28,10 @@ import java.util.concurrent.Future;
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
-public class DeleteDumpTask {
+public class DeleteDumpTask implements AsyncTask {
 
     private Logger logger = LoggerFactory.getLogger(DeleteDumpTask.class);
 
-    @Value("${dump.delete.expiration.days:5}")
-    private Integer dumpDeleteExpirationDays;
     @Autowired
     private JobRepo jobRepo;
 
@@ -48,7 +45,7 @@ public class DeleteDumpTask {
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Future<Boolean> runDeleteDump(Integer jobId) throws JobCreationException {
+    public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
         DatabaseRef databaseRef = job.getDatabaseRefSrc();
         this.deleter.deleteAll(databaseRef);

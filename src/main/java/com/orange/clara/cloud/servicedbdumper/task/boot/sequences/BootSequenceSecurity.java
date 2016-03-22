@@ -14,11 +14,11 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 09/12/2015
  */
@@ -27,10 +27,10 @@ import java.security.NoSuchAlgorithmException;
 public class BootSequenceSecurity implements BootSequence {
 
     @Value("${encryption.key:MySuperSecretKey}")
-    private String encryptionKey;
+    protected String encryptionKey;
 
     @Value("classpath:properties/encryption_key.txt")
-    private File encryptionKeyFile;
+    protected File encryptionKeyFile;
 
     public void fillEncryptionKeyFile() throws IOException, NoSuchAlgorithmException {
         //force to have always a 32 bytes key (to use AES encryption with 256 bits key length)

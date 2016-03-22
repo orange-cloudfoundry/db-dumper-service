@@ -5,6 +5,8 @@ import com.orange.clara.cloud.servicedbdumper.model.DbDumperPlan;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperPlanRepo;
 import org.cloudfoundry.community.servicebroker.model.Catalog;
 import org.cloudfoundry.community.servicebroker.model.Plan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
@@ -26,20 +28,18 @@ import java.util.Map;
 @Component
 @Order(4)
 public class BootSequencePlan implements BootSequence {
-
+    @Autowired
+    @Qualifier("currency")
+    protected String currency;
+    @Autowired
+    @Qualifier("isFree")
+    protected Boolean isFree;
+    private Logger logger = LoggerFactory.getLogger(BootSequencePlan.class);
     @Autowired
     private Catalog catalog;
 
     @Autowired
-    @Qualifier("currency")
-    private String currency;
-
-    @Autowired
     private DbDumperPlanRepo dbDumperPlanRepo;
-
-    @Autowired
-    @Qualifier("isFree")
-    private Boolean isFree;
 
     @Override
     public void runSequence() {
@@ -81,7 +81,7 @@ public class BootSequencePlan implements BootSequence {
         }
         Map<String, Object> amount = (Map<String, Object>) costs.get("amount");
         if (!amount.containsKey(this.currency)) {
-            System.out.println("this is not found");
+            logger.warn("Currency '" + currency + "' not found.");
             return 0.0F;
         }
         return (Float) amount.get(this.currency);

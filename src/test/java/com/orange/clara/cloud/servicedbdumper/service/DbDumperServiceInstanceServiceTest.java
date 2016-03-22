@@ -4,18 +4,14 @@ import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperPlan;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.*;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceExistsException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceUpdateNotSupportedException;
-import org.cloudfoundry.community.servicebroker.model.CreateServiceInstanceRequest;
-import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
-import org.cloudfoundry.community.servicebroker.model.UpdateServiceInstanceRequest;
+import org.cloudfoundry.community.servicebroker.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -53,6 +49,7 @@ public class DbDumperServiceInstanceServiceTest {
     private final static Map<String, Object> params = Maps.newHashMap();
     private final static CreateServiceInstanceRequest createRequest = new CreateServiceInstanceRequest(serviceDefinitionId, planId, orgId, spaceId, true, params).withServiceInstanceId(serviceId);
     private final static UpdateServiceInstanceRequest updateRequest = new UpdateServiceInstanceRequest(planId, true, params).withInstanceId(serviceId);
+    private final static DeleteServiceInstanceRequest deleteRequest = new DeleteServiceInstanceRequest(serviceId, serviceId, planId, false);
     @InjectMocks
     DbDumperServiceInstanceService instanceService;
     @Mock
@@ -176,6 +173,70 @@ public class DbDumperServiceInstanceServiceTest {
         assertServiceInstanceUpdateRequest(serviceInstance);
     }
 
+    @Test
+    public void when_deleting_service_from_existing_service_instance_which_not_exist_it_should_alway_return_service_instance() throws ServiceBrokerException {
+        when(repository.findOne(anyString())).thenReturn(null);
+        ServiceInstance serviceInstance = instanceService.deleteServiceInstance(deleteRequest);
+        this.assertServiceInstanceDeleteRequest(serviceInstance, true);
+    }
+
+    @Test
+    public void when_deleting_service_should_return_service_instance() throws ServiceBrokerException {
+        when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
+        ServiceInstance serviceInstance = instanceService.deleteServiceInstance(deleteRequest);
+        this.assertServiceInstanceDeleteRequest(serviceInstance, false);
+    }
+
+    @Test
+    public void when_getting_service_instance_when_service_instance_not_exist_it_should_return_null() {
+        when(repository.findOne(anyString())).thenReturn(null);
+        ServiceInstance serviceInstance = instanceService.getServiceInstance(serviceId);
+        assertThat(serviceInstance).isNull();
+    }
+
+    @Test
+    public void when_getting_service_instance_and_no_last_job_it_should_return_service_instance_with_in_progress_last_operation() {
+        when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
+        ServiceInstance serviceInstance = instanceService.getServiceInstance(serviceId);
+        this.assertServiceInstanceGetRequest(serviceInstance, false, null);
+    }
+
+    @Test
+    public void when_getting_service_instance_and_last_job_is_errored_it_should_return_service_instance_with_failed_last_operation() {
+        when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
+        Job job = new Job();
+        job.setJobEvent(JobEvent.ERRORED);
+        job.setErrorMessage("Error");
+        job.setJobType(JobType.CREATE_DUMP);
+        when(jobRepo.findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(dbDumperServiceInstance)).thenReturn(job);
+        ServiceInstance serviceInstance = instanceService.getServiceInstance(serviceId);
+        this.assertServiceInstanceGetRequest(serviceInstance, true, "failed");
+    }
+
+    @Test
+    public void when_getting_service_instance_and_last_job_is_started_it_should_return_service_instance_with_in_progress_last_operation() {
+        when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
+        Job job = new Job();
+        job.setJobEvent(JobEvent.START);
+        job.setErrorMessage("start");
+        job.setJobType(JobType.CREATE_DUMP);
+        when(jobRepo.findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(dbDumperServiceInstance)).thenReturn(job);
+        ServiceInstance serviceInstance = instanceService.getServiceInstance(serviceId);
+        this.assertServiceInstanceGetRequest(serviceInstance, true, "in progress");
+    }
+
+    @Test
+    public void when_getting_service_instance_and_last_job_is_finished_it_should_return_service_instance_with_succeeded_last_operation() {
+        when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
+        Job job = new Job();
+        job.setJobEvent(JobEvent.FINISHED);
+        job.setErrorMessage("finished");
+        job.setJobType(JobType.CREATE_DUMP);
+        when(jobRepo.findFirstByDbDumperServiceInstanceOrderByUpdatedAtDesc(dbDumperServiceInstance)).thenReturn(job);
+        ServiceInstance serviceInstance = instanceService.getServiceInstance(serviceId);
+        this.assertServiceInstanceGetRequest(serviceInstance, true, "succeeded");
+    }
+
     private void assertServiceInstanceCreateRequest(ServiceInstance serviceInstance) {
         assertThat(serviceInstance).isNotNull();
         assertThat(serviceInstance.getDashboardUrl()).isNotEmpty();
@@ -193,5 +254,38 @@ public class DbDumperServiceInstanceServiceTest {
         assertThat(serviceInstance.isAsync()).isTrue();
         assertThat(serviceInstance.getPlanId()).isEqualTo(planId);
         assertThat(serviceInstance.getServiceInstanceId()).isEqualTo(serviceId);
+    }
+
+    private void assertServiceInstanceDeleteRequest(ServiceInstance serviceInstance, boolean emptyDashboard) {
+        assertThat(serviceInstance).isNotNull();
+        if (emptyDashboard) {
+            assertThat(serviceInstance.getDashboardUrl()).isNull();
+        } else {
+            assertThat(serviceInstance.getDashboardUrl()).isNotNull();
+            assertThat(serviceInstance.getDashboardUrl()).isNotEmpty();
+        }
+
+        assertThat(serviceInstance.isAsync()).isFalse();
+        assertThat(serviceInstance.getPlanId()).isEqualTo(planId);
+        assertThat(serviceInstance.getServiceInstanceId()).isEqualTo(serviceId);
+    }
+
+    private void assertServiceInstanceGetRequest(ServiceInstance serviceInstance, boolean withLastOperation, String operationState) {
+        assertThat(serviceInstance).isNotNull();
+        assertThat(serviceInstance.getServiceInstanceId()).isEqualTo(serviceId);
+        assertThat(serviceInstance.getDashboardUrl()).isNotNull();
+        assertThat(serviceInstance.getDashboardUrl()).isNotEmpty();
+        if (!withLastOperation) {
+            assertThat(serviceInstance.getServiceInstanceLastOperation()).isNotNull();
+            assertThat(serviceInstance.getServiceInstanceLastOperation().getState()).isEqualTo("in progress");
+            assertThat(serviceInstance.isAsync()).isFalse();
+            return;
+        }
+        assertThat(serviceInstance.getServiceInstanceLastOperation()).isNotNull();
+        assertThat(serviceInstance.isAsync()).isTrue();
+
+        ServiceInstanceLastOperation serviceInstanceLastOperation = serviceInstance.getServiceInstanceLastOperation();
+        assertThat(serviceInstanceLastOperation.getState()).isEqualTo(operationState);
+        assertThat(serviceInstanceLastOperation.getDescription()).isNotEmpty();
     }
 }

@@ -1,10 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
+import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.exception.JobCreationException;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.asynctask.DeleteDumpTask;
 import org.slf4j.Logger;
@@ -31,34 +31,33 @@ import java.util.List;
  */
 @Component
 public class ScheduledDeleteAllDumpsTask {
-    private Logger logger = LoggerFactory.getLogger(ScheduledDeleteAllDumpsTask.class);
     @Autowired
     @Qualifier("dumpDeleteExpirationDays")
-    private Integer dumpDeleteExpirationDays;
-    @Autowired
-    private JobRepo jobRepo;
+    protected Integer dumpDeleteExpirationDays;
+
+    private Logger logger = LoggerFactory.getLogger(ScheduledDeleteAllDumpsTask.class);
 
     @Autowired
-    private DatabaseRefRepo databaseRefRepo;
+    private JobRepo jobRepo;
 
     @Autowired
     @Qualifier(value = "deleteDumpTask")
     private DeleteDumpTask deleteDumpTask;
 
     @Scheduled(fixedDelay = 5000)
-    public void deleteAllDumps() throws JobCreationException {
+    public void deleteAllDumps() throws JobCreationException, AsyncTaskException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DUMPS, JobEvent.START);
         logger.debug("Running: delete all dump scheduled task ...");
 
         LocalDateTime whenRemoveDateTime;
         for (Job job : jobs) {
-            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.of("UTC"))).plusDays(this.dumpDeleteExpirationDays);
-            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.of("UTC"))).isBefore(whenRemoveDateTime)) {
+            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.systemDefault())).plusDays(this.dumpDeleteExpirationDays);
+            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.systemDefault())).isBefore(whenRemoveDateTime)) {
                 continue;
             }
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
-            this.deleteDumpTask.runDeleteDump(job.getId());
+            this.deleteDumpTask.runTask(job.getId());
         }
 
         logger.debug("Finished: delete all dump scheduled task.");
