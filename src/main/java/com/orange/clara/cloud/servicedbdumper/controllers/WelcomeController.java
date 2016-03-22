@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,15 +21,15 @@ public class WelcomeController {
 
     @RequestMapping("/")
     public ModelAndView defaultRoute() {
-        return new ModelAndView("redirect:/manage");
+        return new ModelAndView("redirect:" + Routes.MANAGE_ROOT);
     }
 
-    @RequestMapping("/manage")
+    @RequestMapping(Routes.MANAGE_ROOT)
     public String welcome(Model model) {
         return "welcome";
     }
 
-    @RequestMapping({"/manage/admin", "/admin/control"})
+    @RequestMapping({Routes.MANAGE_ADMIN_ROOT, Routes.MANAGE_ADMIN_ROOT_ALTERNATIVE})
     public String welcomeAdmin(Model model) {
         return "welcome";
     }

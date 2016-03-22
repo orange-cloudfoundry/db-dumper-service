@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.helper;
 
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,8 +20,9 @@ import java.net.URI;
  */
 @Service
 public class UrlForge {
-    public final static String DOWNLOAD_ROUTE = "/manage/download/";
-    public final static String SHOW_ROUTE = "/manage/show/";
+    public final static String DOWNLOAD_ROUTE = Routes.MANAGE_ROOT + Routes.DOWNLOAD_DUMP_FILE_ROOT;
+    public final static String SHOW_ROUTE = Routes.MANAGE_ROOT + Routes.SHOW_DUMP_FILE_ROOT;
+    ;
     @Autowired
     @Qualifier("appUri")
     protected String appUri;
@@ -31,7 +33,7 @@ public class UrlForge {
         return appInUri.getScheme() + "://" +
                 databaseDumpFile.getUser() + ":" +
                 databaseDumpFile.getPassword() + "@" +
-                appInUri.getHost() + port + DOWNLOAD_ROUTE +
+                appInUri.getHost() + port + DOWNLOAD_ROUTE + "/" +
                 databaseDumpFile.getId();
     }
 
@@ -51,7 +53,7 @@ public class UrlForge {
         URI appInUri = URI.create(appUri);
         String port = this.getPortInString();
         return appInUri.getScheme() + "://" +
-                appInUri.getHost() + port + SHOW_ROUTE +
+                appInUri.getHost() + port + SHOW_ROUTE + "/" +
                 databaseDumpFile.getId();
     }
 }

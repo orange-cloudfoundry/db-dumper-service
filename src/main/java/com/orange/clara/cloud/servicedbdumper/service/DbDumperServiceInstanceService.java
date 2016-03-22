@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.service;
 
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
@@ -50,7 +51,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private final static String SPACE_PARAMETER = "space";
 
 
-    private final static String DASHBOARD_ROUTE = "/manage/list/database/";
+    private final static String DASHBOARD_ROUTE = Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/";
     private final static String[] VALID_DATES_FORMAT = {
             "dd-MM-yyyy HH:mm:ss",
             "dd/MM/yyyy HH:mm:ss",

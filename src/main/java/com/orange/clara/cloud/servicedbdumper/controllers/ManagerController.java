@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
@@ -41,7 +42,7 @@ import java.util.Base64;
  * Date: 14/10/2015
  */
 @Controller
-@RequestMapping(value = "/manage")
+@RequestMapping(value = Routes.MANAGE_ROOT)
 public class ManagerController {
     private Logger logger = LoggerFactory.getLogger(ManagerController.class);
 
@@ -61,7 +62,7 @@ public class ManagerController {
     @Qualifier(value = "deleter")
     private Deleter deleter;
 
-    @RequestMapping("/raw/{dumpFileId:[0-9]+}")
+    @RequestMapping(Routes.RAW_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     @ResponseBody
     public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
@@ -108,7 +109,7 @@ public class ManagerController {
         }
     }
 
-    @RequestMapping("/show/{dumpFileId:[0-9]+}")
+    @RequestMapping(Routes.SHOW_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
         if (databaseDumpFile == null) {
@@ -138,7 +139,7 @@ public class ManagerController {
         return "show";
     }
 
-    @RequestMapping("/delete/{dumpFileId:[0-9]+}")
+    @RequestMapping(Routes.DELETE_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     public String delete(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
         if (databaseDumpFile == null) {
@@ -147,11 +148,11 @@ public class ManagerController {
         this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
         DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
         this.deleter.delete(databaseDumpFile);
-        return String.format("redirect:/manage/list/database/%s", databaseRef.getName());
+        return String.format("redirect:" + Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseRef.getName());
     }
 
 
-    @RequestMapping(value = "/download/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
+    @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request)
             throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);

@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.controllers.admin;
 
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
@@ -13,16 +14,16 @@ import java.io.IOException;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 09/12/2015
  */
 @Controller
-@RequestMapping(value = "/admin/control/jobs")
+@RequestMapping(value = Routes.JOB_CONTROL_ROOT)
 public class JobsController {
 
     @Autowired
@@ -34,7 +35,7 @@ public class JobsController {
         return "admin/jobs";
     }
 
-    @RequestMapping("/details/{jobId:[0-9]+}")
+    @RequestMapping(Routes.JOB_CONTROL_DETAILS_ROOT + "/{jobId:[0-9]+}")
     public String showJob(@PathVariable Integer jobId, Model model) throws IOException {
         model.addAttribute("job", this.jobRepo.findOne(jobId));
         return "admin/jobdetails";
@@ -50,14 +51,14 @@ public class JobsController {
         }
     }
 
-    @RequestMapping("/delete/{jobId:[0-9]+}")
+    @RequestMapping(Routes.JOB_CONTROL_DELETE_ROOT + "/{jobId:[0-9]+}")
     public String deleteJob(@PathVariable Integer jobId, Model model) throws IOException {
         checkJob(jobId, true);
         this.jobRepo.delete(jobId);
-        return "redirect:/admin/jobs";
+        return "redirect:" + Routes.JOB_CONTROL_ROOT;
     }
 
-    @RequestMapping("/update/{jobId:[0-9]+}/jobevent/{event:[A-Z]+}")
+    @RequestMapping(Routes.JOB_CONTROL_UPDATE_ROOT + "/{jobId:[0-9]+}/jobevent/{event:[A-Z]+}")
     public String updateJobEventFromJob(@PathVariable Integer jobId, @PathVariable String event, Model model) throws IOException {
         checkJob(jobId, false);
         JobEvent jobEvent = JobEvent.valueOf(event);
@@ -67,6 +68,6 @@ public class JobsController {
             job.setErrorMessage("Put in error manually by admin.");
         }
         this.jobRepo.save(job);
-        return "redirect:/admin/control/jobs";
+        return "redirect:" + Routes.JOB_CONTROL_ROOT;
     }
 }

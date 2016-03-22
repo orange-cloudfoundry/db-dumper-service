@@ -22,7 +22,7 @@ public class WebApplicationConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(this.addAdminUrlsInterceptor()).addPathPatterns("/admin/**").addPathPatterns("/manage/admin");
+        registry.addInterceptor(this.addAdminUrlsInterceptor()).addPathPatterns("/admin/**").addPathPatterns(Routes.MANAGE_ROOT + "/**");
     }
 
     @Bean

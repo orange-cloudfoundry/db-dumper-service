@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
@@ -29,7 +30,7 @@ import java.util.List;
  * Date: 15/10/2015
  */
 @Controller
-@RequestMapping(value = "/manage")
+@RequestMapping(value = Routes.MANAGE_ROOT)
 public class InterfaceController {
 
     @Autowired
@@ -51,7 +52,7 @@ public class InterfaceController {
     @Qualifier("userAccessRight")
     private UserAccessRight userAccessRight;
 
-    @RequestMapping("/list")
+    @RequestMapping(Routes.MANAGE_LIST)
     public String list(Model model) throws IOException, UserAccessRightException {
         List<DatabaseRef> databaseRefs = Lists.newArrayList(this.databaseRefRepo.findAll());
         model.addAttribute("databaseRefs", this.filteringDatabaseRef(databaseRefs));
@@ -74,7 +75,7 @@ public class InterfaceController {
         return databaseRefsFinal;
     }
 
-    @RequestMapping("/list/{instanceId}")
+    @RequestMapping(Routes.MANAGE_LIST + "/{instanceId}")
     public String listFromInstance(@PathVariable String instanceId, Model model) throws IOException, UserAccessRightException {
         DbDumperServiceInstance serviceInstance = instanceRepository.findOne(instanceId);
         if (serviceInstance != null && !this.userAccessRight.haveAccessToServiceInstance(serviceInstance)) {
@@ -91,7 +92,7 @@ public class InterfaceController {
         return "listfiles";
     }
 
-    @RequestMapping("/list/database/{databaseName}")
+    @RequestMapping(Routes.MANAGE_LIST_DATABASE_ROOT + "/{databaseName}")
     public String listFromDatabase(@PathVariable String databaseName, Model model) throws IOException, UserAccessRightException {
         DatabaseRef databaseRef = this.databaseRefRepo.findOne(databaseName);
         if (databaseRef == null) {

@@ -99,7 +99,7 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                    .antMatcher("/manage/download/**")
+                    .antMatcher(Routes.MANAGE_ROOT + Routes.DOWNLOAD_DUMP_FILE_ROOT + "/**")
                     .authorizeRequests()
                     .anyRequest()
                     .permitAll();
@@ -119,7 +119,7 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                    .antMatcher("/admin/control/**")
+                    .antMatcher(Routes.MANAGE_ADMIN_ROOT_ALTERNATIVE + "/**")
                     .authorizeRequests()
                     .anyRequest()
                     .hasRole("ADMIN")
@@ -142,7 +142,7 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                    .antMatcher("/manage/admin")
+                    .antMatcher(Routes.MANAGE_ADMIN_ROOT)
                     .authorizeRequests()
                     .anyRequest()
                     .hasRole("ADMIN")
