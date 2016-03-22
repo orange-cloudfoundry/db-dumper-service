@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.interceptor;
 
 import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.model.MappedRequestInfo;
+import com.orange.clara.cloud.servicedbdumper.security.AccessManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.mvc.EndpointHandlerMapping;
 import org.springframework.web.method.HandlerMethod;
@@ -34,6 +35,8 @@ public class AddAdminUrlsInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private EndpointHandlerMapping endpointHandlerMapping;
 
+    @Autowired
+    private AccessManager accessManager;
 
     private void loadMappedRequestFromRequestMappingInfoSet(Set<RequestMappingInfo> requestMappingInfoSet) {
         for (RequestMappingInfo requestMappingInfo : requestMappingInfoSet) {
@@ -63,9 +66,10 @@ public class AddAdminUrlsInterceptor extends HandlerInterceptorAdapter {
     }
 
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        if (!modelAndView.hasView()) {
+        if (modelAndView == null || !modelAndView.hasView() || !accessManager.isUserIsAdmin()) {
             return;
         }
+
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = this.handlerMapping.getHandlerMethods();
         this.loadMappedRequestFromRequestMappingInfoSet(handlerMethods.keySet());
         this.loadMappedRequestFromRequestMappingInfoSet(endpointHandlerMapping.getHandlerMethods().keySet());
