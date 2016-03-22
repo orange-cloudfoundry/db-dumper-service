@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
-public class CreateDumpTask implements AsyncTask {
+public class CreateDumpTask {
     private Logger logger = LoggerFactory.getLogger(CreateDumpTask.class);
     @Autowired
     @Qualifier("dumper")

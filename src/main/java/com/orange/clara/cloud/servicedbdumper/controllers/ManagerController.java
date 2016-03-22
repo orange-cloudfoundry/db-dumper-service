@@ -184,7 +184,6 @@ public class ManagerController {
         respHeaders.setContentDispositionFormData("attachment", fileName);
 
         InputStream inputStream = this.filer.retrieveWithOriginalStream(fileName);
-
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
     }

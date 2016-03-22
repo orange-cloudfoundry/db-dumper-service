@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.filer;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +59,13 @@ public class DiskFiler implements Filer {
     @Override
     public InputStream retrieveWithStream(String filename) throws IOException {
         File dumpfile = this.getFile(filename);
-        return new FileInputStream(dumpfile);
+        return Files.asByteSource(dumpfile).openStream();
     }
 
     @Override
     public InputStream retrieveWithOriginalStream(String filename) throws IOException {
         File dumpfile = this.getFile(filename);
-        return new FileInputStream(dumpfile);
+        return Files.asByteSource(dumpfile).openStream();
     }
 
     @Override

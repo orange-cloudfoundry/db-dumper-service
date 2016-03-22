@@ -126,7 +126,7 @@ public class DatabaseRefManagerTest {
     }
 
     @Test
-    public void udpate_database_ref_with_database_service_give_a_database_ref_with_new_user_password() throws DatabaseExtractionException, ServiceKeyException {
+    public void update_database_ref_with_database_service_give_a_database_ref_with_new_user_password() throws DatabaseExtractionException, ServiceKeyException {
         String newPassword = "mynewpassword";
         String newUser = "mynewuser";
         String newHost = "mynewhost";

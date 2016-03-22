@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
-public class RestoreDumpTask implements AsyncTask {
+public class RestoreDumpTask {
     private Logger logger = LoggerFactory.getLogger(RestoreDumpTask.class);
     @Autowired
     @Qualifier("restorer")

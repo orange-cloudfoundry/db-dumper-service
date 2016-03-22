@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
  * Author: Arthur Halet
  * Date: 26/11/2015
  */
-public class DeleteDumpTask implements AsyncTask {
+public class DeleteDumpTask {
 
     private Logger logger = LoggerFactory.getLogger(DeleteDumpTask.class);
 
