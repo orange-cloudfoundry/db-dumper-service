@@ -1,4 +1,4 @@
-# db-dumper-service
+# db-dumper-service [![Build Status](https://travis-ci.org/Orange-OpenSource/db-dumper-service.svg?branch=master)](https://travis-ci.org/Orange-OpenSource/db-dumper-service)
 
 A Cloud Foundry service broker to dump and restore database on demand.
 
