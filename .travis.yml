@@ -3,6 +3,9 @@ sudo: true
 jdk:
 - oraclejdk8
 after_success:
+- curl https://www.jpm4j.org/install/script | sh
+- jpm install com.codacy:codacy-coverage-reporter:assembly
+- codacy-coverage-reporter -l Java -r coverage.xml
 - mkdir go
 - export GOPATH=$(pwd)/go
 - bin/install-binaries
@@ -20,3 +23,6 @@ deploy:
     repo: Orange-OpenSource/db-dumper-service
     tags: true
     all_branches: true
+env:
+  global:
+    secure: pNZZlgQ2eKNWeCrvb9M0HcoBmxUJAKB/SlZc8W9L8zZfZDQWbufrsfPATVzRqTECyU7EK+3reM9JOLKIiXf3XKf/wp4/NiH7xcC3otAqD/btsoYcQ9W2vAZVcml4XbNdyWAoCPSOySUZqtvYe4Ou+f3+3JHKxaNBH2hDvN9iQFDkOyaf05KAQ8G6DA3xk0L2u/A27EAqsM0ZiSD9pcI1UscQVg6Xkja0KkxmRVJORMppuqH6PhOWxYeIJQ9VhOvti0I52iVE5es9AVO8eJdsWxNDAQxiaHz/VR/BIrFmxZMf79ys320sp0M9McOuflV4IsWo6MxG+E4txzGg3j7CbO5TwniljlQ92j7A/a3omOVhxn/868U75fD5YrYL16Deqmfiem26oEGmEWFiYwuFKlO77dVO7sGacqDd1mrtY73dYILtX8kYHGLcsuHX8aTFB1wTTPCqEMuUdtq+RjNkZ6T7KeIn/Z5AN4cqRAJwsf4yg3bHbhplDnAzw6K8FMWZulFS1l8wMiS+z+7J7Zhk2BQTGeJA0uzzcXrkZNlhpm6u2UuZHIZdhsL82DftSMKXgecrY6dV6zlUxc9qoyZjFNeq+gDBsNhlTyFgYgePLC88GtHHcsLN8FGVI1oNg0ruRWEmQ4FN9G4Taf4TfEzwpPaHYNmzq7sYbcMQ/xjRXrE=
