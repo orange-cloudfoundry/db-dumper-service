@@ -9,7 +9,7 @@ after_success:
 - rm t.jar
 - export PATH=$PATH:$HOME/jpm/bin
 - jpm install com.codacy:codacy-coverage-reporter:assembly
-- codacy-coverage-reporter -l Java -r coverage.xml
+- codacy-coverage-reporter -l Java -r target/site/jacoco/jacoco.xml
 - mkdir go
 - export GOPATH=$(pwd)/go
 - bin/install-binaries
