@@ -2,6 +2,10 @@ language: java
 sudo: true
 jdk:
 - oraclejdk8
+install:
+- mkdir go
+- export GOPATH=$(pwd)/go
+- bin/install-binaries
 after_success:
 - "mvn clean test jacoco:report"
 - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >t.jar
@@ -10,9 +14,6 @@ after_success:
 - export PATH=$PATH:$HOME/jpm/bin
 - jpm install com.codacy:codacy-coverage-reporter:assembly
 - codacy-coverage-reporter -l Java -r target/site/jacoco/jacoco.xml
-- mkdir go
-- export GOPATH=$(pwd)/go
-- bin/install-binaries
 - mvn clean install -DskipTests=true
 - mkdir -p db-dumper-service/target
 - cp target/db-dumper-service-1.2.0.war db-dumper-service/target
