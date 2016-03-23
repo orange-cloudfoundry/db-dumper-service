@@ -1,8 +1,8 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.google.common.collect.Maps;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.cloudservicekey.MockCloudServiceKey;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.services.MockServiceKeyManager;
+import com.orange.clara.cloud.servicedbdumper.fake.cloudservicekey.MockCloudServiceKey;
+import com.orange.clara.cloud.servicedbdumper.fake.services.MockServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;

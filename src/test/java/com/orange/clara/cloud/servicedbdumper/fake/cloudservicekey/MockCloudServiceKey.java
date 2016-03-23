@@ -1,6 +1,6 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.cloudservicekey;
+package com.orange.clara.cloud.servicedbdumper.fake.cloudservicekey;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.cloudservice.MockCloudService;
+import com.orange.clara.cloud.servicedbdumper.fake.cloudservice.MockCloudService;
 import org.cloudfoundry.client.lib.domain.CloudServiceKey;
 
 import java.util.Date;

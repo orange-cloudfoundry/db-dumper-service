@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.filer;
+package com.orange.clara.cloud.servicedbdumper.fake.filer;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;

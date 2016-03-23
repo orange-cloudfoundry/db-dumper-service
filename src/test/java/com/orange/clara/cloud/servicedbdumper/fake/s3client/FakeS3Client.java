@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.s3client;
+package com.orange.clara.cloud.servicedbdumper.fake.s3client;
 
 import com.google.common.io.Files;
 import org.jclouds.http.options.GetOptions;

@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.s3uploader;
+package com.orange.clara.cloud.servicedbdumper.fake.s3uploader;
 
 import com.orange.clara.cloud.servicedbdumper.filer.s3uploader.UploadS3Stream;
 import org.jclouds.blobstore.BlobStore;

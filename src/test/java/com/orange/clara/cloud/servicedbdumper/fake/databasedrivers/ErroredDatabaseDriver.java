@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.databasedrivers;
+package com.orange.clara.cloud.servicedbdumper.fake.databasedrivers;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.AbstractDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
@@ -13,24 +13,25 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDr
  * Author: Arthur Halet
  * Date: 26/02/2016
  */
-public class EchoDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
+public class ErroredDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
 
-    public EchoDatabaseDriver() {
+    public ErroredDatabaseDriver() {
         super(null, null);
     }
 
     @Override
     public String[] getDumpCommandLine() {
         return new String[]{
-                "echo",
-                this.getDatabaseRef().toString()
+                "cat",
+                "1"
         };
     }
 
     @Override
     public String[] getRestoreCommandLine() {
         return new String[]{
-                "cat"
+                "cat",
+                "1"
         };
     }
 

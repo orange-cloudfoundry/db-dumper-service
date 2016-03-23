@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.filer;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.s3uploader.UploadS3StreamFake;
+import com.orange.clara.cloud.servicedbdumper.fake.s3uploader.UploadS3StreamFake;
 import com.orange.spring.cloud.connector.s3.core.jcloudswrappers.SpringCloudBlobStore;
 import com.orange.spring.cloud.connector.s3.core.jcloudswrappers.SpringCloudBlobStoreContext;
 import org.jclouds.ContextBuilder;

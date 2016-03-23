@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.service.servicekey;
 
 import com.orange.clara.cloud.servicedbdumper.cloudfoundry.CloudFoundryClientFactory;
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.cloudfoundry.CloudFoundryClientFake;
+import com.orange.clara.cloud.servicedbdumper.fake.cloudfoundry.CloudFoundryClientFake;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseService;
 import org.cloudfoundry.client.lib.CloudFoundryClient;

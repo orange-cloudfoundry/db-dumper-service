@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.services;
+package com.orange.clara.cloud.servicedbdumper.fake.services;
 
 import com.orange.clara.cloud.servicedbdumper.security.AccessManager;
 

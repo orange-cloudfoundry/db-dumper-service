@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.security.useraccess;
 
-import com.orange.clara.cloud.servicedbdumper.dbdumper.fake.services.FakeAccessManager;
+import com.orange.clara.cloud.servicedbdumper.fake.services.FakeAccessManager;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;

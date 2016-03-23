@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.cloudservice;
+package com.orange.clara.cloud.servicedbdumper.fake.cloudservice;
 
 import org.cloudfoundry.client.lib.domain.CloudService;
 

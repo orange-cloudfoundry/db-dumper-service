@@ -29,16 +29,13 @@ public class AccessManager {
     public boolean isUserIsAdmin() {
         SecurityContext context = this.getSecurityContextHolder();
         if (context == null) {
-            System.out.println("no context");
             return false;
         }
         Authentication authentication = context.getAuthentication();
         if (authentication == null) {
-            System.out.println("no authent");
             return false;
         }
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        System.out.println("authorities " + authorities);
         return authorities.contains(new SimpleGrantedAuthority(AUTHORIZED_AUTHORITY));
     }
 

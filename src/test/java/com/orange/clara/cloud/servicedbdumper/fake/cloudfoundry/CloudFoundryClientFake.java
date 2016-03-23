@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.dbdumper.fake.cloudfoundry;
+package com.orange.clara.cloud.servicedbdumper.fake.cloudfoundry;
 
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.archive.ApplicationArchive;
