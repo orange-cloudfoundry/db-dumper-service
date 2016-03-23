@@ -110,10 +110,10 @@ public class CatalogConfig {
 
     private float getCostFromQuota(String quota, String formula) throws ParseException, ScriptException {
         long size = ByteFormat.parse(quota);
-        formula = formula.replaceAll("quota", String.valueOf(size * this.getDefaultCost()));
+        String formulaInjected = formula.replaceAll("quota", String.valueOf(size * this.getDefaultCost()));
         ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine engine = factory.getEngineByName("JavaScript");
-        Object eval = engine.eval(formula);
+        Object eval = engine.eval(formulaInjected);
         if (eval instanceof Integer) {
             return new Float((Integer) eval);
         }

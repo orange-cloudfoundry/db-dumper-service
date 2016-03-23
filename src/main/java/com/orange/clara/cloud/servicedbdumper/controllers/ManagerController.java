@@ -10,8 +10,6 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.InputStreamResource;
@@ -44,7 +42,6 @@ import java.util.Base64;
 @Controller
 @RequestMapping(value = Routes.MANAGE_ROOT)
 public class ManagerController {
-    private Logger logger = LoggerFactory.getLogger(ManagerController.class);
 
     @Autowired
     @Qualifier(value = "filer")

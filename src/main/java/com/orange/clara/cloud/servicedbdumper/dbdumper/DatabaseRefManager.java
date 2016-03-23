@@ -99,9 +99,9 @@ public class DatabaseRefManager {
     }
 
     protected String sanitizeToken(String token) {
-        token = token.replaceAll("(?i)^bearer", "");
-        token = token.trim();
-        return token;
+        String sanitizedToken = token.replaceAll("(?i)^bearer", "");
+        sanitizedToken = sanitizedToken.trim();
+        return sanitizedToken;
     }
 
     private boolean isUri(String possibleUri) {
