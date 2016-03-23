@@ -59,8 +59,8 @@ public class DatabaseRefManager {
         if (token == null || token.isEmpty()) {
             throw new ServiceKeyException("You must pass your token (param: cf_user_token)");
         }
-        token = this.sanitizeToken(token);
-        CloudServiceKey cloudServiceKey = this.serviceKeyManager.createServiceKey(uriOrServiceName, token, org, space);
+        String sanitizedToken = this.sanitizeToken(token);
+        CloudServiceKey cloudServiceKey = this.serviceKeyManager.createServiceKey(uriOrServiceName, sanitizedToken, org, space);
         return this.getDatabaseRefFromServiceKey(cloudServiceKey, org, space);
     }
 

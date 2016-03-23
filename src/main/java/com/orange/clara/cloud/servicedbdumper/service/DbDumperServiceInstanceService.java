@@ -144,6 +144,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 break;
             default:
                 serviceInstanceLastOperation = new ServiceInstanceLastOperation("Finished", OperationState.SUCCEEDED);
+                break;
         }
         return serviceInstance.withAsync(true).withLastOperation(serviceInstanceLastOperation);
     }
@@ -153,6 +154,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     public ServiceInstance deleteServiceInstance(DeleteServiceInstanceRequest request) throws ServiceBrokerException {
         DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
         if (dbDumperServiceInstance == null) {
+            logger.warn("The service instance '" + request.getServiceInstanceId() + "' doesn't exist. Defaulting to say to cloud controller that instance is deleted.");
             return new ServiceInstance(request);
         }
         String dbRefName = dbDumperServiceInstance.getDatabaseRef().getName();

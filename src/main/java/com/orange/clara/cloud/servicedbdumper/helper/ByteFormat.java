@@ -15,15 +15,15 @@ import java.util.regex.Pattern;
  */
 public class ByteFormat {
 
-    public static long parse(String in) {
-        in = in.trim().toLowerCase();
-        in = in.replaceAll(",", ".");
+    public static long parse(String sizeInText) {
+        String formatedSizeInText = sizeInText.trim().toLowerCase();
+        formatedSizeInText = formatedSizeInText.replaceAll(",", ".");
         try {
-            return Long.parseLong(in);
+            return Long.parseLong(formatedSizeInText);
         } catch (NumberFormatException e) {
 
         }
-        final Matcher m = Pattern.compile("([\\d.,]+)\\s*(\\w)").matcher(in);
+        final Matcher m = Pattern.compile("([\\d.,]+)\\s*(\\w)").matcher(formatedSizeInText);
         m.find();
         long scale = 1;
         switch (m.group(2).charAt(0)) {

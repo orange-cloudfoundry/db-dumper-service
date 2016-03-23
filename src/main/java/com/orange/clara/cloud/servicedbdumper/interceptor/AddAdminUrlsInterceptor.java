@@ -29,7 +29,7 @@ import java.util.*;
 public class AddAdminUrlsInterceptor extends HandlerInterceptorAdapter {
 
     private final static String DEFAULT_ADMIN_URL = "/admin";
-    List<MappedRequestInfo> mappedRequests = Lists.newArrayList();
+    private List<MappedRequestInfo> mappedRequests = Lists.newArrayList();
     @Autowired
     private RequestMappingHandlerMapping handlerMapping;
     @Autowired

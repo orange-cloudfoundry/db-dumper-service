@@ -7,8 +7,6 @@ import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
@@ -29,8 +27,6 @@ import java.util.concurrent.Future;
  * Date: 26/11/2015
  */
 public class DeleteDumpTask {
-
-    private Logger logger = LoggerFactory.getLogger(DeleteDumpTask.class);
 
     @Autowired
     private JobRepo jobRepo;

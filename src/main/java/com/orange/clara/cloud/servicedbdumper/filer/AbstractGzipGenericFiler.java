@@ -39,12 +39,9 @@ abstract public class AbstractGzipGenericFiler implements Filer {
 
     @Override
     public void retrieve(OutputStream outputStream, String filename) throws IOException {
-        PipedOutputStream outputPipe = new PipedOutputStream();
-        PipedInputStream inputPipe = new PipedInputStream(outputPipe);
         InputStream inputStream = this.originalFiler.retrieveWithStream(filename);
         gzipCompressing.gunziptIt(outputStream, inputStream);
         logger.debug("Gunziping file ...");
-        this.originalFiler.retrieve(outputPipe, filename);
     }
 
     @Override

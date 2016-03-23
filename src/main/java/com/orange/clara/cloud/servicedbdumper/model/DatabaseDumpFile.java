@@ -90,12 +90,12 @@ public class DatabaseDumpFile {
         return this.fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
     public void setFileName(File file) {
         this.fileName = file.getName();
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public File getFile() {
@@ -164,7 +164,7 @@ public class DatabaseDumpFile {
     }
 
     @PrePersist
-    void createdAt() {
+    public void createdAt() {
         this.createdAt = new Date();
     }
 
