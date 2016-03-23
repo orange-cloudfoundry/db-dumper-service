@@ -1,4 +1,4 @@
-# db-dumper-service [![Build Status](https://travis-ci.org/Orange-OpenSource/db-dumper-service.svg?branch=master)](https://travis-ci.org/Orange-OpenSource/db-dumper-service)
+# db-dumper-service [![Build Status](https://travis-ci.org/Orange-OpenSource/db-dumper-service.svg?branch=master)](https://travis-ci.org/Orange-OpenSource/db-dumper-service) [![Codacy Badge](https://api.codacy.com/project/badge/grade/f94fec332f4645a099a99b9b743fc8f9)](https://www.codacy.com/app/arthur-halet/db-dumper-service) [![Codacy Badge](https://api.codacy.com/project/badge/coverage/f94fec332f4645a099a99b9b743fc8f9)](https://www.codacy.com/app/arthur-halet/db-dumper-service)
 
 A Cloud Foundry service broker to dump and restore database on demand.
 
