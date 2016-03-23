@@ -7,7 +7,7 @@ after_success:
 - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >t.jar
 - java -jar t.jar -u init
 - rm t.jar
-- export PATH=$PATH:$HOME/bin
+- export PATH=$PATH:$HOME/jpm/bin
 - jpm install com.codacy:codacy-coverage-reporter:assembly
 - codacy-coverage-reporter -l Java -r coverage.xml
 - mkdir go
