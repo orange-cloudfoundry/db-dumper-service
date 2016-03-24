@@ -3,7 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.service;
 import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
-import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
+import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFileException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.*;
@@ -190,7 +190,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         } else if (action.equals(UpdateAction.RESTORE)) {
             try {
                 this.restoreDump(request.getParameters(), instance);
-            } catch (RestoreCannotFindFile e) {
+            } catch (RestoreCannotFindFileException e) {
                 throw new ServiceBrokerException(e.getMessage());
             } catch (RestoreException e) {
                 throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);

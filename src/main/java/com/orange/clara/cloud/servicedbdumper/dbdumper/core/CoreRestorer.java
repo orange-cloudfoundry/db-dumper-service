@@ -3,7 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
-import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFile;
+import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFileException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
@@ -36,7 +36,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " ...");
         DatabaseDumpFile dumpFile = this.findDumpFile(databaseRefSource, date);
         if (dumpFile == null) {
-            throw new RestoreCannotFindFile(databaseRefSource);
+            throw new RestoreCannotFindFileException(databaseRefSource);
         }
         String fileName = this.getFileName(dumpFile);
         try {
