@@ -44,28 +44,22 @@ import java.util.Base64;
 public class ManagerController {
 
     @Autowired
-    @Qualifier(value = "filer")
     private Filer filer;
 
     @Autowired
     @Qualifier("userAccessRight")
     private UserAccessRight userAccessRight;
 
-
     @Autowired
     private DatabaseDumpFileRepo databaseDumpFileRepo;
 
     @Autowired
-    @Qualifier(value = "deleter")
     private Deleter deleter;
 
     @RequestMapping(Routes.RAW_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     @ResponseBody
     public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
-        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
-        if (databaseDumpFile == null) {
-            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
-        }
+        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
         this.checkDumpShowable(databaseDumpFile);
         String databaseName = databaseDumpFile.getDatabaseRef().getName();
@@ -108,10 +102,7 @@ public class ManagerController {
 
     @RequestMapping(Routes.SHOW_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
-        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
-        if (databaseDumpFile == null) {
-            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
-        }
+        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
         this.checkDumpShowable(databaseDumpFile);
         String databaseName = databaseDumpFile.getDatabaseRef().getName();
@@ -138,13 +129,12 @@ public class ManagerController {
 
     @RequestMapping(Routes.DELETE_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     public String delete(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException {
-        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
-        if (databaseDumpFile == null) {
-            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
-        }
+        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
         DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
-        this.deleter.delete(databaseDumpFile);
+        if (!databaseDumpFile.isDeleted()) {
+            this.deleter.delete(databaseDumpFile);
+        }
         return String.format("redirect:" + Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseRef.getName());
     }
 
@@ -152,10 +142,7 @@ public class ManagerController {
     @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request)
             throws IOException, UserAccessRightException {
-        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
-        if (databaseDumpFile == null) {
-            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
-        }
+        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDatabase(databaseDumpFile.getDatabaseRef());
         String userRequest = "";
         String passwordRequest = "";
@@ -184,6 +171,14 @@ public class ManagerController {
         InputStream inputStream = this.filer.retrieveWithOriginalStream(fileName);
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+    }
+
+    private DatabaseDumpFile getDatabaseDumpFile(Integer dumpFileId) {
+        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);
+        if (databaseDumpFile == null) {
+            throw new IllegalArgumentException(String.format("Cannot find dump file with id '%s'", dumpFileId));
+        }
+        return databaseDumpFile;
     }
 
     private ResponseEntity<InputStreamResource> getErrorResponseEntityBasicAuth() {

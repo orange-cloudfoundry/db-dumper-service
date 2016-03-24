@@ -1,10 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.google.common.collect.Maps;
-import com.orange.clara.cloud.servicedbdumper.fake.cloudservicekey.MockCloudServiceKey;
-import com.orange.clara.cloud.servicedbdumper.fake.services.MockServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
+import com.orange.clara.cloud.servicedbdumper.fake.cloudservicekey.MockCloudServiceKey;
+import com.orange.clara.cloud.servicedbdumper.fake.services.MockServiceKeyManager;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseService;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import static org.mockito.Matchers.notNull;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -58,6 +59,7 @@ public class DatabaseRefManagerTest {
 
     @Before
     public void init() {
+        reset();
         initMocks(this);
         when(databaseRefRepo.save((DatabaseRef) notNull())).thenReturn(null);
         when(databaseServiceRepo.save((DatabaseService) notNull())).thenReturn(null);

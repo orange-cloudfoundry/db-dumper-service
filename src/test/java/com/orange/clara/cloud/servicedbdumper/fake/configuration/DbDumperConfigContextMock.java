@@ -1,10 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.fake.configuration;
 
-import com.orange.clara.cloud.servicedbdumper.fake.filer.EchoFiler;
-import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.fake.dbdumper.mocked.DeleterMock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 /**
  * Copyright (C) 2016 Orange
@@ -14,18 +13,12 @@ import org.springframework.context.annotation.Primary;
  * or at 'https://opensource.org/licenses/Apache-2.0'.
  * <p>
  * Author: Arthur Halet
- * Date: 23/03/2016
+ * Date: 24/03/2016
  */
 @Configuration
-public class FilerConfigContext {
+public class DbDumperConfigContextMock {
     @Bean
-    public Filer filer() throws InstantiationException, IllegalAccessException {
-        return new EchoFiler(this.testTextForFiler());
-    }
-
-    @Bean
-    @Primary
-    public String testTextForFiler() {
-        return "my test";
+    public Deleter deleter() {
+        return new DeleterMock();
     }
 }

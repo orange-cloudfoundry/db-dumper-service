@@ -32,7 +32,6 @@ public class DeleteDumpTask {
     private JobRepo jobRepo;
 
     @Autowired
-    @Qualifier("deleter")
     private Deleter deleter;
 
     @Autowired

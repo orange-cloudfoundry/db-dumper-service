@@ -40,7 +40,6 @@ public abstract class AbstractCoreDbAction {
     protected DbDumpersFactory dbDumpersFactory;
 
     @Autowired
-    @Qualifier(value = "filer")
     protected Filer filer;
 
     @Autowired

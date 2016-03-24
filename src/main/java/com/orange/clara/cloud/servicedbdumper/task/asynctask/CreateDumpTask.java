@@ -10,7 +10,6 @@ import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.transaction.annotation.Propagation;
@@ -31,7 +30,6 @@ import java.util.concurrent.Future;
 public class CreateDumpTask {
     private Logger logger = LoggerFactory.getLogger(CreateDumpTask.class);
     @Autowired
-    @Qualifier("dumper")
     private Dumper dumper;
 
     @Autowired

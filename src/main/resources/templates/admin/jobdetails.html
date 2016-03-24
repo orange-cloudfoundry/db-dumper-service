@@ -17,8 +17,9 @@
 
                 <p th:text="${job.dbDumperServiceInstance.serviceInstanceId}"></p>
             </li>
-            <li class="collection-item" th:if="${job.databaseRefSrc.databaseService != null}">
-                <span class="title">Service name</span>
+            <li class="collection-item"
+                th:if="${job.databaseRefSrc != null and job.databaseRefSrc.databaseService != null}">
+                <span class="title">Source service name</span>
 
                 <p th:text="${job.databaseRefSrc.databaseService.name}"></p>
             </li>
@@ -30,6 +31,12 @@
                        data-delay="50"
                        th:attr="data-tooltip=${job.databaseRefSrc.getInUrlFormat()}">info_outline</i>
                 </p>
+            </li>
+            <li class="collection-item"
+                th:if="${job.databaseRefTarget != null and job.databaseRefTarget.databaseService != null}">
+                <span class="title">Target service name</span>
+
+                <p th:text="${job.databaseRefTarget.databaseService.name}"></p>
             </li>
             <li class="collection-item" th:if="${job.databaseRefTarget != null}">
                 <span class="title">Database target name</span>

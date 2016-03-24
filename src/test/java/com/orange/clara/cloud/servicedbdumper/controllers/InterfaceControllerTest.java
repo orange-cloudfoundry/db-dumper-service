@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  * Date: 23/03/2016
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {Application.class, FilerConfigContext.class})
+@SpringApplicationConfiguration(classes = {Application.class})
 @WebAppConfiguration
 @ActiveProfiles("local")
 public class InterfaceControllerTest {
