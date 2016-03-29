@@ -124,6 +124,7 @@ public class DatabaseLocalDumperTest {
                 this.password,
                 "--targetDb",
                 this.databaseName,
+                "--drop",
                 "--archive"
         };
         assertThat(mongodbDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
