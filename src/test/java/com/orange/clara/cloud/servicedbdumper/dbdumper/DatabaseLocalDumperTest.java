@@ -122,7 +122,7 @@ public class DatabaseLocalDumperTest {
                 this.user,
                 "--password",
                 this.password,
-                "--db",
+                "--targetDb",
                 this.databaseName,
                 "--archive"
         };
@@ -133,13 +133,13 @@ public class DatabaseLocalDumperTest {
     public void create_command_line_for_dump_redis() throws Exception {
         String[] expected = {
                 dumpBinaries.getAbsolutePath(),
-                "dump",
                 "-s",
                 this.host,
                 "-p",
                 this.port.toString(),
                 "-a",
                 this.password,
+                "dump",
                 "-o"
         };
         assertThat(redisDatabaseDumper.getDumpCommandLine()).isEqualTo(expected);
@@ -149,13 +149,13 @@ public class DatabaseLocalDumperTest {
     public void create_command_line_for_restore_redis() throws Exception {
         String[] expected = {
                 dumpBinaries.getAbsolutePath(),
-                "restore",
                 "-s",
                 this.host,
                 "-p",
                 this.port.toString(),
                 "-a",
                 this.password,
+                "restore",
                 "-i"
         };
         assertThat(redisDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
