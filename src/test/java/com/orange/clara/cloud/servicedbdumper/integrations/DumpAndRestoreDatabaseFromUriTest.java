@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.integrations;
 
 import com.orange.clara.cloud.servicedbdumper.Application;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
@@ -21,6 +22,30 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles("local")
-public class DumpAndRestoreDatabaseFromUriTest {
+public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
 
+
+    @Override
+    @Test
+    public void when_dump_and_restore_a_MYSQL_database_it_should_have_the_database_source_equals_to_the_database_target() {
+
+    }
+
+    @Override
+    @Test
+    public void when_dump_and_restore_a_POSTGRES_database_it_should_have_the_database_source_equals_to_the_database_target() {
+
+    }
+
+    @Override
+    @Test
+    public void when_dump_and_restore_a_REDIS_database_it_should_have_the_database_source_equals_to_the_database_target() {
+
+    }
+
+    @Override
+    @Test
+    public void when_dump_and_restore_a_MONGODB_database_it_should_have_the_database_source_equals_to_the_database_target() {
+
+    }
 }
