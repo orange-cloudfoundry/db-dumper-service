@@ -53,13 +53,12 @@ if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
     exit 1
 fi
 mkdir -p "${WD}/src/main/resources/binaries/mongodb/bin"
-tar -zxvf "$filepath"
+mkdir $finalfile && tar -zxvf "$filepath" -C $finalfile # tar -zxvf "$filepath"
 cp "$finalfile/bin/mongodump" "${WD}/src/main/resources/binaries/mongodb/bin"
 cp "$finalfile/bin/mongorestore" "${WD}/src/main/resources/binaries/mongodb/bin"
 rm -Rf "$finalfile"
 rm "$filepath"
 echo "Done installing mongodb binaries."
-
 #####################################################################################
 #postgresql
 #####################################################################################
