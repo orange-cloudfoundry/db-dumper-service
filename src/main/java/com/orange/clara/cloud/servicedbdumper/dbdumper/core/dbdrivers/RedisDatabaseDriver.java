@@ -20,7 +20,7 @@ public class RedisDatabaseDriver extends AbstractDatabaseDriver implements Datab
 
     @Override
     public String[] getDumpCommandLine() {
-        return String.format("%s dump -s %s -p %s -a %s -o",
+        return String.format("%s -s %s -p %s -a %s dump -o",
                 this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
@@ -30,7 +30,7 @@ public class RedisDatabaseDriver extends AbstractDatabaseDriver implements Datab
 
     @Override
     public String[] getRestoreCommandLine() {
-        return String.format("%s restore -s %s -p %s -a %s -i",
+        return String.format("%s -s %s -p %s -a %s restore -i",
                 this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),

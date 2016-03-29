@@ -5,7 +5,7 @@ echo ""
 
 mysql_version="5.7.10"
 mysql_global_version="5.7"
-mongodb_version="3.2.1"
+mongodb_version="3.2.4"
 postgresql_version="9.4.5"
 
 #####################################################################################
@@ -37,7 +37,7 @@ echo "Done installing mysql binaries."
 #####################################################################################
 #mongodb
 #####################################################################################
-fileurl="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${mongodb_version}.tgz"
+fileurl="https://github.com/ArthurHlt/mongo-tools/releases/download/r3.3.2-targetdb/mongodb-linux-x86_64-${mongodb_version}.tgz"
 filepath="mongodb-linux-x86_64-${mongodb_version}.tgz"
 finalfile="mongodb-linux-x86_64-${mongodb_version}"
 echo "Installing mongodb dump and restore binaries..."
