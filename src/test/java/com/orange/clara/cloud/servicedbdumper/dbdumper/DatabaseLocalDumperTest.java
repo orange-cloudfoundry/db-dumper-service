@@ -167,8 +167,8 @@ public class DatabaseLocalDumperTest {
     public void create_command_line_for_dump_mysql() throws Exception {
         String[] expected = {
                 dumpBinaries.getAbsolutePath(),
-                "--skip-comments",
                 "--routines",
+                "--skip-comments",
                 "--host=" + this.host,
                 "--port=" + this.port,
                 "--user=" + this.user,
