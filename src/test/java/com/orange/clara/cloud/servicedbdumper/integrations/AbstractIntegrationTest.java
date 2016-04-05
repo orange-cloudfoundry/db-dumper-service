@@ -303,12 +303,14 @@ abstract public class AbstractIntegrationTest {
         }
         if (databaseType.equals(DatabaseType.POSTGRESQL)) {
             this.dropDatabase(databaseRef);
-            createDatabaseCommands.add(new String[]{
-                    this.psqlBinary.getAbsolutePath(),
-                    String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),
-                    "-c",
-                    "CREATE DATABASE " + DATABASE_SOURCE_NAME
-            });
+            if (System.getenv("TRAVIS") == null) {
+                createDatabaseCommands.add(new String[]{
+                        this.psqlBinary.getAbsolutePath(),
+                        String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),
+                        "-c",
+                        "CREATE DATABASE " + DATABASE_SOURCE_NAME
+                });
+            }
             createDatabaseCommands.add(new String[]{
                     this.psqlBinary.getAbsolutePath(),
                     String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),

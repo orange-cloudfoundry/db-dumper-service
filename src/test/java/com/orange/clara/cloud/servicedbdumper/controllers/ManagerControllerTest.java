@@ -60,6 +60,10 @@ public class ManagerControllerTest {
     private final static String userNotShowable = "user-2";
     private final static String passwordNotShowable = "password-2";
     private final static long sizeNotShowable = 24L;
+    private static DatabaseDumpFile databaseDumpFileShowable;
+    private static DatabaseDumpFile databaseDumpFileNotShowable;
+    private static DatabaseDumpFile databaseDumpFileWithDeletedDb;
+    private static DatabaseDumpFile databaseDumpFileDeleted;
     @Autowired
     private Deleter deleter;
     @Autowired
@@ -69,20 +73,15 @@ public class ManagerControllerTest {
     private WebApplicationContext webApplicationContext;
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
-    private DatabaseDumpFile databaseDumpFileShowable;
-    private DatabaseDumpFile databaseDumpFileNotShowable;
-    private DatabaseDumpFile databaseDumpFileWithDeletedDb;
-    private DatabaseDumpFile databaseDumpFileDeleted;
     @Autowired
     @Qualifier("testTextForFiler")
     private String textForFiler;
-    private boolean dbFeeded = false;
 
 
     @Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
-        if (dbFeeded) {
+        if (databaseRefRepo.exists(databaseNameNotShowable)) {
             return;
         }
         DatabaseRef databaseRef = new DatabaseRef(databaseNameShowable, URI.create("mysql://foo:bar@mymysql-1/mydb"));
@@ -91,12 +90,17 @@ public class ManagerControllerTest {
         databaseRefRepo.save(Arrays.asList(databaseRef, databaseRefDeleted));
 
         databaseDumpFileShowable = new DatabaseDumpFile(fileNameShowable, databaseRef, userShowable, passwordShowable, true, sizeShowable);
+
         databaseDumpFileNotShowable = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+
         databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
         databaseDumpFileDeleted.setDeleted(true);
+
         databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+
         databaseDumpFileRepo.save(Arrays.asList(databaseDumpFileShowable, databaseDumpFileNotShowable, databaseDumpFileDeleted, databaseDumpFileWithDeletedDb));
-        dbFeeded = true;
+
+
     }
 
 
