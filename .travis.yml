@@ -2,6 +2,16 @@ language: java
 sudo: true
 jdk:
 - oraclejdk8
+services:
+- mysql
+- postgresql
+- mongodb
+- redis-server
+before_script:
+- mysql -e 'create database dbdumpertestsource;'
+- mysql -e 'create database dbdumpertesttarget;'
+- psql -c 'create database dbdumpertestsource;' -U postgres
+- psql -c 'create database dbdumpertesttarget;' -U postgres
 install:
 - mkdir go
 - export GOPATH=$(pwd)/go

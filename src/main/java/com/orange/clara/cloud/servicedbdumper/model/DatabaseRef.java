@@ -30,7 +30,7 @@ public class DatabaseRef {
     protected String databaseName;
     @Enumerated(EnumType.STRING)
     protected DatabaseType type;
-    @OneToMany(mappedBy = "databaseRef")
+    @OneToMany(mappedBy = "databaseRef", fetch = FetchType.EAGER)
     protected List<DatabaseDumpFile> databaseDumpFiles;
     protected Integer port;
     private Boolean deleted;
@@ -39,7 +39,7 @@ public class DatabaseRef {
     @JoinColumn(name = "database_service_id")
     private DatabaseService databaseService;
 
-    @OneToMany(mappedBy = "databaseRef")
+    @OneToMany(mappedBy = "databaseRef", fetch = FetchType.EAGER)
     private List<DbDumperServiceInstance> dbDumperServiceInstances;
 
     public DatabaseRef() {
@@ -61,10 +61,10 @@ public class DatabaseRef {
         } else {
             this.port = databaseUri.getPort();
         }
-        if (databaseUri.getPath() != null) {
+        if (databaseUri.getPath() != null && !databaseUri.getPath().isEmpty()) {
             this.databaseName = databaseUri.getPath().substring(1);
         }
-        if (databaseUri.getUserInfo() == null) {
+        if (databaseUri.getUserInfo() == null || databaseUri.getUserInfo().isEmpty()) {
             return;
         }
         String[] userInfo = databaseUri.getUserInfo().split(":");

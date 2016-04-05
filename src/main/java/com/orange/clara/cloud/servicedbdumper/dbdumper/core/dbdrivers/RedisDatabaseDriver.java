@@ -30,7 +30,7 @@ public class RedisDatabaseDriver extends AbstractDatabaseDriver implements Datab
 
     @Override
     public String[] getRestoreCommandLine() {
-        return String.format("%s -s %s -p %s -a %s restore -i",
+        return String.format("%s -s %s -p %s -a %s restore --flushdb -i",
                 this.binaryRestore.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),

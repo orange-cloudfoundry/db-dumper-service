@@ -2,7 +2,6 @@ DROP TABLE IF EXISTS "faketable";
 
 CREATE TABLE "faketable" (
   id SERIAL PRIMARY KEY,
-  id integer NULL,
   name varchar(255) default NULL,
   mail varchar(255) default NULL
 );

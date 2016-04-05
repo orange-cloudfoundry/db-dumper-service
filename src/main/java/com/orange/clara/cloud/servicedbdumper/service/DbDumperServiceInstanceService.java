@@ -40,15 +40,15 @@ import java.util.Map;
 @Service
 public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
-    private final static String NEW_SRC_URL_PARAMETER = "db";
-    private final static String SRC_URL_PARAMETER = "src_url";
-    private final static String ACTION_PARAMETER = "action";
-    private final static String CREATED_AT_PARAMETER = "created_at";
-    private final static String NEW_TARGET_URL_PARAMETER = "db";
-    private final static String TARGET_URL_PARAMETER = "target_url";
-    private final static String CF_USER_TOKEN_PARAMETER = "cf_user_token";
-    private final static String ORG_PARAMETER = "org";
-    private final static String SPACE_PARAMETER = "space";
+    public final static String NEW_SRC_URL_PARAMETER = "db";
+    public final static String SRC_URL_PARAMETER = "src_url";
+    public final static String ACTION_PARAMETER = "action";
+    public final static String CREATED_AT_PARAMETER = "created_at";
+    public final static String NEW_TARGET_URL_PARAMETER = "db";
+    public final static String TARGET_URL_PARAMETER = "target_url";
+    public final static String CF_USER_TOKEN_PARAMETER = "cf_user_token";
+    public final static String ORG_PARAMETER = "org";
+    public final static String SPACE_PARAMETER = "space";
 
 
     private final static String DASHBOARD_ROUTE = Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/";

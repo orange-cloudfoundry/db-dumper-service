@@ -1,8 +1,7 @@
-DROP TABLE `faketable`;
+DROP TABLE IF EXISTS `faketable`;
 
 CREATE TABLE `faketable` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
-  `id` mediumint,
   `name` varchar(255) default NULL,
   `mail` varchar(255) default NULL,
   PRIMARY KEY (`id`)

@@ -61,7 +61,6 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         this.filer.retrieve(p.getOutputStream(), fileName);
         p.waitFor();
         if (p.exitValue() != 0) {
-            this.filer.delete(fileName);
             throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
         }
     }

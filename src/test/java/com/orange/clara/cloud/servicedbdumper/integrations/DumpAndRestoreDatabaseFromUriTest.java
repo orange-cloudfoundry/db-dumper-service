@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.integrations;
 
 import com.orange.clara.cloud.servicedbdumper.Application;
-import org.junit.Test;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
@@ -26,26 +26,45 @@ public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
 
 
     @Override
-    @Test
-    public void when_dump_and_restore_a_MYSQL_database_it_should_have_the_database_source_equals_to_the_database_target() {
-
+    public String getDbParamsForDump(DatabaseType databaseType) {
+        switch (databaseType) {
+            case MONGODB:
+                return this.getDbSourceFromUri(mongoServer);
+            case MYSQL:
+                return this.getDbSourceFromUri(mysqlServer);
+            case POSTGRESQL:
+                return this.getDbSourceFromUri(postgresServer);
+            case REDIS:
+                return redisServer;
+        }
+        return "";
     }
 
     @Override
-    @Test
-    public void when_dump_and_restore_a_POSTGRES_database_it_should_have_the_database_source_equals_to_the_database_target() {
-
+    public String getDbParamsForRestore(DatabaseType databaseType) {
+        switch (databaseType) {
+            case MONGODB:
+                return this.getDbTargetFromUri(mongoServer);
+            case MYSQL:
+                return this.getDbTargetFromUri(mysqlServer);
+            case POSTGRESQL:
+                return this.getDbTargetFromUri(postgresServer);
+            case REDIS:
+                return redisServer;
+        }
+        return "";
     }
 
-    @Override
-    @Test
-    public void when_dump_and_restore_a_REDIS_database_it_should_have_the_database_source_equals_to_the_database_target() {
-
+    public String getDbFromUri(String databaseServerUri, String databaseName) {
+        int lastPos = databaseServerUri.lastIndexOf('/');
+        return databaseServerUri.substring(0, lastPos) + "/" + databaseName;
     }
 
-    @Override
-    @Test
-    public void when_dump_and_restore_a_MONGODB_database_it_should_have_the_database_source_equals_to_the_database_target() {
+    public String getDbSourceFromUri(String databaseServerUri) {
+        return this.getDbFromUri(databaseServerUri, DATABASE_SOURCE_NAME);
+    }
 
+    public String getDbTargetFromUri(String databaseServerUri) {
+        return this.getDbFromUri(databaseServerUri, DATABASE_TARGET_NAME);
     }
 }

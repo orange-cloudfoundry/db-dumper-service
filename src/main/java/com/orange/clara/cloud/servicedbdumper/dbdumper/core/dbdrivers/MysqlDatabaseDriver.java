@@ -4,11 +4,11 @@ import java.io.File;
 
 /**
  * Copyright (C) 2015 Orange
- * <p/>
+ * <p>
  * This software is distributed under the terms and conditions of the 'Apache-2.0'
  * license which can be found in the file 'LICENSE' in this package distribution
  * or at 'https://opensource.org/licenses/Apache-2.0'.
- * <p/>
+ * <p>
  * Author: Arthur Halet
  * Date: 21/05/2015
  */
@@ -20,7 +20,7 @@ public class MysqlDatabaseDriver extends AbstractDatabaseDriver implements Datab
 
     @Override
     public String[] getDumpCommandLine() {
-        return String.format("%s --routines --host=%s --port=%s --user=%s --password=%s %s",
+        return String.format("%s --routines --skip-comments --host=%s --port=%s --user=%s --password=%s %s",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),

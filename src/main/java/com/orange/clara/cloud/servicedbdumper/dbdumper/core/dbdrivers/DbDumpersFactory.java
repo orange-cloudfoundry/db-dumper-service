@@ -3,7 +3,8 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -23,19 +24,32 @@ import java.util.Map;
 public class DbDumpersFactory {
     private Map<DatabaseType, DatabaseDriver> dbDumpers;
 
-    @Value("${mysql.dump.bin.path:classpath:binaries/mysql/bin/mysqldump}")
+    @Autowired
+    @Qualifier("mysqlBinaryDump")
     private File mysqlBinaryDump;
-    @Value("${mysql.restore.bin.path:classpath:binaries/mysql/bin/mysql}")
+
+    @Autowired
+    @Qualifier("mysqlBinaryRestore")
     private File mysqlBinaryRestore;
-    @Value("${postgres.dump.bin.path:classpath:binaries/postgresql/bin/pg_dump}")
+
+    @Autowired
+    @Qualifier("postgresBinaryDump")
     private File postgresBinaryDump;
-    @Value("${postgres.restore.bin.path:classpath:binaries/postgresql/bin/psql}")
+
+    @Autowired
+    @Qualifier("postgresBinaryRestore")
     private File postgresBinaryRestore;
-    @Value("${mongodb.dump.bin.path:classpath:binaries/mongodb/bin/mongodump}")
+
+    @Autowired
+    @Qualifier("mongodbBinaryDump")
     private File mongodbBinaryDump;
-    @Value("${mongodb.restore.bin.path:classpath:binaries/mongodb/bin/mongorestore}")
+
+    @Autowired
+    @Qualifier("mongodbBinaryRestore")
     private File mongodbBinaryRestore;
-    @Value("${redis.rutil.bin.path:classpath:binaries/redis/bin/rutil}")
+
+    @Autowired
+    @Qualifier("redisRutilBinary")
     private File redisRutilBinary;
 
     @PostConstruct

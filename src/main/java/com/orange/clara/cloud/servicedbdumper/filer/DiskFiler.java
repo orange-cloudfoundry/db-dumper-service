@@ -48,7 +48,7 @@ public class DiskFiler implements Filer {
     public void retrieve(OutputStream outputStream, String filename) throws IOException {
         File dumpfile = this.getFile(filename);
         logger.debug("Retrieving from file " + dumpfile.getAbsolutePath());
-        FileInputStream dumpFileInputStream = new FileInputStream(dumpfile);
+        InputStream dumpFileInputStream = Files.asByteSource(dumpfile).openStream();
         ByteStreams.copy(dumpFileInputStream, outputStream);
         outputStream.flush();
         dumpFileInputStream.close();

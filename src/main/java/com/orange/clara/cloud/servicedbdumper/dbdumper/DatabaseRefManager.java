@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
+import com.orange.clara.cloud.servicedbdumper.helper.URICheck;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseService;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
@@ -53,7 +54,7 @@ public class DatabaseRefManager {
     private ServiceKeyManager serviceKeyManager;
 
     public DatabaseRef getDatabaseRef(String uriOrServiceName, String token, String org, String space) throws ServiceKeyException, DatabaseExtractionException {
-        if (this.isUri(uriOrServiceName)) {
+        if (URICheck.isUri(uriOrServiceName)) {
             return this.getDatabaseRefFromUrl(uriOrServiceName, this.generateDatabaseRefName(uriOrServiceName));
         }
         if (token == null || token.isEmpty()) {
@@ -104,17 +105,6 @@ public class DatabaseRefManager {
         return sanitizedToken;
     }
 
-    private boolean isUri(String possibleUri) {
-        try {
-            URI uri = new URI(possibleUri);
-            if (uri.getScheme() == null || uri.getScheme().isEmpty()) {
-                return false;
-            }
-        } catch (URISyntaxException e) {
-            return false;
-        }
-        return true;
-    }
 
     private DatabaseRef getDatabaseRefFromUrl(String dbUrl, String name) throws DatabaseExtractionException {
         DatabaseRef databaseRef = new DatabaseRef(name, URI.create(dbUrl));

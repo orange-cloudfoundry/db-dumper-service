@@ -80,7 +80,7 @@ public class DatabaseLocalDumperTest {
     @Test
     public void create_command_line_for_restore_postgres() throws Exception {
         String[] expected = String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s -f -",
                 this.restoreBinaries.getAbsolutePath(),
                 this.user,
                 this.password,
@@ -157,6 +157,7 @@ public class DatabaseLocalDumperTest {
                 "-a",
                 this.password,
                 "restore",
+                "--flushdb",
                 "-i"
         };
         assertThat(redisDatabaseDumper.getRestoreCommandLine()).isEqualTo(expected);
@@ -166,6 +167,7 @@ public class DatabaseLocalDumperTest {
     public void create_command_line_for_dump_mysql() throws Exception {
         String[] expected = {
                 dumpBinaries.getAbsolutePath(),
+                "--skip-comments",
                 "--routines",
                 "--host=" + this.host,
                 "--port=" + this.port,
