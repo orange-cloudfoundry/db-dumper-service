@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest(randomPort = true)
-@ActiveProfiles("local")
+@ActiveProfiles({"local", "integration"})
 public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
 
 
@@ -55,16 +55,5 @@ public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
         return "";
     }
 
-    public String getDbFromUri(String databaseServerUri, String databaseName) {
-        int lastPos = databaseServerUri.lastIndexOf('/');
-        return databaseServerUri.substring(0, lastPos) + "/" + databaseName;
-    }
 
-    public String getDbSourceFromUri(String databaseServerUri) {
-        return this.getDbFromUri(databaseServerUri, DATABASE_SOURCE_NAME);
-    }
-
-    public String getDbTargetFromUri(String databaseServerUri) {
-        return this.getDbFromUri(databaseServerUri, DATABASE_TARGET_NAME);
-    }
 }

@@ -48,7 +48,6 @@ abstract public class AbstractIntegrationTest {
     protected final static String DATABASE_SOURCE_NAME = "dbdumpertestsource";
     protected final static String DATABASE_TARGET_NAME = "dbdumpertesttarget";
     protected Logger logger = LoggerFactory.getLogger(AbstractIntegrationTest.class);
-
     @Autowired
     protected ServiceBrokerRequestForge requestForge;
     @Autowired
@@ -87,15 +86,29 @@ abstract public class AbstractIntegrationTest {
     @Value("${postgres.fake.data.file:classpath:data/fake-data-postgres.sql}")
     private File postgresFakeData;
 
+    @Value("${binaries.db.folder:classpath:binaries}")
+    private File binariesFolder;
+
     @Autowired
     @Qualifier("postgresBinaryRestore")
     private File psqlBinary;
+
+    @Value("${int.check.binaries:true}")
+    private boolean checkBinariesValid;
 
     @Autowired
     @Qualifier("mysqlBinaryRestore")
     private File mysqlBinary;
 
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
+        assumeTrue(
+                String.format("Binaries for database %s use for integrations test are not correct, you're not running on linux 64, please set %s.dump.bin.path and %s.restore.bin.path .\nSkipping test.",
+                        databaseType.toString().toLowerCase(),
+                        databaseType.toString().toLowerCase(),
+                        databaseType.toString().toLowerCase()
+                ),
+                this.isBinariesValid(databaseType)
+        );
         assumeTrue(String.format("Server '%s' not accessible, skipping test.", this.getDatabaseServerTest(databaseType)), serverListening(databaseType));
         this.populateData(databaseType);
     }
@@ -136,6 +149,38 @@ abstract public class AbstractIntegrationTest {
         this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdTarget));
     }
 
+    public boolean isBinariesValid(DatabaseType databaseType) {
+        if (!this.checkBinariesValid) {
+            return true;
+        }
+        List<File> filesToCheck = Lists.newArrayList();
+        switch (databaseType) {
+            case MONGODB:
+                filesToCheck.add(dbDumpersFactory.getMongodbBinaryDump());
+                filesToCheck.add(dbDumpersFactory.getMongodbBinaryRestore());
+                break;
+            case MYSQL:
+                filesToCheck.add(dbDumpersFactory.getMysqlBinaryDump());
+                filesToCheck.add(dbDumpersFactory.getMysqlBinaryRestore());
+                break;
+            case POSTGRESQL:
+                filesToCheck.add(dbDumpersFactory.getPostgresBinaryDump());
+                filesToCheck.add(dbDumpersFactory.getPostgresBinaryRestore());
+                break;
+            case REDIS:
+                filesToCheck.add(dbDumpersFactory.getRedisRutilBinary());
+                break;
+        }
+        String OS = System.getProperty("os.name").toLowerCase();
+        String arch = System.getProperty("os.arch");
+        for (File fileToCheck : filesToCheck) {
+            if (fileToCheck.getAbsolutePath().contains(binariesFolder.getAbsolutePath()) && (!OS.contains("nux") || !arch.contains("64"))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Test
     public void when_dump_and_restore_a_MYSQL_database_it_should_have_the_database_source_equals_to_the_database_target() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerAsyncRequiredException, ServiceBrokerException, ServiceInstanceDoesNotExistException, ServiceKeyException, ServiceInstanceExistsException {
         DatabaseType databaseType = DatabaseType.MYSQL;
@@ -166,11 +211,32 @@ abstract public class AbstractIntegrationTest {
         String databaseTarget = this.getDbParamsForRestore(databaseType);
         DatabaseRef sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseSource, ServiceBrokerRequestForge.USER_TOKEN, ServiceBrokerRequestForge.ORG, ServiceBrokerRequestForge.SPACE);
         DatabaseRef targetDatabase = this.databaseRefManager.getDatabaseRef(databaseTarget, ServiceBrokerRequestForge.USER_TOKEN, ServiceBrokerRequestForge.ORG, ServiceBrokerRequestForge.SPACE);
-        InputStream sourceStream = this.filer.retrieveWithStream(sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(0).getFileName());
-        InputStream targetStream = this.filer.retrieveWithStream(targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(0).getFileName());
-        assertThat(Arrays.equals(ByteStreams.toByteArray(sourceStream), ByteStreams.toByteArray(targetStream)))
-                .overridingErrorMessage(String.format("Dumps files between database source '%s' and database target '%s' diverged.", databaseSource, databaseTarget))
+        assertThat(sourceDatabase.getDatabaseDumpFiles().size() > 0)
+                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseSource))
                 .isTrue();
+        assertThat(targetDatabase.getDatabaseDumpFiles().size() > 0)
+                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseTarget))
+                .isTrue();
+        assertThat(sourceDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
+        assertThat(targetDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
+        String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(0).getFileName();
+        String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(0).getFileName();
+
+        assertThat(this.filer.getContentLength(fileSource)).isEqualTo(this.filer.getContentLength(fileTarget));
+        if (databaseType.equals(DatabaseType.REDIS)) { // Redis rearrange data which make diff files unreliable
+            return;
+        }
+
+        InputStream sourceStream = this.filer.retrieveWithStream(fileSource);
+        InputStream targetStream = this.filer.retrieveWithStream(fileTarget);
+        if (dbDumpersFactory.getDatabaseDumper(databaseType).isDumpShowable()) {
+            assertThat(new String(ByteStreams.toByteArray(sourceStream))).isEqualTo(new String(ByteStreams.toByteArray(targetStream)));
+        } else {
+            assertThat(Arrays.equals(ByteStreams.toByteArray(sourceStream), ByteStreams.toByteArray(targetStream)))
+                    .overridingErrorMessage(String.format("Dumps files between database source '%s' and database target '%s' diverged.", databaseSource, databaseTarget))
+                    .isTrue();
+        }
+
     }
 
     protected boolean serverListening(DatabaseType databaseType) throws DatabaseExtractionException {
@@ -303,7 +369,7 @@ abstract public class AbstractIntegrationTest {
         }
         if (databaseType.equals(DatabaseType.POSTGRESQL)) {
             this.dropDatabase(databaseRef);
-            if (System.getenv("TRAVIS") != null) {
+            if (System.getenv("TRAVIS") != null) { // if in travis we don't try to create database cause they already exists
                 return;
             }
             createDatabaseCommands.add(new String[]{
@@ -414,7 +480,7 @@ abstract public class AbstractIntegrationTest {
                     case "internal error":
                         return false;
                 }
-                Thread.sleep(5000L);
+                Thread.sleep(5000L);// we yield the task for 5seconds to let the service do is work (actually, Cloud Controller hit getServiceInstance every 30sec)
             }
         };
         Future<Boolean> future = executor.submit(task);
@@ -426,5 +492,18 @@ abstract public class AbstractIntegrationTest {
             fail(ex.getMessage(), ex);
         }
         return false;
+    }
+
+    public String getDbFromUri(String databaseServerUri, String databaseName) {
+        int lastPos = databaseServerUri.lastIndexOf('/');
+        return databaseServerUri.substring(0, lastPos) + "/" + databaseName;
+    }
+
+    public String getDbSourceFromUri(String databaseServerUri) {
+        return this.getDbFromUri(databaseServerUri, DATABASE_SOURCE_NAME);
+    }
+
+    public String getDbTargetFromUri(String databaseServerUri) {
+        return this.getDbFromUri(databaseServerUri, DATABASE_TARGET_NAME);
     }
 }

@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.fake.cloudfoundry;
 
+import com.google.common.collect.Maps;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.archive.ApplicationArchive;
 import org.cloudfoundry.client.lib.domain.*;
@@ -28,6 +29,8 @@ import java.util.UUID;
  */
 public class CloudFoundryClientFake extends CloudFoundryClient {
     public final static String SERVICE_NOT_ACCESSIBLE = "not-accessible";
+
+    private String databaseUri;
 
     public CloudFoundryClientFake() {
         super((CloudControllerClient) null);
@@ -155,22 +158,46 @@ public class CloudFoundryClientFake extends CloudFoundryClient {
 
     @Override
     public CloudServiceKey createServiceKey(String guid, String name) {
-        return null;
+        if (databaseUri == null) {
+            return null;
+        }
+        Map<String, Object> credentials = Maps.newHashMap();
+        credentials.put("uri", this.databaseUri);
+        CloudServiceKey cloudServiceKey = new CloudServiceKey(new CloudEntity.Meta(UUID.randomUUID(), new Date(), new Date()), name);
+        cloudServiceKey.setCredentials(credentials);
+        cloudServiceKey.setService(new CloudService(new CloudEntity.Meta(UUID.fromString(guid), new Date(), new Date()), guid));
+
+        return cloudServiceKey;
     }
 
     @Override
     public CloudServiceKey createServiceKey(CloudService cloudService, String name) {
-        return null;
+        if (databaseUri == null) {
+            return null;
+        }
+        Map<String, Object> credentials = Maps.newHashMap();
+        credentials.put("uri", this.databaseUri);
+        CloudServiceKey cloudServiceKey = new CloudServiceKey(new CloudEntity.Meta(UUID.randomUUID(), new Date(), new Date()), name);
+        cloudServiceKey.setCredentials(credentials);
+        cloudServiceKey.setService(cloudService);
+
+        return cloudServiceKey;
     }
 
     @Override
     public CloudServiceKey createServiceKey(String guid, String name, Map<String, Object> parameters) {
-        return null;
+        if (databaseUri == null) {
+            return null;
+        }
+        return this.createServiceKey(guid, name);
     }
 
     @Override
     public CloudServiceKey createServiceKey(CloudService cloudService, String name, Map<String, Object> parameters) {
-        return null;
+        if (databaseUri == null) {
+            return null;
+        }
+        return this.createServiceKey(cloudService, name);
     }
 
     @Override
@@ -428,7 +455,7 @@ public class CloudFoundryClientFake extends CloudFoundryClient {
         if (service.equals(SERVICE_NOT_ACCESSIBLE)) {
             return null;
         }
-        return new CloudService(new CloudEntity.Meta(UUID.randomUUID(), new Date(), new Date()), service);
+        return new CloudService(new CloudEntity.Meta(UUID.nameUUIDFromBytes(service.getBytes()), new Date(), new Date()), service);
     }
 
     @Override
@@ -741,4 +768,11 @@ public class CloudFoundryClientFake extends CloudFoundryClient {
 
     }
 
+    public String getDatabaseUri() {
+        return databaseUri;
+    }
+
+    public void setDatabaseUri(String databaseUri) {
+        this.databaseUri = databaseUri;
+    }
 }

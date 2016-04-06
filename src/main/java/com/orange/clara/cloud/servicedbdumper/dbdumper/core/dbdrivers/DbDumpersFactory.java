@@ -73,4 +73,32 @@ public class DbDumpersFactory {
         databaseDriver.setDatabaseRef(databaseRef);
         return databaseDriver;
     }
+
+    public File getMysqlBinaryDump() {
+        return mysqlBinaryDump;
+    }
+
+    public File getMysqlBinaryRestore() {
+        return mysqlBinaryRestore;
+    }
+
+    public File getPostgresBinaryDump() {
+        return postgresBinaryDump;
+    }
+
+    public File getPostgresBinaryRestore() {
+        return postgresBinaryRestore;
+    }
+
+    public File getMongodbBinaryDump() {
+        return mongodbBinaryDump;
+    }
+
+    public File getMongodbBinaryRestore() {
+        return mongodbBinaryRestore;
+    }
+
+    public File getRedisRutilBinary() {
+        return redisRutilBinary;
+    }
 }

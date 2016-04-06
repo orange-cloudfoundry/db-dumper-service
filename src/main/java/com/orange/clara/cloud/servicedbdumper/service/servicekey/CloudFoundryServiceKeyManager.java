@@ -6,6 +6,8 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseService;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.domain.CloudService;
 import org.cloudfoundry.client.lib.domain.CloudServiceKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -22,7 +24,7 @@ import java.util.UUID;
  * Date: 19/02/2016
  */
 public class CloudFoundryServiceKeyManager implements ServiceKeyManager {
-
+    private Logger logger = LoggerFactory.getLogger(CloudFoundryServiceKeyManager.class);
     @Autowired
     @Qualifier("cloudFoundryClientAsAdmin")
     private CloudFoundryClient cloudFoundryClient;
@@ -32,11 +34,14 @@ public class CloudFoundryServiceKeyManager implements ServiceKeyManager {
 
     @Override
     public CloudServiceKey createServiceKey(String serviceName, String token, String org, String space) throws ServiceKeyException {
+        logger.debug("Creating service key for service {} ...", serviceName);
         CloudService cloudService = this.getUserService(serviceName, token, org, space);
         if (cloudService == null) {
             throw new ServiceKeyException("User don't have access to service '" + serviceName + "'");
         }
-        return this.cloudFoundryClient.createServiceKey(cloudService, UUID.randomUUID().toString());
+        CloudServiceKey cloudServiceKey = this.cloudFoundryClient.createServiceKey(cloudService, UUID.randomUUID().toString());
+        logger.debug("Finish creating service key for {} .", serviceName);
+        return cloudServiceKey;
     }
 
     @Override

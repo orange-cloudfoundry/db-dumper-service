@@ -251,7 +251,13 @@ public class DatabaseRefManager {
     }
 
     private void updateDatabaseRef(DatabaseRef databaseRefTemp, DatabaseRef databaseRefDao) {
-        if (databaseRefDao.equals(databaseRefTemp)) {
+        if (databaseRefDao.getUser().equals(databaseRefTemp.getUser())
+                && databaseRefDao.getDatabaseName().equals(databaseRefTemp.getDatabaseName())
+                && databaseRefDao.getHost().equals(databaseRefTemp.getHost())
+                && databaseRefDao.getPassword().equals(databaseRefTemp.getPassword())
+                && databaseRefDao.getPort().equals(databaseRefTemp.getPort())
+                && databaseRefDao.getType().equals(databaseRefTemp.getType())
+                ) {
             return;
         }
         databaseRefDao.setDatabaseName(databaseRefTemp.getDatabaseName());
