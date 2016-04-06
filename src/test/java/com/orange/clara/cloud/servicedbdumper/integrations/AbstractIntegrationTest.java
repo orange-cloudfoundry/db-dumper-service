@@ -303,7 +303,7 @@ abstract public class AbstractIntegrationTest {
         }
         if (databaseType.equals(DatabaseType.POSTGRESQL)) {
             this.dropDatabase(databaseRef);
-            if (System.getenv("TRAVIS") == null) {
+            if (System.getenv("TRAVIS") != null) {
                 return;
             }
             createDatabaseCommands.add(new String[]{
