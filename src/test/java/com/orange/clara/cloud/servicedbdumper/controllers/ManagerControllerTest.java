@@ -107,6 +107,7 @@ public class ManagerControllerTest {
         } else {
             databaseDumpFileShowable = new DatabaseDumpFile(fileNameShowable, databaseRef, userShowable, passwordShowable, true, sizeShowable);
             databaseDumpFileRepo.save(databaseDumpFileShowable);
+            databaseDumpFileShowableId = databaseDumpFileShowable.getId();
         }
 
         if (databaseDumpFileNotShowableId != null && databaseDumpFileRepo.exists(databaseDumpFileNotShowableId)) {
@@ -114,6 +115,7 @@ public class ManagerControllerTest {
         } else {
             databaseDumpFileNotShowable = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
             databaseDumpFileRepo.save(databaseDumpFileNotShowable);
+            databaseDumpFileNotShowableId = databaseDumpFileNotShowable.getId();
         }
         if (databaseDumpFileDeletedId != null && databaseDumpFileRepo.exists(databaseDumpFileDeletedId)) {
             databaseDumpFileDeleted = databaseDumpFileRepo.findOne(databaseDumpFileDeletedId);
@@ -121,12 +123,14 @@ public class ManagerControllerTest {
             databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, true, sizeNotShowable);
             databaseDumpFileDeleted.setDeleted(true);
             databaseDumpFileRepo.save(databaseDumpFileDeleted);
+            databaseDumpFileDeletedId = databaseDumpFileDeleted.getId();
         }
         if (databaseDumpFileWithDeletedDbId != null && databaseDumpFileRepo.exists(databaseDumpFileWithDeletedDbId)) {
             databaseDumpFileWithDeletedDb = databaseDumpFileRepo.findOne(databaseDumpFileWithDeletedDbId);
         } else {
             databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, true, sizeNotShowable);
             databaseDumpFileRepo.save(databaseDumpFileWithDeletedDb);
+            databaseDumpFileWithDeletedDbId = databaseDumpFileWithDeletedDb.getId();
         }
 
     }
@@ -246,7 +250,6 @@ public class ManagerControllerTest {
             mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.RAW_DUMP_FILE_ROOT + "/" + databaseDumpFileWithDeletedDb.getId()));
             fail("It should throw an IllegalArgumentException");
         } catch (NestedServletException e) {
-            e.printStackTrace();
             assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
         }
         try {
