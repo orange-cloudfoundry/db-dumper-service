@@ -25,7 +25,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.util.NestedServletException;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Base64;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -60,10 +59,14 @@ public class ManagerControllerTest {
     private final static String userNotShowable = "user-2";
     private final static String passwordNotShowable = "password-2";
     private final static long sizeNotShowable = 24L;
-    private static DatabaseDumpFile databaseDumpFileShowable;
-    private static DatabaseDumpFile databaseDumpFileNotShowable;
-    private static DatabaseDumpFile databaseDumpFileWithDeletedDb;
-    private static DatabaseDumpFile databaseDumpFileDeleted;
+    private static Integer databaseDumpFileShowableId;
+    private static Integer databaseDumpFileNotShowableId;
+    private static Integer databaseDumpFileWithDeletedDbId;
+    private static Integer databaseDumpFileDeletedId;
+    private DatabaseDumpFile databaseDumpFileShowable;
+    private DatabaseDumpFile databaseDumpFileNotShowable;
+    private DatabaseDumpFile databaseDumpFileWithDeletedDb;
+    private DatabaseDumpFile databaseDumpFileDeleted;
     @Autowired
     private Deleter deleter;
     @Autowired
@@ -81,25 +84,47 @@ public class ManagerControllerTest {
     @Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
-        if (databaseRefRepo.exists(databaseNameNotShowable)) {
-            return;
+        DatabaseRef databaseRef;
+        if (!databaseRefRepo.exists(databaseNameNotShowable)) {
+            databaseRef = new DatabaseRef(databaseNameShowable, URI.create("mysql://foo:bar@mymysql-1/mydb"));
+            databaseRefRepo.save(databaseRef);
+        } else {
+            databaseRef = databaseRefRepo.findOne(databaseNameShowable);
         }
-        DatabaseRef databaseRef = new DatabaseRef(databaseNameShowable, URI.create("mysql://foo:bar@mymysql-1/mydb"));
-        DatabaseRef databaseRefDeleted = new DatabaseRef(databaseNameNotShowable, URI.create("mysql://foo:bar@mymysql-2/mydb"));
-        databaseRefDeleted.setDeleted(true);
-        databaseRefRepo.save(Arrays.asList(databaseRef, databaseRefDeleted));
+        DatabaseRef databaseRefDeleted;
+        if (!databaseRefRepo.exists(databaseNameNotShowable)) {
+            databaseRefDeleted = new DatabaseRef(databaseNameNotShowable, URI.create("mysql://foo:bar@mymysql-2/mydb"));
+            databaseRefDeleted.setDeleted(true);
+            databaseRefRepo.save(databaseRefDeleted);
+        } else {
+            databaseRefDeleted = databaseRefRepo.findOne(databaseNameNotShowable);
+        }
+        if (databaseDumpFileShowableId != null && databaseDumpFileRepo.exists(databaseDumpFileShowableId)) {
+            databaseDumpFileShowable = databaseDumpFileRepo.findOne(databaseDumpFileShowableId);
+        } else {
+            databaseDumpFileShowable = new DatabaseDumpFile(fileNameShowable, databaseRef, userShowable, passwordShowable, true, sizeShowable);
+            databaseDumpFileRepo.save(databaseDumpFileShowable);
+        }
 
-        databaseDumpFileShowable = new DatabaseDumpFile(fileNameShowable, databaseRef, userShowable, passwordShowable, true, sizeShowable);
-
-        databaseDumpFileNotShowable = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
-
-        databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
-        databaseDumpFileDeleted.setDeleted(true);
-
-        databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, false, sizeNotShowable);
-
-        databaseDumpFileRepo.save(Arrays.asList(databaseDumpFileShowable, databaseDumpFileNotShowable, databaseDumpFileDeleted, databaseDumpFileWithDeletedDb));
-
+        if (databaseDumpFileNotShowableId != null && databaseDumpFileRepo.exists(databaseDumpFileNotShowableId)) {
+            databaseDumpFileNotShowable = databaseDumpFileRepo.findOne(databaseDumpFileNotShowableId);
+        } else {
+            databaseDumpFileNotShowable = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+            databaseDumpFileRepo.save(databaseDumpFileNotShowable);
+        }
+        if (databaseDumpFileDeletedId != null && databaseDumpFileRepo.exists(databaseDumpFileDeletedId)) {
+            databaseDumpFileDeleted = databaseDumpFileRepo.findOne(databaseDumpFileDeletedId);
+        } else {
+            databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+            databaseDumpFileDeleted.setDeleted(true);
+            databaseDumpFileRepo.save(databaseDumpFileDeleted);
+        }
+        if (databaseDumpFileWithDeletedDbId != null && databaseDumpFileRepo.exists(databaseDumpFileWithDeletedDbId)) {
+            databaseDumpFileWithDeletedDb = databaseDumpFileRepo.findOne(databaseDumpFileWithDeletedDbId);
+        } else {
+            databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+            databaseDumpFileRepo.save(databaseDumpFileWithDeletedDb);
+        }
 
     }
 
