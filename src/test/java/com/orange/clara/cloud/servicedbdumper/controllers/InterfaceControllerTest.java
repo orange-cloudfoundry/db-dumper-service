@@ -2,7 +2,6 @@ package com.orange.clara.cloud.servicedbdumper.controllers;
 
 import com.orange.clara.cloud.servicedbdumper.Application;
 import com.orange.clara.cloud.servicedbdumper.config.Routes;
-import com.orange.clara.cloud.servicedbdumper.fake.configuration.FilerConfigContext;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
@@ -16,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -43,7 +43,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {Application.class})
 @WebAppConfiguration
-@ActiveProfiles("local")
+@ActiveProfiles({"local", "test-controller"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class InterfaceControllerTest {
     private final static String databaseName1 = "database-1";
     private final static String databaseName2 = "database-2";

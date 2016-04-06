@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -29,6 +30,7 @@ import static org.fest.assertions.Assertions.assertThat;
 @SpringApplicationConfiguration({Application.class, FakeCloudFoundryClientConfig.class})
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "cloud", "integration", "integration-fake-cf-client"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DumpAndRestoreDatabaseFromServiceNameWithFakeCloudFoundryClientTest extends AbstractIntegrationTest {
 
     @Autowired

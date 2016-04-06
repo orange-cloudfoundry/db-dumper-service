@@ -16,6 +16,8 @@ import org.cloudfoundry.community.servicebroker.exception.*;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceLastOperation;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceService;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,32 +75,34 @@ abstract public class AbstractIntegrationTest {
 
     @Autowired
     protected DatabaseRefManager databaseRefManager;
-
+    protected DatabaseType currentDatabaseType;
+    protected String serviceIdSource;
+    protected String serviceIdTarget;
     @Value("${mongodb.fake.data.file:classpath:data/fake-data-mongodb.bin}")
     private File mongodbFakeData;
-
     @Value("${mysql.fake.data.file:classpath:data/fake-data-mysql.sql}")
     private File mysqlFakeData;
-
     @Value("${redis.fake.data.file:classpath:data/fake-data-redis.rdmp}")
     private File redisFakeData;
-
     @Value("${postgres.fake.data.file:classpath:data/fake-data-postgres.sql}")
     private File postgresFakeData;
-
     @Value("${binaries.db.folder:classpath:binaries}")
     private File binariesFolder;
-
     @Autowired
     @Qualifier("postgresBinaryRestore")
     private File psqlBinary;
-
     @Value("${int.check.binaries:true}")
     private boolean checkBinariesValid;
-
     @Autowired
     @Qualifier("mysqlBinaryRestore")
     private File mysqlBinary;
+
+    @Before
+    public void init() {
+        currentDatabaseType = null;
+        serviceIdSource = null;
+        serviceIdTarget = null;
+    }
 
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
         assumeTrue(
@@ -113,7 +117,7 @@ abstract public class AbstractIntegrationTest {
         this.populateData(databaseType);
     }
 
-    public void cleanAfterTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
+    public void cleanDatabase(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
         DatabaseRef databaseServer = this.getDatabaseRefServerTest(databaseType);
         if (databaseServer == null) {
             fail("Cannot find server for database: " + databaseType);
@@ -122,18 +126,35 @@ abstract public class AbstractIntegrationTest {
         this.dropDatabase(databaseServer);
     }
 
+    @After
+    public void cleanAfterTest() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceBrokerAsyncRequiredException, ServiceBrokerException {
+        if (serviceIdSource != null && !serviceIdSource.isEmpty()) {
+            this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdSource));
+        }
+        if (serviceIdTarget != null && !serviceIdTarget.isEmpty()) {
+            this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdTarget));
+        }
+        if (currentDatabaseType == null) {
+            return;
+        }
+        this.cleanDatabase(currentDatabaseType);
+    }
+
     abstract public String getDbParamsForDump(DatabaseType databaseType);
 
     abstract public String getDbParamsForRestore(DatabaseType databaseType);
 
-    protected void dumpAndRestoreTest(DatabaseType databaseType) throws InterruptedException, CannotFindDatabaseDumperException, DatabaseExtractionException, IOException, ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException, ServiceKeyException {
-        String serviceIdSource = databaseType.toString() + "-service-source";
-        String serviceIdTarget = databaseType.toString() + "-service-target";
+    protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
+        serviceIdSource = databaseType.toString() + "-service-source";
+        serviceIdTarget = databaseType.toString() + "-service-target";
+        this.currentDatabaseType = databaseType;
         this.doBeforeTest(databaseType);
+
         this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForDump(databaseType), serviceIdSource));
         if (!this.isFinishedAction(serviceIdSource)) {
             fail("Creating dump for source database failed");
         }
+
         this.dbDumperServiceInstanceService.updateServiceInstance(this.requestForge.createRestoreRequest(this.getDbParamsForRestore(databaseType), serviceIdSource));
         if (!this.isFinishedAction(serviceIdSource)) {
             fail("Restoring dump failed");
@@ -144,9 +165,6 @@ abstract public class AbstractIntegrationTest {
             fail("Creating dump for target database failed");
         }
         this.diffSourceAndTargetDatabase(databaseType);
-        this.cleanAfterTest(databaseType);
-        this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdSource));
-        this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdTarget));
     }
 
     public boolean isBinariesValid(DatabaseType databaseType) {
@@ -221,18 +239,20 @@ abstract public class AbstractIntegrationTest {
         assertThat(targetDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
         String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(0).getFileName();
         String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(0).getFileName();
-
-        assertThat(this.filer.getContentLength(fileSource)).isEqualTo(this.filer.getContentLength(fileTarget));
+        InputStream sourceStream = this.filer.retrieveWithStream(fileSource);
+        InputStream targetStream = this.filer.retrieveWithStream(fileTarget);
+        byte[] sourceBytes = ByteStreams.toByteArray(sourceStream);
+        byte[] targetBytes = ByteStreams.toByteArray(targetStream);
+        assertThat(targetBytes).hasSize(sourceBytes.length);
         if (databaseType.equals(DatabaseType.REDIS)) { // Redis rearrange data which make diff files unreliable
             return;
         }
 
-        InputStream sourceStream = this.filer.retrieveWithStream(fileSource);
-        InputStream targetStream = this.filer.retrieveWithStream(fileTarget);
+
         if (dbDumpersFactory.getDatabaseDumper(databaseType).isDumpShowable()) {
-            assertThat(new String(ByteStreams.toByteArray(sourceStream))).isEqualTo(new String(ByteStreams.toByteArray(targetStream)));
+            assertThat(new String(targetBytes)).isEqualTo(new String(sourceBytes));
         } else {
-            assertThat(Arrays.equals(ByteStreams.toByteArray(sourceStream), ByteStreams.toByteArray(targetStream)))
+            assertThat(Arrays.equals(targetBytes, sourceBytes))
                     .overridingErrorMessage(String.format("Dumps files between database source '%s' and database target '%s' diverged.", databaseSource, databaseTarget))
                     .isTrue();
         }

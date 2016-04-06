@@ -5,6 +5,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -22,6 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SpringApplicationConfiguration(Application.class)
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "integration"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
 
 

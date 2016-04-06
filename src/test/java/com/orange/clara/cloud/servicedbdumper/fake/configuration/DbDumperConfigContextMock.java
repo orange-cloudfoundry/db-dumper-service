@@ -4,6 +4,7 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.fake.dbdumper.mocked.DeleterMock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Copyright (C) 2016 Orange
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * Date: 24/03/2016
  */
 @Configuration
+@Profile("test-controller")
 public class DbDumperConfigContextMock {
     @Bean
     public Deleter deleter() {

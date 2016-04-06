@@ -5,6 +5,7 @@ import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Copyright (C) 2016 Orange
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Primary;
  * Date: 23/03/2016
  */
 @Configuration
+@Profile("test-controller")
 public class FilerConfigContext {
     @Bean
     public Filer filer() throws InstantiationException, IllegalAccessException {

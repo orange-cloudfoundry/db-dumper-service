@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.controllers;
 import com.orange.clara.cloud.servicedbdumper.Application;
 import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.fake.configuration.DbDumperConfigContextMock;
 import com.orange.clara.cloud.servicedbdumper.fake.configuration.FilerConfigContext;
@@ -17,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -47,15 +49,16 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {Application.class, FilerConfigContext.class, DbDumperConfigContextMock.class})
 @WebAppConfiguration
-@ActiveProfiles("local")
+@ActiveProfiles({"local", "test-controller"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class ManagerControllerTest {
     private final static String fileNameShowable = "file-1";
-    private final static String databaseNameShowable = "database-1";
+    private final static String databaseNameShowable = "database-showable-1";
     private final static String userShowable = "user-1";
     private final static String passwordShowable = "password-1";
     private final static long sizeShowable = 12L;
     private final static String fileNameNotShowable = "file-2";
-    private final static String databaseNameNotShowable = "database-2";
+    private final static String databaseNameNotShowable = "database-not-showable-2";
     private final static String userNotShowable = "user-2";
     private final static String passwordNotShowable = "password-2";
     private final static long sizeNotShowable = 24L;
@@ -115,14 +118,14 @@ public class ManagerControllerTest {
         if (databaseDumpFileDeletedId != null && databaseDumpFileRepo.exists(databaseDumpFileDeletedId)) {
             databaseDumpFileDeleted = databaseDumpFileRepo.findOne(databaseDumpFileDeletedId);
         } else {
-            databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+            databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, true, sizeNotShowable);
             databaseDumpFileDeleted.setDeleted(true);
             databaseDumpFileRepo.save(databaseDumpFileDeleted);
         }
         if (databaseDumpFileWithDeletedDbId != null && databaseDumpFileRepo.exists(databaseDumpFileWithDeletedDbId)) {
             databaseDumpFileWithDeletedDb = databaseDumpFileRepo.findOne(databaseDumpFileWithDeletedDbId);
         } else {
-            databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+            databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, true, sizeNotShowable);
             databaseDumpFileRepo.save(databaseDumpFileWithDeletedDb);
         }
 
@@ -195,15 +198,15 @@ public class ManagerControllerTest {
         }
         try {
             mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.RAW_DUMP_FILE_ROOT + "/" + databaseDumpFileDeleted.getId()));
-            fail("It should throw an DumpFileShowException");
+            fail("It should throw an DumpFileDeletedException");
         } catch (NestedServletException e) {
-            assertThat(e.getCause()).isInstanceOf(DumpFileShowException.class);
+            assertThat(e.getCause()).isInstanceOf(DumpFileDeletedException.class);
         }
         try {
             mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.SHOW_DUMP_FILE_ROOT + "/" + databaseDumpFileDeleted.getId()));
-            fail("It should throw an DumpFileShowException");
+            fail("It should throw an DumpFileDeletedException");
         } catch (NestedServletException e) {
-            assertThat(e.getCause()).isInstanceOf(DumpFileShowException.class);
+            assertThat(e.getCause()).isInstanceOf(DumpFileDeletedException.class);
         }
     }
 
@@ -243,6 +246,7 @@ public class ManagerControllerTest {
             mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.RAW_DUMP_FILE_ROOT + "/" + databaseDumpFileWithDeletedDb.getId()));
             fail("It should throw an IllegalArgumentException");
         } catch (NestedServletException e) {
+            e.printStackTrace();
             assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
         }
         try {
