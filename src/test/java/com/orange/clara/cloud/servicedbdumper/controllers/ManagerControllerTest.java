@@ -12,6 +12,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,6 +81,8 @@ public class ManagerControllerTest {
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
     @Autowired
+    private DbDumperServiceInstanceRepo dbDumperServiceInstanceRepo;
+    @Autowired
     @Qualifier("testTextForFiler")
     private String textForFiler;
 
@@ -87,6 +90,9 @@ public class ManagerControllerTest {
     @Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
+        dbDumperServiceInstanceRepo.deleteAll();
+        databaseDumpFileRepo.deleteAll();
+        databaseRefRepo.deleteAll();
         DatabaseRef databaseRef;
         if (!databaseRefRepo.exists(databaseNameNotShowable)) {
             databaseRef = new DatabaseRef(databaseNameShowable, URI.create("mysql://foo:bar@mymysql-1/mydb"));
