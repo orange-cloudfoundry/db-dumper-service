@@ -31,7 +31,7 @@ import static org.fest.assertions.Assertions.assertThat;
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "cloud", "integration", "integration-fake-cf-client"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DumpAndRestoreDatabaseFromServiceNameWithFakeCloudFoundryClientTest extends AbstractIntegrationTest {
+public class DumpAndRestoreDatabaseFromServiceNameToUriWithFakeCloudFoundryClientTest extends AbstractIntegrationTest {
 
     @Autowired
     @Qualifier("cloudFoundryClientAsAdmin")
@@ -39,37 +39,37 @@ public class DumpAndRestoreDatabaseFromServiceNameWithFakeCloudFoundryClientTest
 
     @Override
     public String getDbParamsForDump(DatabaseType databaseType) {
-        switch (databaseType) {
-            case MONGODB:
-                return this.getDbSourceFromUri(mongoServer);
-            case MYSQL:
-                return this.getDbSourceFromUri(mysqlServer);
-            case POSTGRESQL:
-                return this.getDbSourceFromUri(postgresServer);
-            case REDIS:
-                return redisServer;
-        }
-        return "";
-    }
-
-    @Override
-    public String getDbParamsForRestore(DatabaseType databaseType) {
         assertThat(cloudFoundryClient).isInstanceOf(CloudFoundryClientFake.class);
         CloudFoundryClientFake cloudFoundryClientFake = (CloudFoundryClientFake) cloudFoundryClient;
         switch (databaseType) {
             case MONGODB:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbTargetFromUri(mongoServer));
+                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(mongoServer));
                 break;
             case MYSQL:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbTargetFromUri(mysqlServer));
+                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(mysqlServer));
                 break;
             case POSTGRESQL:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbTargetFromUri(postgresServer));
+                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(postgresServer));
                 break;
             case REDIS:
                 cloudFoundryClientFake.setDatabaseUri(redisServer);
                 break;
         }
-        return databaseType.toString().toLowerCase() + "-myservice-target";
+        return databaseType.toString().toLowerCase() + "-myservice-source";
+    }
+
+    @Override
+    public String getDbParamsForRestore(DatabaseType databaseType) {
+        switch (databaseType) {
+            case MONGODB:
+                return this.getDbTargetFromUri(mongoServer);
+            case MYSQL:
+                return this.getDbTargetFromUri(mysqlServer);
+            case POSTGRESQL:
+                return this.getDbTargetFromUri(postgresServer);
+            case REDIS:
+                return redisServer;
+        }
+        return "";
     }
 }

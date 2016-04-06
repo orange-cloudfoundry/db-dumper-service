@@ -31,25 +31,30 @@ import static org.fest.assertions.Assertions.assertThat;
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "cloud", "integration", "integration-fake-cf-client"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DumpAndRestoreDatabaseFromServiceNameWithFakeCloudFoundryClientTest extends AbstractIntegrationTest {
-
+public class DumpAndRestoreDatabaseFromUriToServiceNameWithFakeCloudFoundryClientTest extends AbstractIntegrationTest {
     @Autowired
     @Qualifier("cloudFoundryClientAsAdmin")
     protected CloudFoundryClient cloudFoundryClient;
 
     @Override
     public String getDbParamsForDump(DatabaseType databaseType) {
+        assertThat(cloudFoundryClient).isInstanceOf(CloudFoundryClientFake.class);
+        CloudFoundryClientFake cloudFoundryClientFake = (CloudFoundryClientFake) cloudFoundryClient;
         switch (databaseType) {
             case MONGODB:
-                return this.getDbSourceFromUri(mongoServer);
+                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(mongoServer));
+                break;
             case MYSQL:
-                return this.getDbSourceFromUri(mysqlServer);
+                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(mysqlServer));
+                break;
             case POSTGRESQL:
-                return this.getDbSourceFromUri(postgresServer);
+                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(postgresServer));
+                break;
             case REDIS:
-                return redisServer;
+                cloudFoundryClientFake.setDatabaseUri(redisServer);
+                break;
         }
-        return "";
+        return databaseType.toString().toLowerCase() + "-myservice-source";
     }
 
     @Override
