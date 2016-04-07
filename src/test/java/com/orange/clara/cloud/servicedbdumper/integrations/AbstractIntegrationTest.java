@@ -96,24 +96,31 @@ abstract public class AbstractIntegrationTest {
     @Autowired
     @Qualifier("mysqlBinaryRestore")
     private File mysqlBinary;
+    private boolean skipCleaning;
 
     @Before
     public void init() {
+        skipCleaning = false;
         currentDatabaseType = null;
         serviceIdSource = null;
         serviceIdTarget = null;
     }
 
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
+        boolean isBinariesValid = this.isBinariesValid(databaseType);
+        boolean isServerListening = serverListening(databaseType);
+        if (!isBinariesValid || !isServerListening) {
+            this.skipCleaning = true;
+        }
         assumeTrue(
                 String.format("Binaries for database %s use for integrations test are not correct, you're not running on linux 64, please set %s.dump.bin.path and %s.restore.bin.path .\nSkipping test.",
                         databaseType.toString().toLowerCase(),
                         databaseType.toString().toLowerCase(),
                         databaseType.toString().toLowerCase()
                 ),
-                this.isBinariesValid(databaseType)
+                isBinariesValid
         );
-        assumeTrue(String.format("Server '%s' not accessible, skipping test.", this.getDatabaseServerTest(databaseType)), serverListening(databaseType));
+        assumeTrue(String.format("Server '%s' not accessible, skipping test.", this.getDatabaseServerTest(databaseType)), isServerListening);
         this.populateData(databaseType);
     }
 
@@ -128,6 +135,9 @@ abstract public class AbstractIntegrationTest {
 
     @After
     public void cleanAfterTest() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceBrokerAsyncRequiredException, ServiceBrokerException {
+        if (this.skipCleaning) {
+            return;
+        }
         if (serviceIdSource != null && !serviceIdSource.isEmpty()) {
             this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdSource));
         }
