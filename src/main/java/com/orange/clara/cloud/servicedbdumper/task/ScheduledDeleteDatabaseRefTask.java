@@ -6,6 +6,7 @@ import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseServiceRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.slf4j.Logger;
@@ -41,6 +42,9 @@ public class ScheduledDeleteDatabaseRefTask {
     private DatabaseRefRepo databaseRefRepo;
 
     @Autowired
+    private DatabaseServiceRepo databaseServiceRepo;
+
+    @Autowired
     @Qualifier("jobFactory")
     private JobFactory jobFactory;
 
@@ -67,6 +71,16 @@ public class ScheduledDeleteDatabaseRefTask {
             }
             job.setDatabaseRefSrc(null);
             jobRepo.save(job);
+            if (databaseRef.getDatabaseService() != null) {
+                try {
+                    databaseServiceRepo.delete(databaseRef.getDatabaseService());
+                } catch (Exception e) {
+                    job.setJobEvent(JobEvent.ERRORED);
+                    job.setErrorMessage(e.getMessage());
+                    jobRepo.save(job);
+                    continue;
+                }
+            }
             try {
                 databaseRefRepo.delete(databaseRef);
             } catch (Exception e) {

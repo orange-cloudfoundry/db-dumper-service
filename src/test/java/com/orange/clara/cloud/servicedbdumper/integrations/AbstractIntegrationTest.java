@@ -1,6 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.integrations;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
@@ -10,6 +10,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumper
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.integrations.model.DatabaseAccess;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.cloudfoundry.community.servicebroker.exception.*;
@@ -27,9 +28,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -49,6 +50,9 @@ import static org.junit.Assume.assumeTrue;
 abstract public class AbstractIntegrationTest {
     protected final static String DATABASE_SOURCE_NAME = "dbdumpertestsource";
     protected final static String DATABASE_TARGET_NAME = "dbdumpertesttarget";
+
+    protected Map<DatabaseType, DatabaseAccess> databaseAccessMap = Maps.newHashMap();
+
     protected Logger logger = LoggerFactory.getLogger(AbstractIntegrationTest.class);
     @Autowired
     protected ServiceBrokerRequestForge requestForge;
@@ -78,6 +82,7 @@ abstract public class AbstractIntegrationTest {
     protected DatabaseType currentDatabaseType;
     protected String serviceIdSource;
     protected String serviceIdTarget;
+    protected boolean skipCleaning;
     @Value("${mongodb.fake.data.file:classpath:data/fake-data-mongodb.bin}")
     private File mongodbFakeData;
     @Value("${mysql.fake.data.file:classpath:data/fake-data-mysql.sql}")
@@ -96,19 +101,19 @@ abstract public class AbstractIntegrationTest {
     @Autowired
     @Qualifier("mysqlBinaryRestore")
     private File mysqlBinary;
-    private boolean skipCleaning;
 
     @Before
-    public void init() {
+    public void init() throws DatabaseExtractionException {
         skipCleaning = false;
         currentDatabaseType = null;
         serviceIdSource = null;
         serviceIdTarget = null;
+        this.populateDatabaseAccessMap();
     }
 
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
         boolean isBinariesValid = this.isBinariesValid(databaseType);
-        boolean isServerListening = serverListening(databaseType);
+        boolean isServerListening = isServerListening(databaseType);
         if (!isBinariesValid || !isServerListening) {
             this.skipCleaning = true;
         }
@@ -120,17 +125,12 @@ abstract public class AbstractIntegrationTest {
                 ),
                 isBinariesValid
         );
-        assumeTrue(String.format("Server '%s' not accessible, skipping test.", this.getDatabaseServerTest(databaseType)), isServerListening);
+        assumeTrue(String.format("Server(s) for '%s' not accessible, skipping test.", databaseType.toString().toLowerCase()), isServerListening);
         this.populateData(databaseType);
     }
 
     public void cleanDatabase(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
-        DatabaseRef databaseServer = this.getDatabaseRefServerTest(databaseType);
-        if (databaseServer == null) {
-            fail("Cannot find server for database: " + databaseType);
-            return;
-        }
-        this.dropDatabase(databaseServer);
+        this.dropDatabase(databaseType);
     }
 
     @After
@@ -181,27 +181,10 @@ abstract public class AbstractIntegrationTest {
         if (!this.checkBinariesValid) {
             return true;
         }
-        List<File> filesToCheck = Lists.newArrayList();
-        switch (databaseType) {
-            case MONGODB:
-                filesToCheck.add(dbDumpersFactory.getMongodbBinaryDump());
-                filesToCheck.add(dbDumpersFactory.getMongodbBinaryRestore());
-                break;
-            case MYSQL:
-                filesToCheck.add(dbDumpersFactory.getMysqlBinaryDump());
-                filesToCheck.add(dbDumpersFactory.getMysqlBinaryRestore());
-                break;
-            case POSTGRESQL:
-                filesToCheck.add(dbDumpersFactory.getPostgresBinaryDump());
-                filesToCheck.add(dbDumpersFactory.getPostgresBinaryRestore());
-                break;
-            case REDIS:
-                filesToCheck.add(dbDumpersFactory.getRedisRutilBinary());
-                break;
-        }
+
         String OS = System.getProperty("os.name").toLowerCase();
         String arch = System.getProperty("os.arch");
-        for (File fileToCheck : filesToCheck) {
+        for (File fileToCheck : this.databaseAccessMap.get(databaseType).getBinaries()) {
             if (fileToCheck.getAbsolutePath().contains(binariesFolder.getAbsolutePath()) && (!OS.contains("nux") || !arch.contains("64"))) {
                 return false;
             }
@@ -237,8 +220,8 @@ abstract public class AbstractIntegrationTest {
     public void diffSourceAndTargetDatabase(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
         String databaseSource = this.getDbParamsForDump(databaseType);
         String databaseTarget = this.getDbParamsForRestore(databaseType);
-        DatabaseRef sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseSource, ServiceBrokerRequestForge.USER_TOKEN, ServiceBrokerRequestForge.ORG, ServiceBrokerRequestForge.SPACE);
-        DatabaseRef targetDatabase = this.databaseRefManager.getDatabaseRef(databaseTarget, ServiceBrokerRequestForge.USER_TOKEN, ServiceBrokerRequestForge.ORG, ServiceBrokerRequestForge.SPACE);
+        DatabaseRef sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseSource, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
+        DatabaseRef targetDatabase = this.databaseRefManager.getDatabaseRef(databaseTarget, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
         assertThat(sourceDatabase.getDatabaseDumpFiles().size() > 0)
                 .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseSource))
                 .isTrue();
@@ -249,6 +232,10 @@ abstract public class AbstractIntegrationTest {
         assertThat(targetDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
         String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(0).getFileName();
         String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(0).getFileName();
+
+        this.databaseRefManager.deleteServiceKey(sourceDatabase);
+        this.databaseRefManager.deleteServiceKey(targetDatabase);
+
         InputStream sourceStream = this.filer.retrieveWithStream(fileSource);
         InputStream targetStream = this.filer.retrieveWithStream(fileTarget);
         byte[] sourceBytes = ByteStreams.toByteArray(sourceStream);
@@ -269,14 +256,18 @@ abstract public class AbstractIntegrationTest {
 
     }
 
-    protected boolean serverListening(DatabaseType databaseType) throws DatabaseExtractionException {
-        DatabaseRef databaseServer = this.getDatabaseRefServerTest(databaseType);
+    protected boolean isServerListening(DatabaseType databaseType) throws DatabaseExtractionException {
+        DatabaseRef databaseServer = this.databaseAccessMap.get(databaseType).generateDatabaseRef();
         if (databaseServer == null) {
             return false;
         }
+        return this.isSocketOpen(databaseServer.getHost(), databaseServer.getPort());
+    }
+
+    protected boolean isSocketOpen(String host, Integer port) {
         Socket s = null;
         try {
-            s = new Socket(databaseServer.getHost(), databaseServer.getPort());
+            s = new Socket(host, port);
             return true;
         } catch (Exception e) {
             return false;
@@ -289,21 +280,25 @@ abstract public class AbstractIntegrationTest {
         }
     }
 
-
     public void populateData(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, IOException, InterruptedException {
-        File fakeData = this.getFakeData(databaseType);
+        File fakeData = this.databaseAccessMap.get(databaseType).getFakeDataFile();
         if (fakeData == null) {
             fail("Cannot find file for database: " + databaseType);
             return;
         }
-        DatabaseRef databaseServer = this.getDatabaseRefServerTest(databaseType);
+        DatabaseRef databaseServer = this.databaseAccessMap.get(databaseType).generateDatabaseRef();
         if (databaseServer == null) {
             fail("Cannot find server for database: " + databaseType);
             return;
         }
-        logger.info("Populating fake data on server: {} - database {} will be created", this.getDatabaseServerTest(databaseType), DATABASE_SOURCE_NAME);
-        this.createDatabase(databaseServer);
+
+        this.createDatabase(databaseType);
         databaseServer.setDatabaseName(DATABASE_SOURCE_NAME);
+        this.populateDataToDatabaseRefFromFile(fakeData, databaseServer);
+    }
+
+    public void populateDataToDatabaseRefFromFile(File fakeData, DatabaseRef databaseServer) throws CannotFindDatabaseDumperException, IOException, InterruptedException {
+        logger.info("Populating fake data on server: {} - database {} will be created with data from file {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath());
         DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseServer);
         Process process = this.runCommandLine(databaseDriver.getRestoreCommandLine());
         OutputStream outputStream = process.getOutputStream();
@@ -319,102 +314,30 @@ abstract public class AbstractIntegrationTest {
                     + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
             );
         }
-        logger.info("Finished to populate fake data on server: {}", this.getDatabaseServerTest(databaseType));
+        logger.info("Finished to populate fake data on server: {}", databaseServer.getHost());
     }
 
-    protected void dropDatabase(DatabaseRef databaseRef) throws IOException, InterruptedException {
+    protected void dropDatabase(DatabaseType databaseType) throws IOException, InterruptedException {
         if (System.getenv("TRAVIS") != null) { //we don't drop databases if we are in travis
             return;
         }
-        DatabaseType databaseType = databaseRef.getType();
-        if (databaseType.equals(DatabaseType.MONGODB) || databaseType.equals(DatabaseType.REDIS)) {
-            return;
-        }
-        List<String[]> dropDatabaseCommands = Lists.newArrayList();
-        if (databaseType.equals(DatabaseType.MYSQL)) {
-            dropDatabaseCommands.add(new String[]{
-                    this.mysqlBinary.getAbsolutePath(),
-                    "--host=" + databaseRef.getHost(),
-                    "--port=" + databaseRef.getPort(),
-                    "--user=" + databaseRef.getUser(),
-                    "--password=" + databaseRef.getPassword(),
-                    "-e",
-                    "DROP DATABASE IF EXISTS " + DATABASE_SOURCE_NAME
-            });
-            dropDatabaseCommands.add(new String[]{
-                    this.mysqlBinary.getAbsolutePath(),
-                    "--host=" + databaseRef.getHost(),
-                    "--port=" + databaseRef.getPort(),
-                    "--user=" + databaseRef.getUser(),
-                    "--password=" + databaseRef.getPassword(),
-                    "-e",
-                    "DROP DATABASE IF EXISTS " + DATABASE_TARGET_NAME
-            });
-        }
-        if (databaseType.equals(DatabaseType.POSTGRESQL)) {
-            dropDatabaseCommands.add(new String[]{
-                    this.psqlBinary.getAbsolutePath(),
-                    String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),
-                    "-c",
-                    "DROP DATABASE IF EXISTS " + DATABASE_SOURCE_NAME
-            });
-            dropDatabaseCommands.add(new String[]{
-                    this.psqlBinary.getAbsolutePath(),
-                    String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),
-                    "-c",
-                    "DROP DATABASE IF EXISTS " + DATABASE_TARGET_NAME
-            });
-        }
+
+        List<String[]> dropDatabaseCommands = this.databaseAccessMap.get(databaseType).getDropDatabaseCommands();
+
         if (dropDatabaseCommands.size() == 0) {
             return;
         }
         this.runCommands(dropDatabaseCommands);
     }
 
-    protected void createDatabase(DatabaseRef databaseRef) throws IOException, InterruptedException {
-        DatabaseType databaseType = databaseRef.getType();
-        if (databaseType.equals(DatabaseType.MONGODB) || databaseType.equals(DatabaseType.REDIS)) {
+    protected void createDatabase(DatabaseType databaseType) throws IOException, InterruptedException {
+        if (System.getenv("TRAVIS") != null) { // if in travis we don't try to create database cause they already exists
             return;
         }
-        List<String[]> createDatabaseCommands = Lists.newArrayList();
-        if (databaseType.equals(DatabaseType.MYSQL)) {
-            createDatabaseCommands.add(new String[]{
-                    this.mysqlBinary.getAbsolutePath(),
-                    "--host=" + databaseRef.getHost(),
-                    "--port=" + databaseRef.getPort(),
-                    "--user=" + databaseRef.getUser(),
-                    "--password=" + databaseRef.getPassword(),
-                    "-e",
-                    "CREATE DATABASE IF NOT EXISTS " + DATABASE_SOURCE_NAME
-            });
-            createDatabaseCommands.add(new String[]{
-                    this.mysqlBinary.getAbsolutePath(),
-                    "--host=" + databaseRef.getHost(),
-                    "--port=" + databaseRef.getPort(),
-                    "--user=" + databaseRef.getUser(),
-                    "--password=" + databaseRef.getPassword(),
-                    "-e",
-                    "CREATE DATABASE IF NOT EXISTS " + DATABASE_TARGET_NAME
-            });
-        }
-        if (databaseType.equals(DatabaseType.POSTGRESQL)) {
-            this.dropDatabase(databaseRef);
-            if (System.getenv("TRAVIS") != null) { // if in travis we don't try to create database cause they already exists
-                return;
-            }
-            createDatabaseCommands.add(new String[]{
-                    this.psqlBinary.getAbsolutePath(),
-                    String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),
-                    "-c",
-                    "CREATE DATABASE " + DATABASE_SOURCE_NAME
-            });
+        List<String[]> createDatabaseCommands = this.databaseAccessMap.get(databaseType).getCreateDatabaseCommands();
 
-            createDatabaseCommands.add(new String[]{
-                    this.psqlBinary.getAbsolutePath(),
-                    String.format("--dbname=postgresql://%s:%s@%s:%s/%s", databaseRef.getUser(), databaseRef.getPassword(), databaseRef.getHost(), databaseRef.getPort(), databaseRef.getDatabaseName()),
-                    "-c",
-                    "CREATE DATABASE " + DATABASE_TARGET_NAME
-            });
+        if (databaseType.equals(DatabaseType.POSTGRESQL)) {
+            this.dropDatabase(databaseType);
         }
         if (createDatabaseCommands.size() == 0) {
             return;
@@ -449,7 +372,8 @@ abstract public class AbstractIntegrationTest {
         return outputFromProcess;
     }
 
-    protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
+    protected Process
+    runCommandLine(String[] commandLine) throws IOException, InterruptedException {
         logger.info("Running command line: " + String.join(" ", commandLine));
 
         ProcessBuilder pb = new ProcessBuilder(commandLine);
@@ -458,41 +382,6 @@ abstract public class AbstractIntegrationTest {
         return process;
     }
 
-    private DatabaseRef getDatabaseRefServerTest(DatabaseType databaseType) throws DatabaseExtractionException {
-        String databaseServerUri = this.getDatabaseServerTest(databaseType);
-        if (databaseServerUri == null) {
-            return null;
-        }
-        return new DatabaseRef("server-localhost", URI.create(databaseServerUri));
-    }
-
-    private String getDatabaseServerTest(DatabaseType databaseType) {
-        switch (databaseType) {
-            case MONGODB:
-                return mongoServer;
-            case MYSQL:
-                return mysqlServer;
-            case POSTGRESQL:
-                return postgresServer;
-            case REDIS:
-                return redisServer;
-        }
-        return null;
-    }
-
-    private File getFakeData(DatabaseType databaseType) {
-        switch (databaseType) {
-            case MONGODB:
-                return mongodbFakeData;
-            case MYSQL:
-                return mysqlFakeData;
-            case POSTGRESQL:
-                return postgresFakeData;
-            case REDIS:
-                return redisFakeData;
-        }
-        return null;
-    }
 
     public boolean isFinishedAction(String serviceInstanceId) {
 
@@ -535,5 +424,131 @@ abstract public class AbstractIntegrationTest {
 
     public String getDbTargetFromUri(String databaseServerUri) {
         return this.getDbFromUri(databaseServerUri, DATABASE_TARGET_NAME);
+    }
+
+    protected void populateDatabaseAccessMap() throws DatabaseExtractionException {
+        DatabaseAccess postgresDatabaseAccess = new DatabaseAccess(
+                postgresServer,
+                Arrays.asList(dbDumpersFactory.getPostgresBinaryDump(), dbDumpersFactory.getPostgresBinaryRestore()),
+                postgresFakeData,
+                this.getDbSourceFromUri(postgresServer),
+                this.getDbTargetFromUri(postgresServer)
+        );
+        DatabaseRef databaseServerPostgres = postgresDatabaseAccess.generateDatabaseRef();
+        postgresDatabaseAccess.addCreateDatabaseCommand(new String[]{
+                this.psqlBinary.getAbsolutePath(),
+                String.format("--dbname=postgresql://%s:%s@%s:%s/%s",
+                        databaseServerPostgres.getUser(),
+                        databaseServerPostgres.getPassword(),
+                        databaseServerPostgres.getHost(),
+                        databaseServerPostgres.getPort(),
+                        databaseServerPostgres.getDatabaseName()),
+                "-c",
+                "CREATE DATABASE " + DATABASE_SOURCE_NAME
+        });
+        postgresDatabaseAccess.addCreateDatabaseCommand(new String[]{
+                this.psqlBinary.getAbsolutePath(),
+                String.format("--dbname=postgresql://%s:%s@%s:%s/%s",
+                        databaseServerPostgres.getUser(),
+                        databaseServerPostgres.getPassword(),
+                        databaseServerPostgres.getHost(),
+                        databaseServerPostgres.getPort(),
+                        databaseServerPostgres.getDatabaseName()),
+                "-c",
+                "CREATE DATABASE " + DATABASE_TARGET_NAME
+        });
+        postgresDatabaseAccess.addDropDatabaseCommands(new String[]{
+                this.psqlBinary.getAbsolutePath(),
+                String.format("--dbname=postgresql://%s:%s@%s:%s/%s",
+                        databaseServerPostgres.getUser(),
+                        databaseServerPostgres.getPassword(),
+                        databaseServerPostgres.getHost(),
+                        databaseServerPostgres.getPort(),
+                        databaseServerPostgres.getDatabaseName()),
+                "-c",
+                "DROP DATABASE IF EXISTS " + DATABASE_SOURCE_NAME
+        });
+        postgresDatabaseAccess.addDropDatabaseCommands(new String[]{
+                this.psqlBinary.getAbsolutePath(),
+                String.format("--dbname=postgresql://%s:%s@%s:%s/%s",
+                        databaseServerPostgres.getUser(),
+                        databaseServerPostgres.getPassword(),
+                        databaseServerPostgres.getHost(),
+                        databaseServerPostgres.getPort(),
+                        databaseServerPostgres.getDatabaseName()),
+                "-c",
+                "DROP DATABASE IF EXISTS " + DATABASE_TARGET_NAME
+        });
+        DatabaseAccess mysqlDatabaseAccess = new DatabaseAccess(
+                mysqlServer,
+                Arrays.asList(dbDumpersFactory.getMysqlBinaryDump(), dbDumpersFactory.getMongodbBinaryRestore()),
+                mysqlFakeData,
+                this.getDbSourceFromUri(mysqlServer),
+                this.getDbTargetFromUri(mysqlServer)
+        );
+
+        DatabaseRef databaseServerMysql = mysqlDatabaseAccess.generateDatabaseRef();
+        mysqlDatabaseAccess.addCreateDatabaseCommand(new String[]{
+                this.mysqlBinary.getAbsolutePath(),
+                "--host=" + databaseServerMysql.getHost(),
+                "--port=" + databaseServerMysql.getPort(),
+                "--user=" + databaseServerMysql.getUser(),
+                "--password=" + databaseServerMysql.getPassword(),
+                "-e",
+                "CREATE DATABASE IF NOT EXISTS " + DATABASE_SOURCE_NAME
+        });
+        mysqlDatabaseAccess.addCreateDatabaseCommand(new String[]{
+                this.mysqlBinary.getAbsolutePath(),
+                "--host=" + databaseServerMysql.getHost(),
+                "--port=" + databaseServerMysql.getPort(),
+                "--user=" + databaseServerMysql.getUser(),
+                "--password=" + databaseServerMysql.getPassword(),
+                "-e",
+                "CREATE DATABASE IF NOT EXISTS " + DATABASE_TARGET_NAME
+        });
+        mysqlDatabaseAccess.addDropDatabaseCommands(new String[]{
+                this.mysqlBinary.getAbsolutePath(),
+                "--host=" + databaseServerMysql.getHost(),
+                "--port=" + databaseServerMysql.getPort(),
+                "--user=" + databaseServerMysql.getUser(),
+                "--password=" + databaseServerMysql.getPassword(),
+                "-e",
+                "DROP DATABASE IF EXISTS " + DATABASE_SOURCE_NAME
+        });
+        mysqlDatabaseAccess.addDropDatabaseCommands(new String[]{
+                this.mysqlBinary.getAbsolutePath(),
+                "--host=" + databaseServerMysql.getHost(),
+                "--port=" + databaseServerMysql.getPort(),
+                "--user=" + databaseServerMysql.getUser(),
+                "--password=" + databaseServerMysql.getPassword(),
+                "-e",
+                "DROP DATABASE IF EXISTS " + DATABASE_TARGET_NAME
+        });
+
+        this.databaseAccessMap.put(
+                DatabaseType.MONGODB,
+                new DatabaseAccess(
+                        mongoServer,
+                        Arrays.asList(dbDumpersFactory.getMongodbBinaryDump(), dbDumpersFactory.getMongodbBinaryRestore()),
+                        mongodbFakeData,
+                        this.getDbSourceFromUri(mongoServer),
+                        this.getDbTargetFromUri(mongoServer)
+                )
+        );
+
+        this.databaseAccessMap.put(DatabaseType.POSTGRESQL, postgresDatabaseAccess);
+
+        this.databaseAccessMap.put(
+                DatabaseType.REDIS,
+                new DatabaseAccess(
+                        redisServer,
+                        Arrays.asList(dbDumpersFactory.getRedisRutilBinary()),
+                        redisFakeData,
+                        redisServer,
+                        redisServer
+                )
+        );
+
+        this.databaseAccessMap.put(DatabaseType.MYSQL, mysqlDatabaseAccess);
     }
 }

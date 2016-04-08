@@ -137,4 +137,18 @@ public class AppConfig {
         return null;
     }
 
+    @Bean
+    public String cfAdminUser() {
+        return cfAdminUser;
+    }
+
+    @Bean
+    public String cfAdminPassword() {
+        return cfAdminPassword;
+    }
+
+    @Bean
+    public String cloudControllerUrl() {
+        return cloudControllerUrl;
+    }
 }

@@ -29,32 +29,12 @@ public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
 
     @Override
     public String getDbParamsForDump(DatabaseType databaseType) {
-        switch (databaseType) {
-            case MONGODB:
-                return this.getDbSourceFromUri(mongoServer);
-            case MYSQL:
-                return this.getDbSourceFromUri(mysqlServer);
-            case POSTGRESQL:
-                return this.getDbSourceFromUri(postgresServer);
-            case REDIS:
-                return redisServer;
-        }
-        return "";
+        return this.databaseAccessMap.get(databaseType).getDatabaseSourceUri();
     }
 
     @Override
     public String getDbParamsForRestore(DatabaseType databaseType) {
-        switch (databaseType) {
-            case MONGODB:
-                return this.getDbTargetFromUri(mongoServer);
-            case MYSQL:
-                return this.getDbTargetFromUri(mysqlServer);
-            case POSTGRESQL:
-                return this.getDbTargetFromUri(postgresServer);
-            case REDIS:
-                return redisServer;
-        }
-        return "";
+        return this.databaseAccessMap.get(databaseType).getDatabaseTargetUri();
     }
 
 

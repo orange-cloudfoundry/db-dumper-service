@@ -40,20 +40,7 @@ public class DumpAndRestoreDatabaseFromUriToServiceNameWithFakeCloudFoundryClien
     public String getDbParamsForDump(DatabaseType databaseType) {
         assertThat(cloudFoundryClient).isInstanceOf(CloudFoundryClientFake.class);
         CloudFoundryClientFake cloudFoundryClientFake = (CloudFoundryClientFake) cloudFoundryClient;
-        switch (databaseType) {
-            case MONGODB:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(mongoServer));
-                break;
-            case MYSQL:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(mysqlServer));
-                break;
-            case POSTGRESQL:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbSourceFromUri(postgresServer));
-                break;
-            case REDIS:
-                cloudFoundryClientFake.setDatabaseUri(redisServer);
-                break;
-        }
+        cloudFoundryClientFake.setDatabaseUri(this.databaseAccessMap.get(databaseType).getDatabaseSourceUri());
         return databaseType.toString().toLowerCase() + "-myservice-source";
     }
 
@@ -61,20 +48,7 @@ public class DumpAndRestoreDatabaseFromUriToServiceNameWithFakeCloudFoundryClien
     public String getDbParamsForRestore(DatabaseType databaseType) {
         assertThat(cloudFoundryClient).isInstanceOf(CloudFoundryClientFake.class);
         CloudFoundryClientFake cloudFoundryClientFake = (CloudFoundryClientFake) cloudFoundryClient;
-        switch (databaseType) {
-            case MONGODB:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbTargetFromUri(mongoServer));
-                break;
-            case MYSQL:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbTargetFromUri(mysqlServer));
-                break;
-            case POSTGRESQL:
-                cloudFoundryClientFake.setDatabaseUri(this.getDbTargetFromUri(postgresServer));
-                break;
-            case REDIS:
-                cloudFoundryClientFake.setDatabaseUri(redisServer);
-                break;
-        }
+        cloudFoundryClientFake.setDatabaseUri(this.databaseAccessMap.get(databaseType).getDatabaseTargetUri());
         return databaseType.toString().toLowerCase() + "-myservice-target";
     }
 }

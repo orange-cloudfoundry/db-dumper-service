@@ -9,6 +9,7 @@ import org.cloudfoundry.community.servicebroker.model.DeleteServiceInstanceReque
 import org.cloudfoundry.community.servicebroker.model.UpdateServiceInstanceRequest;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 
 /**
@@ -24,16 +25,16 @@ import java.util.Map;
 @Service
 public class ServiceBrokerRequestForge {
 
-    public final static String SERVICE_DEFINITION_ID = "db-dumper-service";
-    public final static String SERVICE_PLAN_ID = "db-dumper-service-plan-experimental";
-    public final static String SPACE_GUID = "space-1";
-    public final static String ORG_GUID = "org-1";
-    public final static String USER_TOKEN = "faketoken";
-    public final static String ORG = "org";
-    public final static String SPACE = "space";
+    public String SERVICE_DEFINITION_ID = "db-dumper-service";
+    public String SERVICE_PLAN_ID = "db-dumper-service-plan-experimental";
+    private String spaceGuid;
+    private String orgGuid;
+    private String userToken;
+    private String org;
+    private String space;
 
     public CreateServiceInstanceRequest createNewDumpRequest(String db, String serviceInstanceId) {
-        return new CreateServiceInstanceRequest(SERVICE_DEFINITION_ID, SERVICE_PLAN_ID, ORG_GUID, SPACE_GUID, true, this.getParams(db)).withServiceInstanceId(serviceInstanceId);
+        return new CreateServiceInstanceRequest(SERVICE_DEFINITION_ID, SERVICE_PLAN_ID, orgGuid, spaceGuid, true, this.getParams(db)).withServiceInstanceId(serviceInstanceId);
     }
 
     public UpdateServiceInstanceRequest createDumpFromExistingServiceRequest(String db, String serviceInstanceId) {
@@ -58,11 +59,58 @@ public class ServiceBrokerRequestForge {
         if (URICheck.isUri(db)) {
             return params;
         }
-        params.put(DbDumperServiceInstanceService.CF_USER_TOKEN_PARAMETER, USER_TOKEN);
-        params.put(DbDumperServiceInstanceService.ORG_PARAMETER, ORG);
-        params.put(DbDumperServiceInstanceService.SPACE_PARAMETER, SPACE);
+        params.put(DbDumperServiceInstanceService.CF_USER_TOKEN_PARAMETER, userToken);
+        params.put(DbDumperServiceInstanceService.ORG_PARAMETER, org);
+        params.put(DbDumperServiceInstanceService.SPACE_PARAMETER, space);
         return params;
     }
 
+    @PostConstruct
+    public void createDefaultData() {
+        spaceGuid = "space-1";
+        orgGuid = "org-1";
+        userToken = "faketoken";
+        org = "org";
+        space = "space";
+    }
 
+    public String getSpaceGuid() {
+        return spaceGuid;
+    }
+
+    public void setSpaceGuid(String spaceGuid) {
+        this.spaceGuid = spaceGuid;
+    }
+
+    public String getOrgGuid() {
+        return orgGuid;
+    }
+
+    public void setOrgGuid(String orgGuid) {
+        this.orgGuid = orgGuid;
+    }
+
+    public String getUserToken() {
+        return userToken;
+    }
+
+    public void setUserToken(String userToken) {
+        this.userToken = userToken;
+    }
+
+    public String getOrg() {
+        return org;
+    }
+
+    public void setOrg(String org) {
+        this.org = org;
+    }
+
+    public String getSpace() {
+        return space;
+    }
+
+    public void setSpace(String space) {
+        this.space = space;
+    }
 }
