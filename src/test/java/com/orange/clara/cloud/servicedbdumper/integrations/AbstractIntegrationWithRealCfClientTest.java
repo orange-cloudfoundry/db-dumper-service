@@ -19,9 +19,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import static org.fest.assertions.Fail.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -184,7 +186,20 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
 
     @Override
     public void populateData(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, IOException, InterruptedException {
-
+        DatabaseAccess databaseAccess = this.databaseAccessMap.get(databaseType);
+        File fakeData = databaseAccess.getFakeDataFile();
+        if (fakeData == null) {
+            fail("Cannot find file for database: " + databaseType);
+            return;
+        }
+        DatabaseRef sourceDatabase = null;
+        try {
+            sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseAccess.getServiceSourceInstanceName(), requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
+        } catch (ServiceKeyException e) {
+            throw new DatabaseExtractionException(e.getMessage(), e);
+        }
+        this.populateDataToDatabaseRefFromFile(fakeData, sourceDatabase);
+        this.databaseRefManager.deleteServiceKey(sourceDatabase);
     }
 
     @Override

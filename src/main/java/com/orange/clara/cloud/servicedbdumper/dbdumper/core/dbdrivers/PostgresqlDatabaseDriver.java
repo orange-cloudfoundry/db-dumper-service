@@ -21,7 +21,7 @@ public class PostgresqlDatabaseDriver extends AbstractDatabaseDriver implements 
     @Override
     public String[] getDumpCommandLine() {
         return String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s --no-owner",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getUser(),
                 this.databaseRef.getPassword(),
