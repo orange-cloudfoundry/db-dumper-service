@@ -23,7 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration({Application.class, FakeCloudFoundryClientConfig.class})
 @WebIntegrationTest(randomPort = true)
-@ActiveProfiles({"local", "cloud", "integration"})
+@ActiveProfiles({"local", "cloud", "integrationrealcf"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DumpAndRestoreDatabaseFromServiceNameTest extends AbstractIntegrationWithRealCfClientTest {
 

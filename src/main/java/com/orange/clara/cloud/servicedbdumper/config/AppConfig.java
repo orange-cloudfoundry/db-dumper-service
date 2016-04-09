@@ -46,6 +46,8 @@ public class AppConfig {
     private String cfAdminPassword;
     @Value("${cloud.controller.url:#{null}}")
     private String cloudControllerUrl;
+    @Value("${no.cloudfoundry.access:false}")
+    private boolean noCloudFoundryAccess;
 
     @Bean
     public String dateFormatFile() {
@@ -61,7 +63,8 @@ public class AppConfig {
                 || this.cfAdminPassword == null
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
-                || this.cloudControllerUrl.isEmpty()) {
+                || this.cloudControllerUrl.isEmpty()
+                || this.noCloudFoundryAccess) {
             return new NoServiceKeyManager();
         }
         return new CloudFoundryServiceKeyManager();
@@ -91,11 +94,15 @@ public class AppConfig {
                 || this.cfAdminPassword == null
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
-                || this.cloudControllerUrl.isEmpty()) {
+                || this.cloudControllerUrl.isEmpty()
+                || this.noCloudFoundryAccess) {
             return null;
         }
         CloudOrganization cloudOrganization = this.getOrg();
         CloudSpace cloudSpace = this.getSpace();
+        if (cloudOrganization == null || cloudSpace == null) {
+            return null;
+        }
         logger.debug(String.format("Creating new CloudFoundry client using admin access with org '%s' and space '%s'", cloudOrganization.getName(), cloudSpace.getName()));
         return cloudFoundryClientFactory.createCloudFoundryClient(this.cfAdminUser, this.cfAdminPassword, this.cloudControllerUrl, cloudOrganization.getName(), cloudSpace.getName());
     }
@@ -107,7 +114,8 @@ public class AppConfig {
                 || this.cfAdminPassword == null
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
-                || this.cloudControllerUrl.isEmpty()) {
+                || this.cloudControllerUrl.isEmpty()
+                || this.noCloudFoundryAccess) {
             return null;
         }
         logger.debug("Creating new CloudFoundry client using admin access");

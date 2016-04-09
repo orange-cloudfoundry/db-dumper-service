@@ -1,6 +1,7 @@
 logging.level.com.orange.clara.cloud.servicedbdumper: DEBUG
 
 ---
+no.cloudfoundry.access: false
 endpoints:
   env:
     keys-to-sanitize: jdbcurl,uri,DATABASE_URL,username,url,password,key_id,access_key,VCAP_SERVICES,encryption_key
@@ -15,9 +16,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-cf.admin.user: ahalet
-cf.admin.password: 19Ju0697$
-cloud.controller.url: https://api.redacted-domain
 security:
   require-ssl: ${use.ssl:false}
   user:

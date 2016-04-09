@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {Application.class})
 @WebAppConfiguration
-@ActiveProfiles({"local", "test-controller"})
+@ActiveProfiles({"local", "test-controller", "integration"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class JobsControllerTest {
     protected DandelionFilter dandelionFilter;
