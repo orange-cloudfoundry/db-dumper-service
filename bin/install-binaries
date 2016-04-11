@@ -86,7 +86,7 @@ mkdir -p "${WD}/src/main/resources/binaries/postgresql/bin"
 mkdir -p "${WD}/src/main/resources/binaries/postgresql/lib"
 tar -zxf "$filepath"
 cd "$finalfile"
-./configure --without-readline
+./configure --without-readline > /dev/null
 make > /dev/null
 sudo make install > /dev/null
 cd -
