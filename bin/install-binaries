@@ -27,7 +27,7 @@ if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
     exit 1
 fi
 mkdir -p "${WD}/src/main/resources/binaries/mysql/bin"
-tar -zxvf "$filepath"
+tar -zxf "$filepath"
 cp "$finalfile/bin/mysql" "${WD}/src/main/resources/binaries/mysql/bin"
 cp "$finalfile/bin/mysqldump" "${WD}/src/main/resources/binaries/mysql/bin"
 rm -Rf "$finalfile"
@@ -53,7 +53,7 @@ if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
     exit 1
 fi
 mkdir -p "${WD}/src/main/resources/binaries/mongodb/bin"
-mkdir $finalfile && tar -zxvf "$filepath" -C $finalfile # tar -zxvf "$filepath"
+mkdir $finalfile && tar -zxf "$filepath" -C $finalfile # tar -zxvf "$filepath"
 cp "$finalfile/bin/mongodump" "${WD}/src/main/resources/binaries/mongodb/bin"
 cp "$finalfile/bin/mongorestore" "${WD}/src/main/resources/binaries/mongodb/bin"
 rm -Rf "$finalfile"
@@ -84,11 +84,11 @@ if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
 fi
 mkdir -p "${WD}/src/main/resources/binaries/postgresql/bin"
 mkdir -p "${WD}/src/main/resources/binaries/postgresql/lib"
-tar -zxvf "$filepath"
+tar -zxf "$filepath"
 cd "$finalfile"
 ./configure --without-readline
-make
-sudo make install
+make > /dev/null
+sudo make install > /dev/null
 cd -
 cd /usr/local/pgsql
 sudo cp -Rf "lib/" "${WD}/src/main/resources/binaries/postgresql"
