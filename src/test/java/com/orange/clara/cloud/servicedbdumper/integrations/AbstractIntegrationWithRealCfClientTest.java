@@ -17,7 +17,9 @@ import org.junit.After;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,7 +125,16 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         CloudService cloudServiceSource = new CloudService(null, databaseAccess.getServiceSourceInstanceName());
         cloudServiceSource.setPlan(databaseAccess.getServicePlan());
         cloudServiceSource.setLabel(databaseAccess.getServiceName());
-        cfClientToPopulate.createService(cloudServiceSource);
+        try {
+            cfClientToPopulate.createService(cloudServiceSource);
+        } catch (HttpServerErrorException e) {
+            if (!e.getStatusCode().equals(HttpStatus.BAD_GATEWAY)) {
+                throw e;
+            } else {
+                assumeTrue("Bad gateway error, skipping test", false);
+            }
+        }
+
         if (!databaseAccess.getServiceTargetInstanceName().equals(databaseAccess.getServiceSourceInstanceName())) {
             CloudService cloudServiceTarget = new CloudService(null, databaseAccess.getServiceTargetInstanceName());
             cloudServiceTarget.setPlan(databaseAccess.getServicePlan());
