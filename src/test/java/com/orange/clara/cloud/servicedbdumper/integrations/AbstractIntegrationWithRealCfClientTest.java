@@ -152,15 +152,16 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
                 || this.cfAdminPassword == null
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
-                || this.cloudControllerUrl.isEmpty()
-                || this.skipCleaning) {
+                || this.cloudControllerUrl.isEmpty()) {
             return;
         }
-
         for (DatabaseType databaseType : this.databaseAccessMap.keySet()) {
             DatabaseAccess databaseAccess = this.databaseAccessMap.get(databaseType);
             this.cfClientToPopulate.deleteService(databaseAccess.getServiceSourceInstanceName());
             this.cfClientToPopulate.deleteService(databaseAccess.getServiceTargetInstanceName());
+        }
+        if (this.skipCleaning) {
+            return;
         }
         this.requestForge.createDefaultData();
         super.cleanAfterTest();

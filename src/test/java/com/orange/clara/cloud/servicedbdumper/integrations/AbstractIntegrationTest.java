@@ -11,8 +11,10 @@ import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionExcept
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.integrations.model.DatabaseAccess;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import org.cloudfoundry.community.servicebroker.exception.*;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceLastOperation;
@@ -101,6 +103,8 @@ abstract public class AbstractIntegrationTest {
     @Autowired
     @Qualifier("mysqlBinaryRestore")
     private File mysqlBinary;
+    @Autowired
+    private DatabaseDumpFileRepo dumpFileRepo;
 
     @Before
     public void init() throws DatabaseExtractionException {
@@ -143,6 +147,17 @@ abstract public class AbstractIntegrationTest {
         }
         if (serviceIdTarget != null && !serviceIdTarget.isEmpty()) {
             this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdTarget));
+        }
+        Iterable<DatabaseDumpFile> databaseDumpFiles = this.dumpFileRepo.findAll();
+        for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
+            String filePath = databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+            try {
+                this.filer.delete(filePath);
+                this.dumpFileRepo.delete(databaseDumpFile);
+            } catch (Exception e) {
+
+            }
+
         }
         if (currentDatabaseType == null) {
             return;
@@ -230,8 +245,8 @@ abstract public class AbstractIntegrationTest {
                 .isTrue();
         assertThat(sourceDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
         assertThat(targetDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
-        String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(0).getFileName();
-        String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(0).getFileName();
+        String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(sourceDatabase.getDatabaseDumpFiles().size() - 1).getFileName();
+        String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(targetDatabase.getDatabaseDumpFiles().size() - 1).getFileName();
 
         this.databaseRefManager.deleteServiceKey(sourceDatabase);
         this.databaseRefManager.deleteServiceKey(targetDatabase);
@@ -244,7 +259,8 @@ abstract public class AbstractIntegrationTest {
         if (databaseType.equals(DatabaseType.REDIS)) { // Redis rearrange data which make diff files unreliable
             return;
         }
-
+        //this.filer.delete(fileSource);
+        //this.filer.delete(fileTarget);
 
         if (dbDumpersFactory.getDatabaseDumper(databaseType).isDumpShowable()) {
             assertThat(new String(targetBytes)).isEqualTo(new String(sourceBytes));
@@ -346,7 +362,7 @@ abstract public class AbstractIntegrationTest {
 
     }
 
-    private void runCommands(List<String[]> commands) throws IOException, InterruptedException {
+    protected void runCommands(List<String[]> commands) throws IOException, InterruptedException {
         for (String[] command : commands) {
             Process process = this.runCommandLine(command);
             process.waitFor();
@@ -408,7 +424,7 @@ abstract public class AbstractIntegrationTest {
             return result;
         } catch (Exception ex) {
             future.cancel(true);
-            fail(ex.getMessage(), ex);
+            fail("Timeout reached.", ex);
         }
         return false;
     }

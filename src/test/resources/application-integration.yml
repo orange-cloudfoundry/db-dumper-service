@@ -2,6 +2,7 @@ logging.level.com.orange.clara.cloud.servicedbdumper: DEBUG
 
 ---
 no.cloudfoundry.access: true
+dump.delete.expiration.days: 0
 endpoints:
   env:
     keys-to-sanitize: jdbcurl,uri,DATABASE_URL,username,url,password,key_id,access_key,VCAP_SERVICES,encryption_key

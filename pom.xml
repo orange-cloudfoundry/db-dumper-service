@@ -20,7 +20,7 @@
         <commons-lang3.version>3.3.2</commons-lang3.version>
         <protobuf-java.version>2.6.1</protobuf-java.version>
         <humanize.version>1.2.2</humanize.version>
-        <s3.connectors.version>2.0.15</s3.connectors.version>
+        <s3.connectors.version>2.0.18</s3.connectors.version>
     </properties>
     <distributionManagement>
         <snapshotRepository>
@@ -125,6 +125,12 @@
             <groupId>com.orange.spring.cloud.connectors</groupId>
             <artifactId>spring-cloud-s3-connectors-localconfig</artifactId>
             <version>${s3.connectors.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.orange.spring.cloud.connectors</groupId>
+            <artifactId>spring-cloud-s3-connectors-heroku</artifactId>
+            <version>${s3.connectors.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jclouds.api</groupId>
