@@ -50,7 +50,14 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
     private void runDump(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
         String[] commandLine = databaseDriver.getDumpCommandLine();
         Process p = this.runCommandLine(commandLine);
-        this.filer.store(p.getInputStream(), fileName);
+        try{
+            this.filer.store(p.getInputStream(), fileName);
+        }catch (IOException e){
+
+        }finally {
+
+        }
+
         p.waitFor();
         if (p.exitValue() != 0) {
             this.filer.delete(fileName);

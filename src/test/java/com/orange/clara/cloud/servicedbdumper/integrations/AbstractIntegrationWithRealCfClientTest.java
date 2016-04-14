@@ -9,6 +9,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.domain.CloudService;
+import org.cloudfoundry.client.lib.domain.CloudServiceKey;
 import org.cloudfoundry.client.lib.domain.CloudServiceOffering;
 import org.cloudfoundry.client.lib.domain.CloudServicePlan;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerAsyncRequiredException;
@@ -24,6 +25,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.*;
 
 import static org.fest.assertions.Fail.fail;
 import static org.junit.Assume.assumeTrue;
@@ -49,13 +51,13 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
     @Value("${int.cf.service.instance.target.mysql:mysql-db-dumper-dest-int}")
     protected String serviceTargetInstanceMysql;
 
-    @Value("${int.cf.service.name.postgres:elephantsql}")
+    @Value("${int.cf.service.name.postgresql:elephantsql}")
     protected String serviceNamePostgres;
-    @Value("${int.cf.service.plan.postgres:turtle}")
+    @Value("${int.cf.service.plan.postgresql:turtle}")
     protected String servicePlanPostgres;
-    @Value("${int.cf.service.instance.source.postgres:postgres-db-dumper-src-int}")
+    @Value("${int.cf.service.instance.source.postgresql:postgres-db-dumper-src-int}")
     protected String serviceSourceInstancePostgres;
-    @Value("${int.cf.service.instance.target.postgres:postgres-db-dumper-dest-int}")
+    @Value("${int.cf.service.instance.target.postgresql:postgres-db-dumper-dest-int}")
     protected String serviceTargetInstancePostgres;
 
     @Value("${int.cf.service.name.mongodb:mongolab}")
@@ -90,9 +92,9 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
     @Autowired
     @Qualifier("cloudControllerUrl")
     protected String cloudControllerUrl;
-    @Value("${int.cf.admin.org:#{null}}")
+    @Value("${test.cf.admin.org:#{null}}")
     protected String org;
-    @Value("${int.cf.admin.space:#{null}}")
+    @Value("${test.cf.admin.space:#{null}}")
     protected String space;
 
     @Autowired
@@ -119,30 +121,24 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         if (!isServiceExists) {
             this.skipCleaning = true;
         }
-        assumeTrue(String.format("The service %s with plan %s doesn't exists please", databaseAccess.getServiceName(), databaseAccess.getServicePlan()),
+        assumeTrue(String.format("The service %s with plan %s doesn't exists please set properties 'test.cf.service.name.%s' and 'test.cf.service.plan.%s'",
+                databaseAccess.getServiceName(),
+                databaseAccess.getServicePlan(),
+                databaseAccess.generateDatabaseRef().getType().toString().toLowerCase(),
+                databaseAccess.generateDatabaseRef().getType().toString().toLowerCase()
+                ),
                 isServiceExists);
 
         CloudService cloudServiceSource = new CloudService(null, databaseAccess.getServiceSourceInstanceName());
         cloudServiceSource.setPlan(databaseAccess.getServicePlan());
         cloudServiceSource.setLabel(databaseAccess.getServiceName());
-        try {
-            cfClientToPopulate.createService(cloudServiceSource);
-        } catch (HttpServerErrorException e) {
-            if (!e.getStatusCode().equals(HttpStatus.BAD_GATEWAY)) {
-                throw e;
-            } else {
-                assumeTrue("Bad gateway error, skipping test", false);
-            }
-        }
-
+        this.createService(cloudServiceSource);
         if (!databaseAccess.getServiceTargetInstanceName().equals(databaseAccess.getServiceSourceInstanceName())) {
             CloudService cloudServiceTarget = new CloudService(null, databaseAccess.getServiceTargetInstanceName());
             cloudServiceTarget.setPlan(databaseAccess.getServicePlan());
             cloudServiceTarget.setLabel(databaseAccess.getServiceName());
-            cfClientToPopulate.createService(cloudServiceTarget);
+            this.createService(cloudServiceTarget);
         }
-
-
         OAuth2AccessToken accessToken = cfClientToPopulate.login();
         this.requestForge.setUserToken(accessToken.getValue());
         this.requestForge.setOrg(org);
@@ -168,6 +164,13 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         }
         for (DatabaseType databaseType : this.databaseAccessMap.keySet()) {
             DatabaseAccess databaseAccess = this.databaseAccessMap.get(databaseType);
+            List<CloudServiceKey> cloudServiceKeys = this.cfClientToPopulate.getServiceKeys();
+            for (CloudServiceKey cloudServiceKey : cloudServiceKeys) {
+                if (cloudServiceKey.getService().getName().equals(databaseAccess.getServiceSourceInstanceName())
+                        || cloudServiceKey.getService().getName().equals(databaseAccess.getServiceTargetInstanceName())) {
+                    this.cfClientToPopulate.deleteServiceKey(cloudServiceKey);
+                }
+            }
             this.cfClientToPopulate.deleteService(databaseAccess.getServiceSourceInstanceName());
             this.cfClientToPopulate.deleteService(databaseAccess.getServiceTargetInstanceName());
         }
@@ -245,6 +248,56 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
             redisAccess.setServiceTargetInstanceName(serviceTargetInstanceRedis);
         }
 
+    }
+
+    protected void createService(CloudService cloudService) {
+        try {
+            cfClientToPopulate.createService(cloudService);
+            if (!this.isFinishedCreatingService(cloudService)) {
+                fail("Cannot create service '" + cloudService.getName() + "'");
+            }
+        } catch (HttpServerErrorException e) {
+            if (!e.getStatusCode().equals(HttpStatus.BAD_GATEWAY)) {
+                throw e;
+            } else {
+                assumeTrue("Bad gateway error, skipping test", false);
+            }
+        }
+
+    }
+
+    public boolean isFinishedCreatingService(CloudService cloudService) {
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Callable<Boolean> task = () -> {
+            while (true) {
+                CloudService cloudServiceFound = cfClientToPopulate.getService(cloudService.getName());
+                if (cloudServiceFound.getCloudServiceLastOperation() == null) {
+                    return true;
+                }
+                logger.debug("State for service '{}' : {}", cloudServiceFound, cloudServiceFound.getCloudServiceLastOperation().getState());
+                switch (cloudServiceFound.getCloudServiceLastOperation().getState()) {
+                    case "succeeded":
+                        return true;
+                    case "in progress":
+                        break;
+                    case "failed":
+                    case "internal error":
+                        return false;
+                }
+                Thread.sleep(5000L);// we yield the task for 5seconds to let the service do is work (actually, Cloud Controller hit getServiceInstance every 30sec)
+            }
+        };
+        Future<Boolean> future = executor.submit(task);
+        try {
+            Boolean result = future.get(5, TimeUnit.MINUTES);
+            return result;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            future.cancel(true);
+            fail("Timeout reached.", ex);
+        }
+        return false;
     }
 
     public boolean isServiceExist(String serviceName, String plan) {

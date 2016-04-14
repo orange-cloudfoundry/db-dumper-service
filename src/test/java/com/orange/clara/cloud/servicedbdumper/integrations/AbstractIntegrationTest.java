@@ -319,10 +319,15 @@ abstract public class AbstractIntegrationTest {
         Process process = this.runCommandLine(databaseDriver.getRestoreCommandLine());
         OutputStream outputStream = process.getOutputStream();
         InputStream dumpFileInputStream = Files.asByteSource(fakeData).openStream();
-        ByteStreams.copy(dumpFileInputStream, outputStream);
-        outputStream.flush();
-        dumpFileInputStream.close();
-        outputStream.close();
+        try {
+            ByteStreams.copy(dumpFileInputStream, outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+
+        } finally {
+            dumpFileInputStream.close();
+        }
         process.waitFor();
         if (process.exitValue() != 0) {
             throw new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
@@ -497,7 +502,7 @@ abstract public class AbstractIntegrationTest {
         });
         DatabaseAccess mysqlDatabaseAccess = new DatabaseAccess(
                 mysqlServer,
-                Arrays.asList(dbDumpersFactory.getMysqlBinaryDump(), dbDumpersFactory.getMongodbBinaryRestore()),
+                Arrays.asList(dbDumpersFactory.getMysqlBinaryDump(), dbDumpersFactory.getMysqlBinaryRestore()),
                 mysqlFakeData,
                 this.getDbSourceFromUri(mysqlServer),
                 this.getDbTargetFromUri(mysqlServer)

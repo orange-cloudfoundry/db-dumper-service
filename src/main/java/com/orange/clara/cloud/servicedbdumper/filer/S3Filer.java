@@ -49,10 +49,15 @@ public class S3Filer implements Filer {
     public void retrieve(OutputStream outputStream, String filename) throws IOException {
         Blob blob = blobStore.getBlob(filename);
         InputStream inputStream = blob.getPayload().openStream();
-        ByteStreams.copy(inputStream, outputStream);
-        outputStream.flush();
+        try {
+            ByteStreams.copy(inputStream, outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            inputStream.close();
+            throw e;
+        }
         inputStream.close();
-        outputStream.close();
     }
 
     @Override
