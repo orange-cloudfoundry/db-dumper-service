@@ -54,8 +54,6 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
             this.filer.store(p.getInputStream(), fileName);
         }catch (IOException e){
 
-        }finally {
-
         }
 
         p.waitFor();
