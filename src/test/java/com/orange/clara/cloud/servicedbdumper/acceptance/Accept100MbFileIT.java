@@ -10,8 +10,8 @@ package com.orange.clara.cloud.servicedbdumper.acceptance;
  * Author: Arthur Halet
  * Date: 12/04/2016
  */
-public class Accept100MbFileTest extends AbstractAcceptanceTest {
-    public Accept100MbFileTest() {
+public class Accept100MbFileIT extends AbstractAcceptanceTest {
+    public Accept100MbFileIT() {
         super("100mb");
     }
 }

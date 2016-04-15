@@ -228,31 +228,31 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
     protected void populateDatabaseAccessMap() throws DatabaseExtractionException {
         super.populateDatabaseAccessMap();
         DatabaseAccess mysqlAccess = this.databaseAccessMap.get(DatabaseType.MYSQL);
-        mysqlAccess.setServiceName(this.generateServiceName(serviceNameMysql));
+        mysqlAccess.setServiceName(serviceNameMysql);
         mysqlAccess.setServicePlan(servicePlanMysql);
-        mysqlAccess.setServiceSourceInstanceName(serviceSourceInstanceMysql);
-        mysqlAccess.setServiceTargetInstanceName(serviceTargetInstanceMysql);
+        mysqlAccess.setServiceSourceInstanceName(this.generateServiceName(serviceSourceInstanceMysql));
+        mysqlAccess.setServiceTargetInstanceName(this.generateServiceName(serviceTargetInstanceMysql));
 
         DatabaseAccess postgresAccess = this.databaseAccessMap.get(DatabaseType.POSTGRESQL);
-        postgresAccess.setServiceName(this.generateServiceName(serviceNamePostgres));
+        postgresAccess.setServiceName(serviceNamePostgres);
         postgresAccess.setServicePlan(servicePlanPostgres);
-        postgresAccess.setServiceSourceInstanceName(serviceSourceInstancePostgres);
-        postgresAccess.setServiceTargetInstanceName(serviceTargetInstancePostgres);
+        postgresAccess.setServiceSourceInstanceName(this.generateServiceName(serviceSourceInstancePostgres));
+        postgresAccess.setServiceTargetInstanceName(this.generateServiceName(serviceTargetInstancePostgres));
 
         DatabaseAccess mongoAccess = this.databaseAccessMap.get(DatabaseType.MONGODB);
-        mongoAccess.setServiceName(this.generateServiceName(serviceNameMongo));
+        mongoAccess.setServiceName(serviceNameMongo);
         mongoAccess.setServicePlan(servicePlanMongo);
-        mongoAccess.setServiceSourceInstanceName(serviceSourceInstanceMongo);
-        mongoAccess.setServiceTargetInstanceName(serviceTargetInstanceMongo);
+        mongoAccess.setServiceSourceInstanceName(this.generateServiceName(serviceSourceInstanceMongo));
+        mongoAccess.setServiceTargetInstanceName(this.generateServiceName(serviceTargetInstanceMongo));
 
         DatabaseAccess redisAccess = this.databaseAccessMap.get(DatabaseType.REDIS);
-        redisAccess.setServiceName(this.generateServiceName(serviceNameRedis));
+        redisAccess.setServiceName(serviceNameRedis);
         redisAccess.setServicePlan(servicePlanRedis);
-        redisAccess.setServiceSourceInstanceName(serviceSourceInstanceRedis);
+        redisAccess.setServiceSourceInstanceName(this.generateServiceName(serviceSourceInstanceRedis));
         if (serviceNameRedis.equals("rediscloud")) {
-            redisAccess.setServiceTargetInstanceName(serviceSourceInstanceRedis);
+            redisAccess.setServiceTargetInstanceName(this.generateServiceName(serviceSourceInstanceRedis));
         } else {
-            redisAccess.setServiceTargetInstanceName(serviceTargetInstanceRedis);
+            redisAccess.setServiceTargetInstanceName(this.generateServiceName(serviceTargetInstanceRedis));
         }
 
     }
