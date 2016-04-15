@@ -248,9 +248,10 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         DatabaseAccess redisAccess = this.databaseAccessMap.get(DatabaseType.REDIS);
         redisAccess.setServiceName(serviceNameRedis);
         redisAccess.setServicePlan(servicePlanRedis);
-        redisAccess.setServiceSourceInstanceName(this.generateServiceName(serviceSourceInstanceRedis));
+        String generatedSourceInstanceRedis = this.generateServiceName(serviceSourceInstanceRedis);
+        redisAccess.setServiceSourceInstanceName(generatedSourceInstanceRedis);
         if (serviceNameRedis.equals("rediscloud")) {
-            redisAccess.setServiceTargetInstanceName(this.generateServiceName(serviceSourceInstanceRedis));
+            redisAccess.setServiceTargetInstanceName(generatedSourceInstanceRedis);
         } else {
             redisAccess.setServiceTargetInstanceName(this.generateServiceName(serviceTargetInstanceRedis));
         }
