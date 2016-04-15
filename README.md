@@ -181,7 +181,7 @@ You will need to set java properties or env var (replace '.' by '_' ) to point d
 
 **TIP:** If you are on linux 64 based OS you will do not need to do this, simply run the script `bin/install-binaries`
 
-#### Run test with a real Cloud Foundry
+### Run test with a real Cloud Foundry
 
 If you want to test on a real Cloud Foundry you will need to set these properties or env var (replace '.' by '_' ):
 
@@ -201,13 +201,13 @@ If you want to test on a real Cloud Foundry you will need to set these propertie
 | int.cf.service.name.redis | rediscloud | redis service name from marketplace |
 | int.cf.service.plan.redis | 30mb (free plan) | redis service plan from marketplace |
 
-#### Run test with a real s3 bucket
+### Run test with a real s3 bucket
 
 Set two env var:
 - `DYNO=true`
 - `S3_URL=s3://accessKeyId:secretAccessKeyId@mys3.com/mybucket` (Change the value with your own s3 url)
 
-#### Other java properties
+### Other java properties
 
 | Properties | Default value | Description |
 | ---------- |:-------------:|:-----------:|
@@ -221,7 +221,7 @@ Set two env var:
 | http.proxyPassword | N/A | password of your http proxy (if you have one) |
 | skip.ssl.verification | false | Set to true if you want to skip ssl verification when connecting to cloud foundry or s3 bucket |
 
-#### Run integration test
+### Run integration test
 
 1. Install [maven](https://maven.apache.org/download.cgi)
 2. run `mvn clean integration-test` inside the project
