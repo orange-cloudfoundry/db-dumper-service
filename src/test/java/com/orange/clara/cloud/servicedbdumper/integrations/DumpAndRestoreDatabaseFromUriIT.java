@@ -24,7 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "integration"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DumpAndRestoreDatabaseFromUriTest extends AbstractIntegrationTest {
+public class DumpAndRestoreDatabaseFromUriIT extends AbstractIntegrationTest {
 
 
     @Override

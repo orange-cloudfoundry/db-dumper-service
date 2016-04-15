@@ -31,7 +31,7 @@ import static org.fest.assertions.Assertions.assertThat;
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "cloud", "integration", "integration-fake-cf-client"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DumpAndRestoreDatabaseFromServiceNameWithFakeCloudFoundryClientTest extends AbstractIntegrationTest {
+public class DumpAndRestoreDatabaseFromServiceNameToUriWithFakeCloudFoundryClientIT extends AbstractIntegrationTest {
 
     @Autowired
     @Qualifier("cloudFoundryClientAsAdmin")
@@ -39,14 +39,14 @@ public class DumpAndRestoreDatabaseFromServiceNameWithFakeCloudFoundryClientTest
 
     @Override
     public String getDbParamsForDump(DatabaseType databaseType) {
-        return this.databaseAccessMap.get(databaseType).getDatabaseSourceUri();
+        assertThat(cloudFoundryClient).isInstanceOf(CloudFoundryClientFake.class);
+        CloudFoundryClientFake cloudFoundryClientFake = (CloudFoundryClientFake) cloudFoundryClient;
+        cloudFoundryClientFake.setDatabaseUri(this.databaseAccessMap.get(databaseType).getDatabaseSourceUri());
+        return databaseType.toString().toLowerCase() + "-myservice-source";
     }
 
     @Override
     public String getDbParamsForRestore(DatabaseType databaseType) {
-        assertThat(cloudFoundryClient).isInstanceOf(CloudFoundryClientFake.class);
-        CloudFoundryClientFake cloudFoundryClientFake = (CloudFoundryClientFake) cloudFoundryClient;
-        cloudFoundryClientFake.setDatabaseUri(this.databaseAccessMap.get(databaseType).getDatabaseTargetUri());
-        return databaseType.toString().toLowerCase() + "-myservice-target";
+        return this.databaseAccessMap.get(databaseType).getDatabaseTargetUri();
     }
 }
