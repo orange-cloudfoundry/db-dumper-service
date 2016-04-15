@@ -17,7 +17,7 @@ install:
 - export GOPATH=$(pwd)/go
 - bin/install-binaries
 script:
-- clean verify -P all-tests jacoco:report
+- mvn clean verify -P all-tests jacoco:report
 after_success:
 - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >t.jar
 - java -jar t.jar -u init
