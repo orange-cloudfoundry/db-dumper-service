@@ -15,6 +15,7 @@ import org.cloudfoundry.client.lib.domain.CloudServicePlan;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerAsyncRequiredException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.junit.After;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 import static org.fest.assertions.Fail.fail;
@@ -101,6 +103,11 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
     @Qualifier("cloudFoundryClientAsAdmin")
     protected CloudFoundryClient cfAdminClient;
 
+    @Override
+    @Before
+    public void init() throws DatabaseExtractionException {
+        super.init();
+    }
 
     @Override
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
@@ -221,25 +228,25 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
     protected void populateDatabaseAccessMap() throws DatabaseExtractionException {
         super.populateDatabaseAccessMap();
         DatabaseAccess mysqlAccess = this.databaseAccessMap.get(DatabaseType.MYSQL);
-        mysqlAccess.setServiceName(serviceNameMysql);
+        mysqlAccess.setServiceName(this.generateServiceName(serviceNameMysql));
         mysqlAccess.setServicePlan(servicePlanMysql);
         mysqlAccess.setServiceSourceInstanceName(serviceSourceInstanceMysql);
         mysqlAccess.setServiceTargetInstanceName(serviceTargetInstanceMysql);
 
         DatabaseAccess postgresAccess = this.databaseAccessMap.get(DatabaseType.POSTGRESQL);
-        postgresAccess.setServiceName(serviceNamePostgres);
+        postgresAccess.setServiceName(this.generateServiceName(serviceNamePostgres));
         postgresAccess.setServicePlan(servicePlanPostgres);
         postgresAccess.setServiceSourceInstanceName(serviceSourceInstancePostgres);
         postgresAccess.setServiceTargetInstanceName(serviceTargetInstancePostgres);
 
         DatabaseAccess mongoAccess = this.databaseAccessMap.get(DatabaseType.MONGODB);
-        mongoAccess.setServiceName(serviceNameMongo);
+        mongoAccess.setServiceName(this.generateServiceName(serviceNameMongo));
         mongoAccess.setServicePlan(servicePlanMongo);
         mongoAccess.setServiceSourceInstanceName(serviceSourceInstanceMongo);
         mongoAccess.setServiceTargetInstanceName(serviceTargetInstanceMongo);
 
         DatabaseAccess redisAccess = this.databaseAccessMap.get(DatabaseType.REDIS);
-        redisAccess.setServiceName(serviceNameRedis);
+        redisAccess.setServiceName(this.generateServiceName(serviceNameRedis));
         redisAccess.setServicePlan(servicePlanRedis);
         redisAccess.setServiceSourceInstanceName(serviceSourceInstanceRedis);
         if (serviceNameRedis.equals("rediscloud")) {
@@ -248,6 +255,12 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
             redisAccess.setServiceTargetInstanceName(serviceTargetInstanceRedis);
         }
 
+    }
+
+    protected String generateServiceName(String serviceName) {
+        String randomUUID = UUID.randomUUID().toString();
+        randomUUID = randomUUID.replace("-", "");
+        return serviceName + "-" + randomUUID.substring(0, 5);
     }
 
     protected void createService(CloudService cloudService) {

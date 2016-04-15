@@ -50,9 +50,9 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
     private void runDump(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
         String[] commandLine = databaseDriver.getDumpCommandLine();
         Process p = this.runCommandLine(commandLine);
-        try{
+        try {
             this.filer.store(p.getInputStream(), fileName);
-        }catch (IOException e){
+        } catch (IOException e) {
 
         }
 
