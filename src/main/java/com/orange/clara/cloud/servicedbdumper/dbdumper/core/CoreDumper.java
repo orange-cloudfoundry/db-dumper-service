@@ -54,8 +54,12 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
             this.filer.store(p.getInputStream(), fileName);
         } catch (IOException e) {
 
+        } catch (Exception e) {
+            if (p.isAlive()) {
+                p.destroy();
+            }
+            throw e;
         }
-
         p.waitFor();
         if (p.exitValue() != 0) {
             this.filer.delete(fileName);
