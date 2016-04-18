@@ -39,9 +39,10 @@ import java.util.UUID;
 public class FakeS3Client implements S3Client {
 
     private String baseFolder;
+    private boolean makeItFailUpload = false;
+    private boolean makeItFailCompleteUpload = false;
 
-    public FakeS3Client(String baseFolder) {
-        this.baseFolder = baseFolder;
+    public FakeS3Client() {
     }
 
     @Override
@@ -171,6 +172,9 @@ public class FakeS3Client implements S3Client {
 
     @Override
     public String uploadPart(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String bucketName, String key, int partNumber, String uploadId, Payload part) {
+        if (this.makeItFailUpload) {
+            throw new RuntimeException("we make it failed");
+        }
         String folderPath = this.baseFolder + "/" + bucketName;
         File folder = new File(folderPath);
         folder.mkdirs();
@@ -199,11 +203,38 @@ public class FakeS3Client implements S3Client {
 
     @Override
     public String completeMultipartUpload(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String bucketName, String key, String uploadId, @BinderParam(BindPartIdsAndETagsToRequest.class) Map<Integer, String> parts) {
+        if (this.makeItFailCompleteUpload) {
+            throw new RuntimeException("we make it failed");
+        }
         return uploadId;
     }
 
     @Override
     public void close() throws IOException {
 
+    }
+
+    public String getBaseFolder() {
+        return baseFolder;
+    }
+
+    public void setBaseFolder(String baseFolder) {
+        this.baseFolder = baseFolder;
+    }
+
+    public boolean isMakeItFailUpload() {
+        return makeItFailUpload;
+    }
+
+    public void setMakeItFailUpload(boolean makeItFailUpload) {
+        this.makeItFailUpload = makeItFailUpload;
+    }
+
+    public boolean isMakeItFailCompleteUpload() {
+        return makeItFailCompleteUpload;
+    }
+
+    public void setMakeItFailCompleteUpload(boolean makeItFailCompleteUpload) {
+        this.makeItFailCompleteUpload = makeItFailCompleteUpload;
     }
 }

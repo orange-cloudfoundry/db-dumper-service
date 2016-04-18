@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 
@@ -43,13 +44,19 @@ public class UploadS3StreamImplTest {
     @Spy
     UploadS3StreamImpl uploadS3Stream;
 
+    @Spy
+    private FakeS3Client fakeS3Client;
     private Blob blob;
     private SpringCloudBlobStoreContext springCloudBlobStoreContext;
 
     @Before
     public void init() {
         initMocks(this);
-        uploadS3Stream.s3Client = new FakeS3Client(baseDirectory);
+        uploadS3Stream.retry = 5;
+        uploadS3Stream.s3Client = fakeS3Client;
+        fakeS3Client.setMakeItFailUpload(false);
+        fakeS3Client.setBaseFolder(baseDirectory);
+        fakeS3Client.setMakeItFailCompleteUpload(false);
         Properties properties = new Properties();
         properties.setProperty(FilesystemConstants.PROPERTY_BASEDIR, baseDirectory);
         BlobStoreContext blobStoreContext = ContextBuilder.newBuilder("filesystem")
@@ -79,6 +86,38 @@ public class UploadS3StreamImplTest {
                 anyInt(),
                 (Payload) notNull(),
                 (SortedMap<Integer, String>) notNull()
+        );
+    }
+
+    @Test
+    public void ensure_it_retry_upload_when_upload_fail() throws IOException {
+        fakeS3Client.setMakeItFailUpload(true);
+        this.uploadS3Stream.setChunkSize(1);
+        try {
+            this.uploadS3Stream.upload(new ByteArrayInputStream(content.getBytes()), blob);
+        } catch (Exception e) {
+        }
+
+        verify(uploadS3Stream.s3Client, times(5)).uploadPart(
+                anyString(), anyString(), anyInt(),
+                anyString(),
+                (Payload) notNull()
+        );
+    }
+
+    @Test
+    public void ensure_it_retry_complete_upload_when_complete_upload_fail() throws IOException {
+        fakeS3Client.setMakeItFailCompleteUpload(true);
+        this.uploadS3Stream.setChunkSize(1);
+        try {
+            this.uploadS3Stream.upload(new ByteArrayInputStream(content.getBytes()), blob);
+        } catch (Exception e) {
+        }
+
+        verify(uploadS3Stream.s3Client, times(5)).completeMultipartUpload(
+                anyString(), anyString(),
+                anyString(),
+                (Map<Integer, String>) notNull()
         );
     }
 
