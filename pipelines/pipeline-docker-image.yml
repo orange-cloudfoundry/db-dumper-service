@@ -7,7 +7,7 @@ jobs:
   - get: db-dumper-service
   - put: db-dumper-concourse-image
     params:
-      build: db-dumper-service/pipelines/dokerfiles/docker
+      build: db-dumper-service/pipelines/dockerfiles
 
 resources:
 - name: db-dumper-service
