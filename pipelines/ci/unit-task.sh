@@ -13,7 +13,7 @@ echo "" > src/main/resources/binaries/mysql/bin/mysqldump
 
 mkdir -p src/main/resources/binaries/postgresql/bin
 echo "" > src/main/resources/binaries/postgresql/bin/pg_dump
-echo "" > src/main/resources/binaries/postgresql/bin/pg_restore
+echo "" > src/main/resources/binaries/postgresql/bin/psql
 
 mkdir -p src/main/resources/binaries/redis/bin
 echo "" > src/main/resources/binaries/redis/bin/rutil
