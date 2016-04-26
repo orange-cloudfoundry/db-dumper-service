@@ -4,8 +4,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: maven
-    tag: '3.3.3-jdk-8'
+    repository: orangeopensource/db-dumper-concourse
+    tag: 'latest'
 
 inputs:
 - name: db-dumper-service
