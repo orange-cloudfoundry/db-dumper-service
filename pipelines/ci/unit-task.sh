@@ -1,7 +1,23 @@
 #!/usr/bin/env sh
 
 set -e
-
 cd db-dumper-service
-bin/install-binaries
+
+mkdir -p src/main/resources/binaries/mongodb/bin
+echo "" > src/main/resources/binaries/mongodb/bin/mongodump
+echo "" > src/main/resources/binaries/mongodb/bin/mongorestore
+
+mkdir -p src/main/resources/binaries/mysql/bin
+echo "" > src/main/resources/binaries/mysql/bin/mysql
+echo "" > src/main/resources/binaries/mysql/bin/mysqldump
+
+mkdir -p src/main/resources/binaries/postgresql/bin
+echo "" > src/main/resources/binaries/postgresql/bin/pg_dump
+echo "" > src/main/resources/binaries/postgresql/bin/pg_restore
+
+mkdir -p src/main/resources/binaries/redis/bin
+echo "" > src/main/resources/binaries/redis/bin/rutil
+
+chmod -R +x src/main/resources/binaries
+
 mvn test
