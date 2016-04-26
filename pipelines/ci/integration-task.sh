@@ -7,4 +7,4 @@ bin/install-binaries
 
 chmod -R +x src/main/resources/binaries
 
-mvn test
+mvn integration-test

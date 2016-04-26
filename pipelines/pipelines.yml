@@ -8,15 +8,15 @@ jobs:
   - name: db-dumper-unit
     plan:
       - get: db-dumper-service
+        trigger: true
       - task: unit
         file: db-dumper-service/pipelines/ci/unit-task.yml
   - name: db-dumper-integration
     plan:
       - get: db-dumper-service
+        trigger: true
         passed: [db-dumper-unit]
       - task: integration
-        file: db-dumper-service/pipelines/ci/integration-task.yml
-      - put: db-dumper-service
         params:
           cloud_controller_url: {{cloud_controller_url}}
           int_cf_service_name_mongodb: skipped-cause-mongolab-have-issue
@@ -24,3 +24,4 @@ jobs:
           test_cf_admin_space: {{test_cf_admin_space}}
           cf_admin_user: {{cf_admin_user}}
           cf_admin_password: {{cf_admin_password}}
+        file: db-dumper-service/pipelines/ci/integration-task.yml
