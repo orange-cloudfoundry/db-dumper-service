@@ -11,5 +11,4 @@ inputs:
 - name: db-dumper-service
 
 run:
-  path: mvn
-  args: [clean test]
+  path: db-dumper-service/pipelines/ci/unit-task.sh
