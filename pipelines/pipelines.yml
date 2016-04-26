@@ -9,4 +9,4 @@ jobs:
     plan:
       - get: db-dumper-service
       - task: unit
-        file: pipelines/ci/unit-task.yml
+        file: db-dumper-service/pipelines/ci/unit-task.yml
