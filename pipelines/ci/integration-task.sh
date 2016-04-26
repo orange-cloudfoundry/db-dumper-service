@@ -5,6 +5,4 @@ cd db-dumper-service
 
 bin/install-binaries
 
-chmod -R +x src/main/resources/binaries
-
-mvn integration-test
+mvn clean integration-test

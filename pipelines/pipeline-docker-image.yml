@@ -1,0 +1,25 @@
+---
+jobs:
+- name: job-publish
+  public: true
+  serial: true
+  plan:
+  - get: db-dumper-service
+  - put: db-dumper-concourse-image
+    params:
+      build: db-dumper-service/pipelines/dokerfiles/docker
+
+resources:
+- name: db-dumper-service
+  type: git
+  source:
+    uri: https://github.com/Orange-OpenSource/db-dumper-service.git
+    branch: master
+
+- name: db-dumper-concourse-image
+  type: docker-image
+  source:
+    email: {{docker-hub-email}}
+    username: {{docker-hub-username}}
+    password: {{docker-hub-password}}
+    repository: {{docker-hub-image}}
