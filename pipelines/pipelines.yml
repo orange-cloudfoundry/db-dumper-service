@@ -4,13 +4,6 @@ resources:
     source:
       uri: https://github.com/Orange-OpenSource/db-dumper-service.git
       branch: master
-  - name: db-dumper-concourse-image
-    type: docker-image
-    source:
-      email: {{docker-hub-email}}
-      username: {{docker-hub-username}}
-      password: {{docker-hub-password}}
-      repository: {{docker-hub-image}}
 jobs:
   - name: db-dumper-unit
     plan:
@@ -23,7 +16,7 @@ jobs:
     plan:
       - get: db-dumper-service
         trigger: true
-        passed: [db-dumper-unit, publish-db-dumper-concourse]
+        passed: [db-dumper-unit]
       - task: integration
         params:
           cloud_controller_url: {{cloud_controller_url}}
@@ -44,27 +37,10 @@ jobs:
           platform: linux
           image_resource:
             type: docker-image
-            source: {repository: ubuntu}
+            source:
+              repository: orangeopensource/db-dumper-concourse
+              tag: 'latest'
           run:
             path: echo
             args: ["Hello, world!"]
 
-  - name: publish-db-dumper-concourse
-    public: true
-    serial: true
-    plan:
-    - get: db-dumper-service
-      trigger: true
-    - put: db-dumper-concourse-image
-      params:
-        build: db-dumper-service/pipelines/dockerfiles
-
-groups:
-- name: tests
-  jobs:
-  - db-dumper-unit
-  - db-dumper-integration
-  - db-dumper-accept-100mb
-- name: docker-image
-  jobs:
-  - publish-db-dumper-concourse
