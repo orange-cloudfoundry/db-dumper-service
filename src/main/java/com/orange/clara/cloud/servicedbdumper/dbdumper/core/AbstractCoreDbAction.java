@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,6 +49,9 @@ public abstract class AbstractCoreDbAction {
     protected InputStream errorProcess;
     protected InputStream outputProcess;
 
+    @Value("${show.command.line:true}")
+    private boolean showCommandLine;
+
     private String outputFromProcess = "";
     private String errorFromProcess = "";
 
@@ -60,7 +64,9 @@ public abstract class AbstractCoreDbAction {
     }
 
     protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
-        logger.debug("Running command line: " + String.join(" ", commandLine));
+        if (this.showCommandLine) {
+            logger.debug("Running command line: " + String.join(" ", commandLine));
+        }
         ProcessBuilder pb = new ProcessBuilder(commandLine);
         pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
         Process process = pb.start();
