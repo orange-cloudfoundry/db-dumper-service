@@ -5,4 +5,4 @@ cd db-dumper-service
 
 bin/install-binaries
 
-mvn clean integration-test
+mvn integration-test failsafe:verify
