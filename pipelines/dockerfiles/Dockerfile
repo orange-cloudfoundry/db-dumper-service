@@ -1,4 +1,4 @@
-FROM maven:3.3.3-jdk-8
+FROM maven:3.3.9-jdk-8
 
 RUN apt-get update
 RUN apt-get -y install sudo
