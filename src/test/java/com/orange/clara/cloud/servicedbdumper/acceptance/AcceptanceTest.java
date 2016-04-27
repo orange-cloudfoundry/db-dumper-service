@@ -40,7 +40,7 @@ import static org.junit.Assume.assumeTrue;
 @ActiveProfiles({"local", "integrationrealcf", "s3"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @IfProfileValue(name = "test.groups", values = {"acceptance-tests"})
-public class AbstractAcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
+public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
 
     private final static String fileNameTemplate = "fakedata_%s.sql";
     @Value("${accept.cf.service.name.mysql:cleardb}")
@@ -80,15 +80,15 @@ public class AbstractAcceptanceTest extends AbstractIntegrationWithRealCfClientT
     @Value("${user.dir}")
     private File userDir;
 
+    @Value("${test.accept.file.size:#{null}}")
     private String fileSize;
 
-    public AbstractAcceptanceTest(String fileSize) {
-        this.fileSize = fileSize;
-    }
 
     @Override
     @Before
     public void init() throws DatabaseExtractionException {
+        assumeTrue("You must set property test.accept.file.size (e.g. test.accept.file.size=100mb",
+                this.fileSize != null);
         this.serviceNameMongo = this.serviceNameAcceptMongo;
         this.serviceNameMysql = this.serviceNameAcceptMysql;
         this.serviceNameRedis = this.serviceNameAcceptRedis;
@@ -106,6 +106,16 @@ public class AbstractAcceptanceTest extends AbstractIntegrationWithRealCfClientT
         this.serviceTargetInstancePostgres = serviceTargetInstanceAcceptPostgres;
         this.serviceTargetInstanceRedis = serviceTargetInstanceAcceptRedis;
         super.init();
+    }
+
+    @Override
+    public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
+        boolean isS3urlExists = System.getenv("S3_URL") != null && System.getenv("DYNO") != null;
+        if (!isS3urlExists) {
+            this.skipCleaning = true;
+        }
+        assumeTrue("No s3 server found, please set env var S3_URL and DYNO=true", isS3urlExists);
+        super.doBeforeTest(databaseType);
     }
 
     @Override
@@ -132,16 +142,6 @@ public class AbstractAcceptanceTest extends AbstractIntegrationWithRealCfClientT
         commands.add(command);
         this.runCommands(commands);
         super.populateDataToDatabaseRefFromFile(fakeDataGenerated, databaseServer);
-    }
-
-    @Override
-    public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
-        boolean isS3urlExists = System.getenv("S3_URL") != null && System.getenv("DYNO") != null;
-        if (!isS3urlExists) {
-            this.skipCleaning = true;
-        }
-        assumeTrue("No s3 server found, please set env var S3_URL and DYNO=true", isS3urlExists);
-        super.doBeforeTest(databaseType);
     }
 
 

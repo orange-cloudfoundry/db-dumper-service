@@ -25,6 +25,8 @@ jobs:
           test_cf_admin_space: {{test_cf_admin_space}}
           cf_admin_user: {{cf_admin_user}}
           cf_admin_password: {{cf_admin_password}}
+          DYNO: true # remove it to not run integration test on s3
+          S3_URL: {{s3_url}}
         file: db-dumper-service/pipelines/ci/integration-task.yml
 
   - name: db-dumper-accept-100mb
