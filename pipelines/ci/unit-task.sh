@@ -22,4 +22,4 @@ chmod -R +x src/main/resources/binaries
 
 export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:/dev/./urandom"
 
-mvn test
+mvn -B test
