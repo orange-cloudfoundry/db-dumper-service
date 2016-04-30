@@ -17,7 +17,7 @@ install:
 - export GOPATH=$(pwd)/go
 - bin/install-binaries
 script:
-- mvn clean verify -P all-tests jacoco:report
+- mvn -B clean verify -P all-tests jacoco:report
 after_success:
 - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >t.jar
 - java -jar t.jar -u init
@@ -25,7 +25,7 @@ after_success:
 - export PATH=$PATH:$HOME/jpm/bin
 - jpm install com.codacy:codacy-coverage-reporter:assembly
 - codacy-coverage-reporter -l Java -r target/site/jacoco/jacoco.xml
-- mvn clean install -DskipTests=true
+- mvn -B clean install -DskipTests=true
 - mkdir -p db-dumper-service/target
 - cp target/db-dumper-service-1.2.0.war db-dumper-service/target
 - cp manifest.yml db-dumper-service/
