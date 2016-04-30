@@ -5,18 +5,13 @@ resources:
       uri: https://github.com/Orange-OpenSource/db-dumper-service.git
       branch: master
 jobs:
-  - name: db-dumper-unit
+
+  - name: db-dumper-tests
     plan:
       - get: db-dumper-service
         trigger: true
       - task: unit
         file: db-dumper-service/pipelines/ci/unit-task.yml
-
-  - name: db-dumper-integration
-    plan:
-      - get: db-dumper-service
-        trigger: true
-        passed: [db-dumper-unit]
       - task: integration
         params:
           cloud_controller_url: {{cloud_controller_url}}
@@ -25,8 +20,8 @@ jobs:
           test_cf_admin_space: {{test_cf_admin_space}}
           cf_admin_user: {{cf_admin_user}}
           cf_admin_password: {{cf_admin_password}}
-          DYNO: true # remove it to not run integration test on s3
           show_command_line: false
+          DYNO: false # remove it to not run integration test on s3
           S3_URL: {{s3_url}}
         file: db-dumper-service/pipelines/ci/integration-task.yml
 
@@ -34,7 +29,7 @@ jobs:
     plan:
       - get: db-dumper-service
         trigger: true
-        passed: [db-dumper-integration]
+        passed: [db-dumper-tests]
       - task: say-hello
         config:
           platform: linux
