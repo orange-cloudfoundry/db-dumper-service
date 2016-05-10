@@ -20,6 +20,6 @@ echo "" > src/main/resources/binaries/redis/bin/rutil
 
 chmod -R +x src/main/resources/binaries
 
-export MAVEN_OPTS="${MAVEN_OPTS} -Djava.security.egd=file:/dev/./urandom"
+export JAVA_OPTS="${JAVA_OPTS} -Djava.security.egd=file:///dev/urandom"
 
 mvn -B test
