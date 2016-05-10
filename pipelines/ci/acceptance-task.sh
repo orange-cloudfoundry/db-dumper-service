@@ -2,7 +2,7 @@
 
 set -e
 cd db-dumper-service
-
+env
 bin/install-binaries
 export JAVA_OPTS="${JAVA_OPTS} -Djava.security.egd=file:///dev/urandom"
 
