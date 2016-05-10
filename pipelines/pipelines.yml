@@ -34,7 +34,7 @@ jobs:
         passed: [db-dumper-tests]
       - get: db-dumper-service
         trigger: true
-      - task: integration
+      - task: accept
         params:
           cloud_controller_url: {{cloud_controller_url}}
           int_cf_service_name_mysql: {{service_mysql}}
@@ -51,4 +51,4 @@ jobs:
           DYNO: true # remove it to not run integration test on s3
           S3_URL: {{s3_url}}
           test_accept_file_size: 1Mb
-        file: db-dumper-service/pipelines/ci/integration-task.yml
+        file: db-dumper-service/pipelines/ci/acceptance-task.yml
