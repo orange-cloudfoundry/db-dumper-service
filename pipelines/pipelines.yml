@@ -23,17 +23,8 @@ jobs:
         trigger: true
         params:
           download-logs: true
-      - task: say-hello
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: ubuntu}
-          inputs:
-          - name: db-dumper-travis
-          run:
-            path: cat
-            args: ["db-dumper-travis/travis-logs/*"]
+      - task: see-travis-logs
+        file: db-dumper-service/pipelines/ci/see-logs-task.yml
 
   - name: db-dumper-accept-1mb
     plan:
