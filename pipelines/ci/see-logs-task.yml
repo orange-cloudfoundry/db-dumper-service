@@ -7,8 +7,8 @@ image_resource:
     repository: ubuntu
 
 inputs:
-- db-dumper-travis
-- db-dumper-service
+- name: db-dumper-travis
+- name: db-dumper-service
 
 run:
   path: db-dumper-service/pipelines/ci/see-logs-task.sh
