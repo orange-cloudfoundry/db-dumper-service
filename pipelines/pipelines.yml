@@ -35,12 +35,12 @@ jobs:
       - task: accept
         params:
           cloud_controller_url: {{cloud_controller_url}}
-          int_cf_service_name_mysql: {{service_mysql}}
-          int_cf_service_plan_mysql: {{service_plan_mysql}}
-          int_cf_service_name_postgresql: {{service_postgresql}}
-          int_cf_service_plan_postgresql: {{service_plan_postgresql}}
-          int_cf_service_name_mongodb: skipped-mongo
-          int_cf_service_name_redis: skipped-redis
+          accept_cf_service_name_mysql: {{service_mysql}}
+          accept_cf_service_plan_mysql: {{service_plan_mysql}}
+          accept_cf_service_name_postgresql: {{service_postgresql}}
+          accept_cf_service_plan_postgresql: {{service_plan_postgresql}}
+          accept_cf_service_name_mongodb: skipped-mongo
+          accept_cf_service_name_redis: skipped-redis
           test_cf_admin_org: {{test_cf_admin_org}}
           test_cf_admin_space: {{test_cf_admin_space}}
           cf_admin_user: {{cf_admin_user}}

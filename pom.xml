@@ -123,14 +123,14 @@
         </dependency>
         <dependency>
             <groupId>com.orange.spring.cloud.connectors</groupId>
-            <artifactId>spring-cloud-s3-connectors-localconfig</artifactId>
-            <version>${s3.connectors.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.orange.spring.cloud.connectors</groupId>
             <artifactId>spring-cloud-s3-connectors-heroku</artifactId>
             <version>${s3.connectors.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.orange.spring.cloud.connectors</groupId>
+            <artifactId>spring-cloud-s3-connectors-localconfig</artifactId>
+            <version>${s3.connectors.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jclouds.api</groupId>
