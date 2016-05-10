@@ -45,7 +45,7 @@ jobs:
           test_cf_admin_space: {{test_cf_admin_space}}
           cf_admin_user: {{cf_admin_user}}
           cf_admin_password: {{cf_admin_password}}
-          show_command_line: false
+          show_command_line: true
           DYNO: true # remove it to not run integration test on s3
           S3_URL: {{s3_url}}
           test_accept_file_size: 1Mb

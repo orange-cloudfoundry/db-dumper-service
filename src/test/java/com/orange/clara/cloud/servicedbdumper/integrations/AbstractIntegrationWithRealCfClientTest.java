@@ -266,6 +266,7 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
 
     protected void createService(CloudService cloudService) {
         try {
+            logger.info("Creating service {} from {} with plan {} ", cloudService.getName(), cloudService.getLabel(), cloudService.getPlan());
             cfClientToPopulate.createService(cloudService);
             if (!this.isFinishedCreatingService(cloudService)) {
                 fail("Cannot create service '" + cloudService.getName() + "'");
