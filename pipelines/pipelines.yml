@@ -32,7 +32,6 @@ jobs:
         trigger: true
         passed: [db-dumper-tests]
       - get: db-dumper-service
-        trigger: true
       - task: accept
         params:
           cloud_controller_url: {{cloud_controller_url}}
