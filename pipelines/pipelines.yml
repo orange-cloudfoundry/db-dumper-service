@@ -19,6 +19,8 @@ jobs:
 
   - name: db-dumper-tests
     plan:
+      - get: db-dumper-service
+        trigger: true
       - get: db-dumper-travis
         trigger: true
         params:
