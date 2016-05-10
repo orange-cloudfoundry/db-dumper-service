@@ -85,6 +85,8 @@ abstract public class AbstractIntegrationTest {
     protected String serviceIdSource;
     protected String serviceIdTarget;
     protected boolean skipCleaning;
+    @Value("${test.timeout.action:3}")
+    protected int timeoutAction;
     @Value("${mongodb.fake.data.file:classpath:data/fake-data-mongodb.bin}")
     private File mongodbFakeData;
     @Value("${mysql.fake.data.file:classpath:data/fake-data-mysql.sql}")
@@ -425,7 +427,7 @@ abstract public class AbstractIntegrationTest {
         };
         Future<Boolean> future = executor.submit(task);
         try {
-            Boolean result = future.get(3, TimeUnit.MINUTES);
+            Boolean result = future.get(timeoutAction, TimeUnit.MINUTES);
             return result;
         } catch (Exception ex) {
             future.cancel(true);

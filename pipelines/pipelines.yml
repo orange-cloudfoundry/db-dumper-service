@@ -49,4 +49,6 @@ jobs:
           DYNO: true # remove it to not run integration test on s3
           S3_URL: {{s3_url}}
           test_accept_file_size: 1Mb
+          test_timeout_creating_service: {{test_timeout_creating_service}}
+          test_timeout_action: {{test_timeout_action}}
         file: db-dumper-service/pipelines/ci/acceptance-task.yml

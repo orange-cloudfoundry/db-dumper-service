@@ -98,7 +98,8 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
     protected String org;
     @Value("${test.cf.admin.space:#{null}}")
     protected String space;
-
+    @Value("${test.timeout.creating.service:5}")
+    protected int timeoutCreatingService;
     @Autowired
     @Qualifier("cloudFoundryClientAsAdmin")
     protected CloudFoundryClient cfAdminClient;
@@ -305,7 +306,7 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         };
         Future<Boolean> future = executor.submit(task);
         try {
-            Boolean result = future.get(5, TimeUnit.MINUTES);
+            Boolean result = future.get(timeoutCreatingService, TimeUnit.MINUTES);
             return result;
         } catch (Exception ex) {
             ex.printStackTrace();
