@@ -21,7 +21,6 @@ jobs:
     plan:
       - get: db-dumper-service
       - get: db-dumper-travis
-        trigger: true
         params:
           download-logs: true
       - task: see-travis-logs
