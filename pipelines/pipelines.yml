@@ -25,12 +25,6 @@ resource_types:
     repository: cfcommunity/slack-notification-resource
 jobs:
 
-- name: test-create-data
-  plan:
-    - get: db-dumper-service
-    - task: test-create-data
-      file: db-dumper-service/pipelines/ci/test-create-data.yml
-
 - name: db-dumper-tests
   plan:
     - get: db-dumper-service
