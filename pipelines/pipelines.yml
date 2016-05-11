@@ -28,12 +28,19 @@ jobs:
 - name: db-dumper-tests
   plan:
     - get: db-dumper-service
+    - task: test-create-data
+      file: db-dumper-service/pipelines/ci/test-create-data.yml
+
+- name: db-dumper-tests
+  plan:
+    - get: db-dumper-service
     - get: db-dumper-travis
       params:
         download-logs: true
     - task: see-travis-logs
       file: db-dumper-service/pipelines/ci/see-logs-task.yml
 
+# ---- 1MB
 - name: db-dumper-accept-1mb
   plan:
     - get: db-dumper-travis
@@ -75,3 +82,176 @@ jobs:
           ![success](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-green.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Good news :) , test in limit for **1Mb** of data is passed
         channel: "#db-dumper-service"
         username: Concourse
+# ------------------------------
+
+# ---- 100MB
+- name: db-dumper-accept-100mb
+  plan:
+    - get: db-dumper-service
+      trigger: true
+      passed: [db-dumper-accept-1mb]
+    - task: accept
+      params:
+        cloud_controller_url: {{cloud_controller_url}}
+        accept_cf_service_name_mysql: {{service_mysql}}
+        accept_cf_service_plan_mysql: {{service_plan_mysql}}
+        accept_cf_service_name_postgresql: {{service_postgresql}}
+        accept_cf_service_plan_postgresql: {{service_plan_postgresql}}
+        accept_cf_service_name_mongodb: skipped-mongo
+        accept_cf_service_name_redis: skipped-redis
+        test_cf_admin_org: {{test_cf_admin_org}}
+        test_cf_admin_space: {{test_cf_admin_space}}
+        cf_admin_user: {{cf_admin_user}}
+        cf_admin_password: {{cf_admin_password}}
+        show_command_line: true
+        DYNO: true # remove it to not run integration test on s3
+        S3_URL: {{s3_url}}
+        test_accept_file_size: 100Mb
+        test_timeout_creating_service: {{test_timeout_creating_service}}
+        test_timeout_action: {{test_timeout_action}}
+      file: db-dumper-service/pipelines/ci/acceptance-task.yml
+      on_failure:
+        put: slack-alert
+        params:
+          icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+          text: |
+            ![failed](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-red.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Bad news :( , test in limit for **100Mb** of data is not passed
+          channel: "#db-dumper-service"
+          username: Concourse
+    - put: slack-alert
+      params:
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![success](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-green.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Good news :) , test in limit for **100Mb** of data is passed
+        channel: "#db-dumper-service"
+        username: Concourse
+# ------------------------------
+
+# ---- 500MB
+- name: db-dumper-accept-500mb
+  plan:
+    - get: db-dumper-service
+      trigger: true
+      passed: [db-dumper-accept-100mb]
+    - task: accept
+      params:
+        cloud_controller_url: {{cloud_controller_url}}
+        accept_cf_service_name_mysql: {{service_mysql}}
+        accept_cf_service_plan_mysql: {{service_plan_mysql}}
+        accept_cf_service_name_postgresql: {{service_postgresql}}
+        accept_cf_service_plan_postgresql: {{service_plan_postgresql}}
+        accept_cf_service_name_mongodb: skipped-mongo
+        accept_cf_service_name_redis: skipped-redis
+        test_cf_admin_org: {{test_cf_admin_org}}
+        test_cf_admin_space: {{test_cf_admin_space}}
+        cf_admin_user: {{cf_admin_user}}
+        cf_admin_password: {{cf_admin_password}}
+        show_command_line: true
+        DYNO: true # remove it to not run integration test on s3
+        S3_URL: {{s3_url}}
+        test_accept_file_size: 500Mb
+        test_timeout_creating_service: {{test_timeout_creating_service}}
+        test_timeout_action: {{test_timeout_action}}
+      file: db-dumper-service/pipelines/ci/acceptance-task.yml
+      on_failure:
+        put: slack-alert
+        params:
+          icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+          text: |
+            ![failed](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-red.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Bad news :( , test in limit for **500Mb** of data is not passed
+          channel: "#db-dumper-service"
+          username: Concourse
+    - put: slack-alert
+      params:
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![success](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-green.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Good news :) , test in limit for **500Mb** of data is passed
+        channel: "#db-dumper-service"
+        username: Concourse
+# ------------------------------
+
+# ---- 1Gb
+- name: db-dumper-accept-1gb
+  plan:
+    - get: db-dumper-service
+      trigger: true
+      passed: [db-dumper-accept-500mb]
+    - task: accept
+      params:
+        cloud_controller_url: {{cloud_controller_url}}
+        accept_cf_service_name_mysql: {{service_mysql}}
+        accept_cf_service_plan_mysql: {{service_plan_mysql}}
+        accept_cf_service_name_postgresql: {{service_postgresql}}
+        accept_cf_service_plan_postgresql: {{service_plan_postgresql}}
+        accept_cf_service_name_mongodb: skipped-mongo
+        accept_cf_service_name_redis: skipped-redis
+        test_cf_admin_org: {{test_cf_admin_org}}
+        test_cf_admin_space: {{test_cf_admin_space}}
+        cf_admin_user: {{cf_admin_user}}
+        cf_admin_password: {{cf_admin_password}}
+        show_command_line: true
+        DYNO: true # remove it to not run integration test on s3
+        S3_URL: {{s3_url}}
+        test_accept_file_size: 1gb
+        test_timeout_creating_service: {{test_timeout_creating_service}}
+        test_timeout_action: {{test_timeout_action}}
+      file: db-dumper-service/pipelines/ci/acceptance-task.yml
+      on_failure:
+        put: slack-alert
+        params:
+          icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+          text: |
+            ![failed](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-red.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Bad news :( , test in limit for **1Gb** of data is not passed
+          channel: "#db-dumper-service"
+          username: Concourse
+    - put: slack-alert
+      params:
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![success](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-green.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Good news :) , test in limit for **1Gb** of data is passed
+        channel: "#db-dumper-service"
+        username: Concourse
+# ------------------------------
+
+# ---- 2Gb
+- name: db-dumper-accept-2gb
+  plan:
+    - get: db-dumper-service
+      trigger: true
+      passed: [db-dumper-accept-1gb]
+    - task: accept
+      params:
+        cloud_controller_url: {{cloud_controller_url}}
+        accept_cf_service_name_mysql: {{service_mysql}}
+        accept_cf_service_plan_mysql: {{service_plan_mysql}}
+        accept_cf_service_name_postgresql: {{service_postgresql}}
+        accept_cf_service_plan_postgresql: {{service_plan_postgresql}}
+        accept_cf_service_name_mongodb: skipped-mongo
+        accept_cf_service_name_redis: skipped-redis
+        test_cf_admin_org: {{test_cf_admin_org}}
+        test_cf_admin_space: {{test_cf_admin_space}}
+        cf_admin_user: {{cf_admin_user}}
+        cf_admin_password: {{cf_admin_password}}
+        show_command_line: true
+        DYNO: true # remove it to not run integration test on s3
+        S3_URL: {{s3_url}}
+        test_accept_file_size: 2gb
+        test_timeout_creating_service: {{test_timeout_creating_service}}
+        test_timeout_action: {{test_timeout_action}}
+      file: db-dumper-service/pipelines/ci/acceptance-task.yml
+      on_failure:
+        put: slack-alert
+        params:
+          icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+          text: |
+            ![failed](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-red.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Bad news :( , test in limit for **2Gb** of data is not passed
+          channel: "#db-dumper-service"
+          username: Concourse
+    - put: slack-alert
+      params:
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![success](https://rawgit.com/Orange-OpenSource/travis-resource/master/ci/images/concourse-green.png) [[limit-test]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)] Good news :) , test in limit for **2Gb** of data is passed
+        channel: "#db-dumper-service"
+        username: Concourse
+# ------------------------------
