@@ -134,7 +134,7 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
     @Override
     protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
         super.dumpAndRestoreTest(databaseType);
-        logger.info("\\033[0;32mTest for dump and restore for type {} with data for {} (real size of the file) succeeded.", databaseType.toString(), getGeneratedFile().length());
+        logger.info("\\033[0;32mTest for dump and restore for type {} with data for {} (real size of the file) succeeded.", databaseType.toString(), humanize.Humanize.binaryPrefix(getGeneratedFile().length()));
     }
 
     @Override

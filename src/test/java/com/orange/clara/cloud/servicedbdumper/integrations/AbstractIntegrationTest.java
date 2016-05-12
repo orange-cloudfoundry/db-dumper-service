@@ -326,7 +326,7 @@ abstract public class AbstractIntegrationTest {
                 finalRestoreCommand[i + 1] = restoreCommandLine[i];
             }
             finalRestoreCommand[0] = restoreCommandLine[0];
-            finalRestoreCommand[1] = "--max_allowed_packet=" + fakeData.length();
+            finalRestoreCommand[1] = "--max-allowed-packet=" + fakeData.length();
             restoreCommandLine = finalRestoreCommand;
         }
         Process process = this.runCommandLine(restoreCommandLine);
