@@ -1,26 +1,6 @@
 #!/usr/bin/env bash
-set -ex
-file="$2"
-centmb="$1"
-if [ $# -ne 2 ];
-    then echo "Usage: $0 [file_size_in_bytes] [file_name]"
-    exit 1
-fi
-cat <<EOT > "$file"
-DROP TABLE IF EXISTS fake_table;
-CREATE TABLE fake_table
-(
-    value VARCHAR(8)
-);
-INSERT INTO fake_table VALUES
-EOT
-file_dir=$(dirname "${file}")
-file_name=$(basename "${file}")
-size_beginning=`ls -la "$file_dir/." | grep "$file_name" | awk '{ print $5 }'`
-head -c 5 /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/\('\1'\), /" | tr -d '\n' >> "$file"
-size=`ls -la "$file_dir/." | grep "$file_name" | awk '{ print $5 }'`
-size=$(($size - $size_beginning))
-iter=$(($centmb / $size))
-finalbytes=$((5 * $iter))
-head -c $finalbytes /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/\('\1'\), /" | tr -d '\n' >> "$file"
-head -c 5 /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/\('\1'\);/" | tr -d '\n' >> "$file"
+set -e
+BASEDIR=$(dirname $0)
+gsd="generate-sql-data"
+hash generate-sql-data 2>/dev/null || { $BASEDIR/install_generate_sql_data.sh > /dev/null ; gsd="./generate-sql-data"; }
+$gsd $1 $2

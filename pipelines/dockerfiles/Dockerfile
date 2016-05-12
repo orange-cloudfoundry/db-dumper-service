@@ -23,6 +23,10 @@ RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& tar -C /usr/local -xzf golang.tar.gz \
 	&& rm golang.tar.gz
 
+RUN curl -L https://github.com/ArthurHlt/generate-sql-data/releases/download/v1.0.0/generate-sql-data_linux_amd64 -o generate-sql-data \
+    && chmod +x generate-sql-data \
+    && mv generate-sql-data /usr/bin
+
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 

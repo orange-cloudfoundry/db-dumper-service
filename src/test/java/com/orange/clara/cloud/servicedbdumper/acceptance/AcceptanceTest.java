@@ -153,7 +153,7 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
     }
 
     protected Long getFileSize() {
-        Long size = (long) (ByteFormat.parse(this.fileSize) * 1.20);
+        Long size = ByteFormat.parse(this.fileSize);
         return size;
     }
 
