@@ -12,14 +12,15 @@ CREATE TABLE fake_table
 (
     value VARCHAR(8)
 );
+INSERT INTO fake_table VALUES
 EOT
 file_dir=$(dirname "${file}")
 file_name=$(basename "${file}")
 size_beginning=`ls -la "$file_dir/." | grep "$file_name" | awk '{ print $5 }'`
-head -c 5 /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/INSERT INTO fake_table VALUES \('\1'\);/" | tr -d '\n' >> "$file"
+head -c 5 /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/\('\1'\), /" | tr -d '\n' >> "$file"
 size=`ls -la "$file_dir/." | grep "$file_name" | awk '{ print $5 }'`
 size=$(($size - $size_beginning))
 iter=$(($centmb / $size))
 finalbytes=$((5 * $iter))
-head -c $finalbytes /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/INSERT INTO fake_table VALUES \('\1'\);/" | tr -d '\n' >> "$file"
-head -c 5 /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/INSERT INTO fake_table VALUES \('\1'\);/" | tr -d '\n' >> "$file"
+head -c $finalbytes /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/\('\1'\), /" | tr -d '\n' >> "$file"
+head -c 5 /dev/urandom | base64 | fold -w8 | sed "s/\(.*\)/\('\1'\);/" | tr -d '\n' >> "$file"
