@@ -3,10 +3,12 @@ package com.orange.clara.cloud.servicedbdumper.acceptance;
 import com.orange.clara.cloud.servicedbdumper.Application;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
+import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.helper.ByteFormat;
 import com.orange.clara.cloud.servicedbdumper.integrations.AbstractIntegrationWithRealCfClientTest;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
+import org.cloudfoundry.community.servicebroker.exception.*;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -130,18 +132,34 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
     }
 
     @Override
+    protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
+        super.dumpAndRestoreTest(databaseType);
+        logger.info("\\033[0;32mTest for dump and restore for type {} with data for {} (real size of the file) succeeded.", databaseType.toString(), getGeneratedFile().length());
+    }
+
+    @Override
     public void populateDataToDatabaseRefFromFile(File fakeData, DatabaseRef databaseServer) throws CannotFindDatabaseDumperException, IOException, InterruptedException {
-        Long size = (long) (ByteFormat.parse(this.fileSize) * 1.20);
-        File fakeDataGenerated = new File(this.userDir.getAbsolutePath() + "/" + String.format(this.fileNameTemplate, size.toString()));
+
+        File fakeDataGenerated = getGeneratedFile();
         String[] command = new String[]{
                 this.scriptCreateFakeData.getAbsolutePath(),
-                size.toString(),
+                getFileSize().toString(),
                 fakeDataGenerated.getAbsolutePath()
         };
         List<String[]> commands = new ArrayList<>();
         commands.add(command);
         this.runCommands(commands);
         super.populateDataToDatabaseRefFromFile(fakeDataGenerated, databaseServer);
+    }
+
+    protected Long getFileSize() {
+        Long size = (long) (ByteFormat.parse(this.fileSize) * 1.20);
+        return size;
+    }
+
+    protected File getGeneratedFile() {
+
+        return new File(this.userDir.getAbsolutePath() + "/" + String.format(this.fileNameTemplate, getFileSize().toString()));
     }
 
 

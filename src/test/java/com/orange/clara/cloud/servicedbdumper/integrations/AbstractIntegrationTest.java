@@ -6,6 +6,7 @@ import com.google.common.io.Files;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.MysqlDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
@@ -316,9 +317,19 @@ abstract public class AbstractIntegrationTest {
     }
 
     public void populateDataToDatabaseRefFromFile(File fakeData, DatabaseRef databaseServer) throws CannotFindDatabaseDumperException, IOException, InterruptedException {
-        logger.info("Populating fake data on server: {} - database {} will be created with data from file {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath());
+        logger.info("Populating fake data on server: {} - database {} will be created with data from file {} which has size of {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath(), humanize.Humanize.binaryPrefix(fakeData.length()));
         DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseServer);
-        Process process = this.runCommandLine(databaseDriver.getRestoreCommandLine());
+        String[] restoreCommandLine = databaseDriver.getRestoreCommandLine();
+        if (databaseDriver instanceof MysqlDatabaseDriver) {
+            String[] finalRestoreCommand = new String[restoreCommandLine.length + 1];
+            for (int i = 1; i < restoreCommandLine.length; i++) {
+                finalRestoreCommand[i + 1] = restoreCommandLine[i];
+            }
+            finalRestoreCommand[0] = restoreCommandLine[0];
+            finalRestoreCommand[1] = "--max_allowed_packet=" + fakeData.length();
+            restoreCommandLine = finalRestoreCommand;
+        }
+        Process process = this.runCommandLine(restoreCommandLine);
         OutputStream outputStream = process.getOutputStream();
         InputStream dumpFileInputStream = Files.asByteSource(fakeData).openStream();
         try {
