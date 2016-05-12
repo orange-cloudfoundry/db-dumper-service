@@ -65,7 +65,7 @@ public abstract class AbstractCoreDbAction {
 
     protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
         if (this.showCommandLine) {
-            logger.debug("Running command line: " + String.join(" ", commandLine));
+            logger.info("Running command line: " + String.join(" ", commandLine));
         }
         ProcessBuilder pb = new ProcessBuilder(commandLine);
         pb.redirectOutput(ProcessBuilder.Redirect.PIPE);

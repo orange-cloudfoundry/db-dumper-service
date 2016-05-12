@@ -291,7 +291,7 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
                 if (cloudServiceFound.getCloudServiceLastOperation() == null) {
                     return true;
                 }
-                logger.debug("State for service '{}' : {}", cloudServiceFound, cloudServiceFound.getCloudServiceLastOperation().getState());
+                logger.info("State for service '{}' : {}", cloudServiceFound, cloudServiceFound.getCloudServiceLastOperation().getState());
                 switch (cloudServiceFound.getCloudServiceLastOperation().getState()) {
                     case "succeeded":
                         return true;

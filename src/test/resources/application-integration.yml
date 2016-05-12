@@ -1,11 +1,4 @@
-logging.level.com.orange.clara.cloud.servicedbdumper.dbdumper: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.filer: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.helper: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.security: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.service: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.integrations: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.acceptance: DEBUG
-logging.level.com.orange.clara.cloud.servicedbdumper.task: INFO
+logging.level.com.orange.clara.cloud.servicedbdumper: INFO
 
 ---
 no.cloudfoundry.access: true
