@@ -113,7 +113,7 @@ public class UploadS3StreamImpl implements UploadS3Stream {
                 etags.put(Integer.valueOf(numPart), eTag);
                 break;
             } catch (Exception e) {
-                logger.warn("Retry {} to upload on S3.", i);
+                logger.warn("Retry {}/{} to upload on S3 for container {}.", i, retry, container);
                 if (i >= retry) {
                     throw e;
                 }

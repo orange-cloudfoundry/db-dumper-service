@@ -1,6 +1,7 @@
 logging.level.com.orange.clara.cloud.servicedbdumper: INFO
 
 ---
+spring.output.ansi.enabled: always
 no.cloudfoundry.access: true
 endpoints:
   env:

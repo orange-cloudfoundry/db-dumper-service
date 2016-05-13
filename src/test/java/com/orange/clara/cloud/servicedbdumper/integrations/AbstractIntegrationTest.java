@@ -75,7 +75,8 @@ abstract public class AbstractIntegrationTest {
 
     @Value("${int.mongodb.server:mongodb://localhost/dbdumpertestsource}")
     protected String mongoServer;
-
+    @Value("${test.populate.data.retry:5}")
+    protected int populateDataRetry;
     @Autowired
     protected Filer filer;
 
@@ -177,21 +178,28 @@ abstract public class AbstractIntegrationTest {
         this.currentDatabaseType = databaseType;
         this.doBeforeTest(databaseType);
 
+        this.loadBeforeAction();
         this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForDump(databaseType), serviceIdSource));
         if (!this.isFinishedAction(serviceIdSource)) {
             fail("Creating dump for source database failed");
         }
 
+        this.loadBeforeAction();
         this.dbDumperServiceInstanceService.updateServiceInstance(this.requestForge.createRestoreRequest(this.getDbParamsForRestore(databaseType), serviceIdSource));
         if (!this.isFinishedAction(serviceIdSource)) {
             fail("Restoring dump failed");
         }
 
+        this.loadBeforeAction();
         this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForRestore(databaseType), serviceIdTarget));
         if (!this.isFinishedAction(serviceIdTarget)) {
             fail("Creating dump for target database failed");
         }
         this.diffSourceAndTargetDatabase(databaseType);
+    }
+
+    protected void loadBeforeAction() {
+
     }
 
     public boolean isBinariesValid(DatabaseType databaseType) {
@@ -319,7 +327,7 @@ abstract public class AbstractIntegrationTest {
         logger.info("Populating fake data on server: {} - database {} will be created with data from file {} which has size of {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath(), humanize.Humanize.binaryPrefix(fakeData.length()));
         DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseServer);
         String[] restoreCommandLine = databaseDriver.getRestoreCommandLine();
-        int i = 0;
+        int i = 1;
         while (true) {
             Process process = this.runCommandLine(restoreCommandLine);
             OutputStream outputStream = process.getOutputStream();
@@ -337,12 +345,15 @@ abstract public class AbstractIntegrationTest {
             if (process.exitValue() == 0) {
                 break;
             }
-            if (i >= 5) {
+            dumpFileInputStream.close();
+            outputStream.close();
+            if (i >= populateDataRetry) {
                 throw new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
                         + this.getInputStreamToStringFromProcess(process.getErrorStream())
                         + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
                 );
             }
+            logger.warn("Retry {}/{}: fail to populate data.", i, populateDataRetry);
             i++;
         }
 

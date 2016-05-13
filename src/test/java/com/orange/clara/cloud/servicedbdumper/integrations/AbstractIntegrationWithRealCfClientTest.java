@@ -25,6 +25,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -118,11 +119,8 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
                 || this.cloudControllerUrl.isEmpty()));
-        if (org != null && space != null) {
-            cfClientToPopulate = this.clientFactory.createCloudFoundryClient(cfAdminUser, cfAdminPassword, cloudControllerUrl, org, space);
-        } else {
-            cfClientToPopulate = cfAdminClient;
-        }
+        cfClientToPopulate = this.clientFactory.createCloudFoundryClient(cfAdminUser, cfAdminPassword, cloudControllerUrl, org, space);
+
 
         DatabaseAccess databaseAccess = this.databaseAccessMap.get(databaseType);
         boolean isServiceExists = isServiceExist(databaseAccess.getServiceName(), databaseAccess.getServicePlan());
@@ -170,6 +168,7 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
                 || this.cloudControllerUrl.isEmpty()) {
             return;
         }
+        loadBeforeAction();
         for (DatabaseType databaseType : this.databaseAccessMap.keySet()) {
             DatabaseAccess databaseAccess = this.databaseAccessMap.get(databaseType);
             List<CloudServiceKey> cloudServiceKeys = this.cfClientToPopulate.getServiceKeys();
@@ -187,6 +186,21 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         }
         this.requestForge.createDefaultData();
         super.cleanAfterTest();
+    }
+
+    @Override
+    protected void loadBeforeAction() {
+        //do before test can be long, we ask to have a new token
+        try {
+            cfClientToPopulate = this.clientFactory.createCloudFoundryClient(cfAdminUser, cfAdminPassword, cloudControllerUrl, org, space);
+        } catch (MalformedURLException e) {
+            //can't happens here
+        }
+        OAuth2AccessToken accessToken = cfClientToPopulate.login();
+        this.requestForge.setUserToken(accessToken.getValue());
+        this.requestForge.setOrg(org);
+        this.requestForge.setSpace(space);
+        super.loadBeforeAction();
     }
 
     @Override

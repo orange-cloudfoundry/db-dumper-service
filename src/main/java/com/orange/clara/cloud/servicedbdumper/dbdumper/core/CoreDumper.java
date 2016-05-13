@@ -49,7 +49,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
     private void runDump(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
         String[] commandLine = databaseDriver.getDumpCommandLine();
-        int i = 0;
+        int i = 1;
         while (true) {
             Process p = this.runCommandLine(commandLine);
             try {
@@ -69,6 +69,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
                 this.filer.delete(fileName);
                 throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
             }
+            logger.warn("Retry {}/{}: fail to dump data for file {}.", i, dbCommandRetry, fileName);
             i++;
         }
     }
