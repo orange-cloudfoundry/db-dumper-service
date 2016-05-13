@@ -190,7 +190,7 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
 
     @Override
     protected void loadBeforeAction() {
-        //do before test can be long, we ask to have a new token
+        //action like restore, dump or populating data can be long, we ask to have a new token
         try {
             cfClientToPopulate = this.clientFactory.createCloudFoundryClient(cfAdminUser, cfAdminPassword, cloudControllerUrl, org, space);
         } catch (MalformedURLException e) {
