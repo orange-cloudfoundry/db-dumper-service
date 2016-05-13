@@ -319,25 +319,33 @@ abstract public class AbstractIntegrationTest {
         logger.info("Populating fake data on server: {} - database {} will be created with data from file {} which has size of {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath(), humanize.Humanize.binaryPrefix(fakeData.length()));
         DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseServer);
         String[] restoreCommandLine = databaseDriver.getRestoreCommandLine();
-        Process process = this.runCommandLine(restoreCommandLine);
-        OutputStream outputStream = process.getOutputStream();
-        InputStream dumpFileInputStream = Files.asByteSource(fakeData).openStream();
-        try {
-            ByteStreams.copy(dumpFileInputStream, outputStream);
-            outputStream.flush();
-            outputStream.close();
-        } catch (IOException e) {
+        int i = 0;
+        while (true) {
+            Process process = this.runCommandLine(restoreCommandLine);
+            OutputStream outputStream = process.getOutputStream();
+            InputStream dumpFileInputStream = Files.asByteSource(fakeData).openStream();
+            try {
+                ByteStreams.copy(dumpFileInputStream, outputStream);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
 
-        } finally {
-            dumpFileInputStream.close();
+            } finally {
+                dumpFileInputStream.close();
+            }
+            process.waitFor();
+            if (process.exitValue() == 0) {
+                break;
+            }
+            if (i >= 5) {
+                throw new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
+                        + this.getInputStreamToStringFromProcess(process.getErrorStream())
+                        + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
+                );
+            }
+            i++;
         }
-        process.waitFor();
-        if (process.exitValue() != 0) {
-            throw new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
-                    + this.getInputStreamToStringFromProcess(process.getErrorStream())
-                    + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
-            );
-        }
+
         logger.info("Finished to populate fake data on server: {}", databaseServer.getHost());
     }
 
