@@ -35,6 +35,8 @@ public abstract class AbstractCoreDbAction {
     @Qualifier(value = "dateFormatFile")
     protected String dateFormat;
 
+    @Value("${db.command.retry:5}")
+    protected int dbCommandRetry = 5;
 
     @Autowired
     @Qualifier(value = "dbDumpersFactory")

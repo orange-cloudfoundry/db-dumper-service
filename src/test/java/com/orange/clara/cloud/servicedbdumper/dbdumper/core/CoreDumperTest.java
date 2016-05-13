@@ -69,6 +69,7 @@ public class CoreDumperTest extends AbstractCoreTester {
         filer = new EchoFiler("testit");
         this.coreDumper.dateFormat = "dd-MM-yyyy HH:mm";
         this.coreDumper.filer = filer;
+
     }
 
     @Test

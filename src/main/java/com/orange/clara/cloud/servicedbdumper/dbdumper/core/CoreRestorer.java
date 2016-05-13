@@ -56,12 +56,18 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
 
 
     protected void runRestore(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
-
-        Process p = this.runCommandLine(databaseDriver.getRestoreCommandLine());
-        this.filer.retrieve(p.getOutputStream(), fileName);
-        p.waitFor();
-        if (p.exitValue() != 0) {
-            throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
+        int i = 0;
+        while (true) {
+            Process p = this.runCommandLine(databaseDriver.getRestoreCommandLine());
+            this.filer.retrieve(p.getOutputStream(), fileName);
+            p.waitFor();
+            if (p.exitValue() == 0) {
+                break;
+            }
+            if (i >= this.dbCommandRetry) {
+                throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
+            }
+            i++;
         }
     }
 
