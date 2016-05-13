@@ -5,4 +5,4 @@ cd db-dumper-service
 bin/install-binaries
 export JAVA_OPTS="${JAVA_OPTS} -Djava.security.egd=file:///dev/urandom"
 
-mvn test -Dtest.groups=acceptance-tests
+mvn test -q -Dtest.groups=acceptance-tests
