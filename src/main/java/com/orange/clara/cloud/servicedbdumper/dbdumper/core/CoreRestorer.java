@@ -68,6 +68,7 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
                 throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
             }
             logger.warn("Retry {}/{}: fail to restore data for file {}.", i, dbCommandRetry, fileName);
+            Thread.sleep(10000);
             i++;
         }
     }

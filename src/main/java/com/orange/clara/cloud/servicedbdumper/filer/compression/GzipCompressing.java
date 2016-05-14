@@ -33,8 +33,11 @@ public class GzipCompressing {
         logger.debug("Start uncompressing...");
         GZIPInputStream gzis = new GZIPInputStream(inputStream);
         ByteStreams.copy(gzis, outputStream);
+
         outputStream.flush();
         outputStream.close();
+        gzis.close();
+        inputStream.close();
         logger.debug("Finish uncompressing");
         return new AsyncResult<Boolean>(true);
     }
@@ -48,6 +51,7 @@ public class GzipCompressing {
         gout.close();
         outputStream.flush();
         outputStream.close();
+        inputStream.close();
         logger.debug("Finish compressing");
         return new AsyncResult<Boolean>(true);
     }

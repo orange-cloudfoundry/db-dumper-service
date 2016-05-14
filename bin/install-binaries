@@ -5,34 +5,59 @@ echo ""
 
 mysql_version="5.7.11"
 mysql_global_version="5.7"
+mariadb_version="10.1.14"
 mongodb_version="3.3.2"
 postgresql_version="9.5.1"
-
 #####################################################################################
 #mysql
 #####################################################################################
-fileurl="http://dev.mysql.com/get/Downloads/MySQL-${mysql_global_version}/mysql-${mysql_version}-linux-glibc2.5-x86_64.tar.gz"
-filepath="mysql-${mysql_version}-linux-glibc2.5-x86_64.tar.gz"
-finalfile="mysql-${mysql_version}-linux-glibc2.5-x86_64"
-echo "Installing mysql dump and restore binaries..."
-if hash curl 2>/dev/null; then
-    RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
-else
-    wget -o "${filepath}" "$fileurl"
-    RESPONSE=$?
-fi
-if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
-    echo "File ${fileurl} not found, so it can't be downloaded."
+if [ "$1" == "--prefer-mysql" ]; then
+    fileurl="http://dev.mysql.com/get/Downloads/MySQL-${mysql_global_version}/mysql-${mysql_version}-linux-glibc2.5-x86_64.tar.gz"
+    filepath="mysql-${mysql_version}-linux-glibc2.5-x86_64.tar.gz"
+    finalfile="mysql-${mysql_version}-linux-glibc2.5-x86_64"
+    echo "Installing mysql dump and restore binaries..."
+    if hash curl 2>/dev/null; then
+        RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
+    else
+        wget -o "${filepath}" "$fileurl"
+        RESPONSE=$?
+    fi
+    if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+        echo "File ${fileurl} not found, so it can't be downloaded."
+        rm "$filepath"
+        exit 1
+    fi
+    mkdir -p "${WD}/src/main/resources/binaries/mysql/bin"
+    tar -zxf "$filepath"
+    cp "$finalfile/bin/mysql" "${WD}/src/main/resources/binaries/mysql/bin"
+    cp "$finalfile/bin/mysqldump" "${WD}/src/main/resources/binaries/mysql/bin"
+    rm -Rf "$finalfile"
     rm "$filepath"
-    exit 1
+else
+    fileurl="http://nyc2.mirrors.digitalocean.com/mariadb/mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
+    filepath="mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
+    finalfile="mariadb-${mariadb_version}-linux-glibc_214-x86_64"
+    echo "Installing mysql dump and restore binaries from mariadb. "
+    echo -e "\033[1;34mNote:\033[1;0m use arg '--prefer-mysql' to use one from oracle, mariadb has binaries more reliable and is the most used \"mysql\" database."
+    if hash curl 2>/dev/null; then
+        RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
+    else
+        wget -o "${filepath}" "$fileurl"
+        RESPONSE=$?
+    fi
+    if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
+        echo "File ${fileurl} not found, so it can't be downloaded."
+        rm "$filepath"
+        exit 1
+    fi
+    mkdir -p "${WD}/src/main/resources/binaries/mysql/bin"
+    tar -zxf "$filepath"
+    cp "$finalfile/bin/mysql" "${WD}/src/main/resources/binaries/mysql/bin"
+    cp "$finalfile/bin/mysqldump" "${WD}/src/main/resources/binaries/mysql/bin"
+    rm -Rf "$finalfile"
+    rm "$filepath"
 fi
-mkdir -p "${WD}/src/main/resources/binaries/mysql/bin"
-tar -zxf "$filepath"
-cp "$finalfile/bin/mysql" "${WD}/src/main/resources/binaries/mysql/bin"
-cp "$finalfile/bin/mysqldump" "${WD}/src/main/resources/binaries/mysql/bin"
-rm -Rf "$finalfile"
-rm "$filepath"
-echo "Done installing mysql binaries."
+echo -e "Done installing mysql binaries."
 
 #####################################################################################
 #mongodb

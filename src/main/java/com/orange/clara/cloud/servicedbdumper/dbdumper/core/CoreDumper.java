@@ -70,6 +70,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
                 throw new RunProcessException("\nError during process (exit code is " + p.exitValue() + "): ");
             }
             logger.warn("Retry {}/{}: fail to dump data for file {}.", i, dbCommandRetry, fileName);
+            Thread.sleep(10000);
             i++;
         }
     }
