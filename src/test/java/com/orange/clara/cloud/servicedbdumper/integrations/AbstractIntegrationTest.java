@@ -245,8 +245,11 @@ abstract public class AbstractIntegrationTest {
     public void diffSourceAndTargetDatabase(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
         String databaseSource = this.getDbParamsForDump(databaseType);
         String databaseTarget = this.getDbParamsForRestore(databaseType);
+
+        this.loadBeforeAction();
         DatabaseRef sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseSource, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
         DatabaseRef targetDatabase = this.databaseRefManager.getDatabaseRef(databaseTarget, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
+
         assertThat(sourceDatabase.getDatabaseDumpFiles().size() > 0)
                 .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseSource))
                 .isTrue();
@@ -258,6 +261,7 @@ abstract public class AbstractIntegrationTest {
         String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(sourceDatabase.getDatabaseDumpFiles().size() - 1).getFileName();
         String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(targetDatabase.getDatabaseDumpFiles().size() - 1).getFileName();
 
+        this.loadBeforeAction();
         this.databaseRefManager.deleteServiceKey(sourceDatabase);
         this.databaseRefManager.deleteServiceKey(targetDatabase);
 
