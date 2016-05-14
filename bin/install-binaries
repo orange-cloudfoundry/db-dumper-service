@@ -34,7 +34,7 @@ if [ "$1" == "--prefer-mysql" ]; then
     rm -Rf "$finalfile"
     rm "$filepath"
 else
-    fileurl="http://nyc2.mirrors.digitalocean.com/mariadb/mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
+    fileurl="http://mariadb.kisiek.net/mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
     filepath="mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
     finalfile="mariadb-${mariadb_version}-linux-glibc_214-x86_64"
     echo "Installing mysql dump and restore binaries from mariadb. "
