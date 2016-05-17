@@ -310,7 +310,7 @@ abstract public class AbstractIntegrationTest {
                         .isTrue();
             }
         }
-        assertThat(sourceNumberBytesRead).equals(targetNumberBytesRead);
+        assertThat(sourceNumberBytesRead).isEqualTo(targetNumberBytesRead);
     }
 
     protected boolean isServerListening(DatabaseType databaseType) throws DatabaseExtractionException {
