@@ -109,6 +109,9 @@ abstract public class AbstractIntegrationTest {
     @Autowired
     private DatabaseDumpFileRepo dumpFileRepo;
 
+    @Value("${test.chunk.size.diff:2097152}")
+    private int chunkSizeDiff;
+
     @Before
     public void init() throws DatabaseExtractionException {
         skipCleaning = false;
@@ -267,23 +270,47 @@ abstract public class AbstractIntegrationTest {
 
         InputStream sourceStream = this.filer.retrieveWithStream(fileSource);
         InputStream targetStream = this.filer.retrieveWithStream(fileTarget);
-        byte[] sourceBytes = ByteStreams.toByteArray(sourceStream);
-        byte[] targetBytes = ByteStreams.toByteArray(targetStream);
-        assertThat(targetBytes).hasSize(sourceBytes.length);
-        if (databaseType.equals(DatabaseType.REDIS)) { // Redis rearrange data which make diff files unreliable
-            return;
-        }
-        //this.filer.delete(fileSource);
-        //this.filer.delete(fileTarget);
 
-        if (dbDumpersFactory.getDatabaseDumper(databaseType).isDumpShowable()) {
-            assertThat(new String(targetBytes)).isEqualTo(new String(sourceBytes));
-        } else {
-            assertThat(Arrays.equals(targetBytes, sourceBytes))
-                    .overridingErrorMessage(String.format("Dumps files between database source '%s' and database target '%s' diverged.", databaseSource, databaseTarget))
-                    .isTrue();
-        }
 
+        int sourceRead = 0;
+        int targetRead = 0;
+        Long sourceNumberBytesRead = 0L;
+        Long targetNumberBytesRead = 0L;
+        boolean shouldContinue = true;
+        // we create chunk of data to avoid memory heap space
+        while (shouldContinue) {
+            byte[] sourceBytes = new byte[this.chunkSizeDiff];
+            byte[] targetBytes = new byte[this.chunkSizeDiff];
+            sourceRead = ByteStreams.read(sourceStream, sourceBytes, 0, sourceBytes.length);
+            sourceNumberBytesRead += sourceRead;
+            if (sourceRead != sourceBytes.length) {
+                shouldContinue = false;
+                sourceBytes = Arrays.copyOf(sourceBytes, sourceRead);
+                if (sourceBytes.length == 0) {
+                    break;
+                }
+            }
+            targetRead = ByteStreams.read(targetStream, targetBytes, 0, targetBytes.length);
+            targetNumberBytesRead += targetRead;
+            if (targetRead != targetBytes.length) {
+                shouldContinue = false;
+                targetBytes = Arrays.copyOf(targetBytes, targetRead);
+                if (targetBytes.length == 0) {
+                    break;
+                }
+            }
+            if (databaseType.equals(DatabaseType.REDIS)) { // Redis rearrange data which make diff files unreliable
+                continue;
+            }
+            if (dbDumpersFactory.getDatabaseDumper(databaseType).isDumpShowable()) {
+                assertThat(new String(targetBytes)).isEqualTo(new String(sourceBytes));
+            } else {
+                assertThat(Arrays.equals(targetBytes, sourceBytes))
+                        .overridingErrorMessage(String.format("Dumps files between database source '%s' and database target '%s' diverged.", databaseSource, databaseTarget))
+                        .isTrue();
+            }
+        }
+        assertThat(sourceNumberBytesRead).equals(targetNumberBytesRead);
     }
 
     protected boolean isServerListening(DatabaseType databaseType) throws DatabaseExtractionException {

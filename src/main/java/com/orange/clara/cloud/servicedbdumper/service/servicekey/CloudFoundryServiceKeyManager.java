@@ -34,13 +34,13 @@ public class CloudFoundryServiceKeyManager implements ServiceKeyManager {
 
     @Override
     public CloudServiceKey createServiceKey(String serviceName, String token, String org, String space) throws ServiceKeyException {
-        logger.debug("Creating service key for service {} ...", serviceName);
+        logger.info("Creating service key for service {} ...", serviceName);
         CloudService cloudService = this.getUserService(serviceName, token, org, space);
         if (cloudService == null) {
             throw new ServiceKeyException("User don't have access to service '" + serviceName + "'");
         }
         CloudServiceKey cloudServiceKey = this.cloudFoundryClient.createServiceKey(cloudService, UUID.randomUUID().toString());
-        logger.debug("Finish creating service key for {} .", serviceName);
+        logger.info("Finish creating service key for {} .", serviceName);
         return cloudServiceKey;
     }
 

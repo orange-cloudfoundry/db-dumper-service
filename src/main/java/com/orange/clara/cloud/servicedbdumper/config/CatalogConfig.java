@@ -154,8 +154,8 @@ public class CatalogConfig {
         sdMetadata.put("displayName", "db-dumper-service");
         sdMetadata.put("longDescription", "db-dumper-service");
         sdMetadata.put("providerDisplayName", "Orange");
-        sdMetadata.put("documentationUrl", "");
-        sdMetadata.put("supportUrl", "");
+        sdMetadata.put("documentationUrl", "https://github.com/Orange-OpenSource/db-dumper-service");
+        sdMetadata.put("supportUrl", "https://github.com/Orange-OpenSource/db-dumper-service");
         return sdMetadata;
     }
 
