@@ -37,8 +37,11 @@ public class DumpAndRestoreDatabaseFromUriWithS3FilerIT extends AbstractIntegrat
         boolean isS3urlExists = System.getenv("S3_URL") != null && System.getenv("DYNO") != null;
         if (!isS3urlExists) {
             this.skipCleaning = true;
+            String skipMessage = "No s3 server found, please set env var S3_URL and DYNO=true";
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage, false);
         }
-        assumeTrue("No s3 server found, please set env var S3_URL and DYNO=true", isS3urlExists);
         super.doBeforeTest(databaseType);
     }
 

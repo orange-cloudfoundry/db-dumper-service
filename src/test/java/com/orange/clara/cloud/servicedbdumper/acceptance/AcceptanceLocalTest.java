@@ -41,8 +41,8 @@ import static org.junit.Assume.assumeTrue;
 @WebIntegrationTest(randomPort = true)
 @ActiveProfiles({"local", "integrationrealcf", "s3"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@IfProfileValue(name = "test.groups", values = {"acceptance-tests"})
-public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
+@IfProfileValue(name = "test.groups", values = {"local-acceptance-tests"})
+public class AcceptanceLocalTest extends AbstractIntegrationWithRealCfClientTest {
 
     private final static String fileNameTemplate = "fakedata_%s.sql";
     @Value("${accept.cf.service.name.mysql:cleardb}")
@@ -78,19 +78,25 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
     @Value("${accept.cf.service.instance.target.redis:redis-db-dumper-dest-int}")
     protected String serviceTargetInstanceAcceptRedis;
     @Value("${user.dir}/bin/create_fake_data")
-    private File scriptCreateFakeData;
+    protected File scriptCreateFakeData;
     @Value("${user.dir}")
-    private File userDir;
+    protected File userDir;
 
     @Value("${test.accept.file.size:#{null}}")
-    private String fileSize;
+    protected String fileSize;
 
 
     @Override
     @Before
     public void init() throws DatabaseExtractionException {
-        assumeTrue("You must set property test.accept.file.size (e.g. test.accept.file.size=100mb",
-                this.fileSize != null);
+        if (this.fileSize == null) {
+            String skipMessage = "You must set property test.accept.file.size (e.g. test.accept.file.size=100mb";
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage,
+                    false);
+        }
+
         this.serviceNameMongo = this.serviceNameAcceptMongo;
         this.serviceNameMysql = this.serviceNameAcceptMysql;
         this.serviceNameRedis = this.serviceNameAcceptRedis;
@@ -108,6 +114,7 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
         this.serviceTargetInstancePostgres = serviceTargetInstanceAcceptPostgres;
         this.serviceTargetInstanceRedis = serviceTargetInstanceAcceptRedis;
         super.init();
+        this.prefixReportName = this.prefixReportName + " for " + this.fileSize;
     }
 
     @Override
@@ -115,8 +122,12 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
         boolean isS3urlExists = System.getenv("S3_URL") != null && System.getenv("DYNO") != null;
         if (!isS3urlExists) {
             this.skipCleaning = true;
+            String skipMessage = "No s3 server found, please set env var S3_URL and DYNO=true";
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage, false);
         }
-        assumeTrue("No s3 server found, please set env var S3_URL and DYNO=true", isS3urlExists);
+
         super.doBeforeTest(databaseType);
     }
 
@@ -148,7 +159,10 @@ public class AcceptanceTest extends AbstractIntegrationWithRealCfClientTest {
         };
         List<String[]> commands = new ArrayList<>();
         commands.add(command);
+        long currentTime = System.currentTimeMillis();
         this.runCommands(commands);
+        this.reportIntegration.setPopulateFakeDataTime(System.currentTimeMillis() - currentTime);
+        logger.info("Time duration to create fake data from command line: {}", humanize.Humanize.duration(this.reportIntegration.getPopulateFakeDataTime()));
         super.populateDataToDatabaseRefFromFile(fakeDataGenerated, databaseServer);
     }
 

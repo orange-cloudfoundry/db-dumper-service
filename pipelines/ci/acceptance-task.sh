@@ -7,4 +7,4 @@ sed -i "s|http://nyc2\.mirrors\.digitalocean\.com/mariadb|http://mariadb\.kisiek
 bin/install-binaries
 export JAVA_OPTS="${JAVA_OPTS} -Djava.security.egd=file:///dev/./urandom"
 
-mvn test -q -Dtest.groups=acceptance-tests
+mvn test -q -Dtest.groups=local-acceptance-tests

@@ -113,12 +113,18 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
 
     @Override
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
-        assumeTrue("Please define properties: cf.admin.user, cf.admin.password, cloud.controller.url to run this test. This test is skipped.", !(this.cfAdminUser == null
+        if (this.cfAdminUser == null
                 || this.cfAdminUser.isEmpty()
                 || this.cfAdminPassword == null
                 || this.cfAdminPassword.isEmpty()
                 || this.cloudControllerUrl == null
-                || this.cloudControllerUrl.isEmpty()));
+                || this.cloudControllerUrl.isEmpty()) {
+            String skipMessage = "Please define properties: cf.admin.user, cf.admin.password, cloud.controller.url to run this test. This test is skipped.";
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage, false);
+        }
+
         cfClientToPopulate = this.clientFactory.createCloudFoundryClient(cfAdminUser, cfAdminPassword, cloudControllerUrl, org, space);
 
 
@@ -126,14 +132,16 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
         boolean isServiceExists = isServiceExist(databaseAccess.getServiceName(), databaseAccess.getServicePlan());
         if (!isServiceExists) {
             this.skipCleaning = true;
+            String skipMessage = String.format("The service %s with plan %s doesn't exists please set properties 'test.cf.service.name.%s' and 'test.cf.service.plan.%s'",
+                    databaseAccess.getServiceName(),
+                    databaseAccess.getServicePlan(),
+                    databaseAccess.generateDatabaseRef().getType().toString().toLowerCase(),
+                    databaseAccess.generateDatabaseRef().getType().toString().toLowerCase()
+            );
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage, false);
         }
-        assumeTrue(String.format("The service %s with plan %s doesn't exists please set properties 'test.cf.service.name.%s' and 'test.cf.service.plan.%s'",
-                databaseAccess.getServiceName(),
-                databaseAccess.getServicePlan(),
-                databaseAccess.generateDatabaseRef().getType().toString().toLowerCase(),
-                databaseAccess.generateDatabaseRef().getType().toString().toLowerCase()
-                ),
-                isServiceExists);
 
         CloudService cloudServiceSource = new CloudService(null, databaseAccess.getServiceSourceInstanceName());
         cloudServiceSource.setPlan(databaseAccess.getServicePlan());
@@ -290,7 +298,10 @@ abstract public class AbstractIntegrationWithRealCfClientTest extends AbstractIn
             if (!e.getStatusCode().equals(HttpStatus.BAD_GATEWAY)) {
                 throw e;
             } else {
-                assumeTrue("Bad gateway error, skipping test", false);
+                String skipMessage = "Bad gateway error, skipping test";
+                this.reportIntegration.setSkipped(true);
+                this.reportIntegration.setSkippedReason(skipMessage);
+                assumeTrue(skipMessage, false);
             }
         }
 

@@ -15,6 +15,8 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.utiltest.ReportIntegration;
+import com.orange.clara.cloud.servicedbdumper.utiltest.ReportManager;
 import org.cloudfoundry.community.servicebroker.exception.*;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceLastOperation;
@@ -52,7 +54,7 @@ import static org.junit.Assume.assumeTrue;
 abstract public class AbstractIntegrationTest {
     protected final static String DATABASE_SOURCE_NAME = "dbdumpertestsource";
     protected final static String DATABASE_TARGET_NAME = "dbdumpertesttarget";
-
+    protected ReportIntegration reportIntegration;
     protected Map<DatabaseType, DatabaseAccess> databaseAccessMap = Maps.newHashMap();
 
     protected Logger logger = LoggerFactory.getLogger(AbstractIntegrationTest.class);
@@ -88,6 +90,7 @@ abstract public class AbstractIntegrationTest {
     protected boolean skipCleaning;
     @Value("${test.timeout.action:3}")
     protected int timeoutAction;
+    protected String prefixReportName = "";
     @Value("${mongodb.fake.data.file:classpath:data/fake-data-mongodb.bin}")
     private File mongodbFakeData;
     @Value("${mysql.fake.data.file:classpath:data/fake-data-mysql.sql}")
@@ -108,12 +111,12 @@ abstract public class AbstractIntegrationTest {
     private File mysqlBinary;
     @Autowired
     private DatabaseDumpFileRepo dumpFileRepo;
-
     @Value("${test.chunk.size.diff:2097152}")
     private int chunkSizeDiff;
 
     @Before
     public void init() throws DatabaseExtractionException {
+        this.prefixReportName = humanize.Humanize.decamelize(this.getClass().getSimpleName()) + " ";
         skipCleaning = false;
         currentDatabaseType = null;
         serviceIdSource = null;
@@ -124,18 +127,25 @@ abstract public class AbstractIntegrationTest {
     public void doBeforeTest(DatabaseType databaseType) throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException {
         boolean isBinariesValid = this.isBinariesValid(databaseType);
         boolean isServerListening = isServerListening(databaseType);
-        if (!isBinariesValid || !isServerListening) {
+        String skipMessage = "";
+        if (!isBinariesValid) {
             this.skipCleaning = true;
+            skipMessage = String.format("Binaries for database %s use for integrations test are not correct, you're not running on linux 64, please set %s.dump.bin.path and %s.restore.bin.path .\nSkipping test.",
+                    databaseType.toString().toLowerCase(),
+                    databaseType.toString().toLowerCase(),
+                    databaseType.toString().toLowerCase()
+            );
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage, false);
         }
-        assumeTrue(
-                String.format("Binaries for database %s use for integrations test are not correct, you're not running on linux 64, please set %s.dump.bin.path and %s.restore.bin.path .\nSkipping test.",
-                        databaseType.toString().toLowerCase(),
-                        databaseType.toString().toLowerCase(),
-                        databaseType.toString().toLowerCase()
-                ),
-                isBinariesValid
-        );
-        assumeTrue(String.format("Server(s) for '%s' not accessible, skipping test.", databaseType.toString().toLowerCase()), isServerListening);
+        if (!isServerListening) {
+            skipMessage = String.format("Server(s) for '%s' not accessible, skipping test.", databaseType.toString().toLowerCase());
+            this.skipCleaning = true;
+            this.reportIntegration.setSkipped(true);
+            this.reportIntegration.setSkippedReason(skipMessage);
+            assumeTrue(skipMessage, false);
+        }
         this.populateData(databaseType);
     }
 
@@ -182,22 +192,32 @@ abstract public class AbstractIntegrationTest {
         this.doBeforeTest(databaseType);
 
         this.loadBeforeAction();
+        long currentTime = System.currentTimeMillis();
         this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForDump(databaseType), serviceIdSource));
         if (!this.isFinishedAction(serviceIdSource)) {
             fail("Creating dump for source database failed");
         }
+        this.reportIntegration.setDumpDatabaseSourceTime(System.currentTimeMillis() - currentTime);
+        logger.info("Dump database source finished after {}", humanize.Humanize.duration(this.reportIntegration.getDumpDatabaseSourceTime()));
 
         this.loadBeforeAction();
+        currentTime = System.currentTimeMillis();
         this.dbDumperServiceInstanceService.updateServiceInstance(this.requestForge.createRestoreRequest(this.getDbParamsForRestore(databaseType), serviceIdSource));
         if (!this.isFinishedAction(serviceIdSource)) {
             fail("Restoring dump failed");
         }
+        this.reportIntegration.setRestoreDatabaseSourceToTargetTime(System.currentTimeMillis() - currentTime);
+        logger.info("Restore database source to database target finished after {}", humanize.Humanize.duration(this.reportIntegration.getRestoreDatabaseSourceToTargetTime()));
+
 
         this.loadBeforeAction();
+        currentTime = System.currentTimeMillis();
         this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForRestore(databaseType), serviceIdTarget));
         if (!this.isFinishedAction(serviceIdTarget)) {
             fail("Creating dump for target database failed");
         }
+        this.reportIntegration.setDumpDatabaseTargetTime(System.currentTimeMillis() - currentTime);
+        logger.info("Dump database target finished after {}", humanize.Humanize.duration(this.reportIntegration.getDumpDatabaseTargetTime()));
         this.diffSourceAndTargetDatabase(databaseType);
     }
 
@@ -222,24 +242,28 @@ abstract public class AbstractIntegrationTest {
 
     @Test
     public void when_dump_and_restore_a_MYSQL_database_it_should_have_the_database_source_equals_to_the_database_target() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerAsyncRequiredException, ServiceBrokerException, ServiceInstanceDoesNotExistException, ServiceKeyException, ServiceInstanceExistsException {
+        this.reportIntegration = ReportManager.createReportIntegration(prefixReportName + "MySQL");
         DatabaseType databaseType = DatabaseType.MYSQL;
         this.dumpAndRestoreTest(databaseType);
     }
 
     @Test
     public void when_dump_and_restore_a_POSTGRES_database_it_should_have_the_database_source_equals_to_the_database_target() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException, ServiceKeyException {
+        this.reportIntegration = ReportManager.createReportIntegration(prefixReportName + "PostgreSQL");
         DatabaseType databaseType = DatabaseType.POSTGRESQL;
         this.dumpAndRestoreTest(databaseType);
     }
 
     @Test
     public void when_dump_and_restore_a_REDIS_database_it_should_have_the_database_source_equals_to_the_database_target() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerAsyncRequiredException, ServiceBrokerException, ServiceInstanceDoesNotExistException, ServiceKeyException, ServiceInstanceExistsException {
+        this.reportIntegration = ReportManager.createReportIntegration(prefixReportName + "Redis");
         DatabaseType databaseType = DatabaseType.REDIS;
         this.dumpAndRestoreTest(databaseType);
     }
 
     @Test
     public void when_dump_and_restore_a_MONGODB_database_it_should_have_the_database_source_equals_to_the_database_target() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerAsyncRequiredException, ServiceBrokerException, ServiceInstanceDoesNotExistException, ServiceKeyException, ServiceInstanceExistsException {
+        this.reportIntegration = ReportManager.createReportIntegration(prefixReportName + "MongoDB");
         DatabaseType databaseType = DatabaseType.MONGODB;
         this.dumpAndRestoreTest(databaseType);
     }
@@ -250,6 +274,7 @@ abstract public class AbstractIntegrationTest {
         String databaseTarget = this.getDbParamsForRestore(databaseType);
 
         this.loadBeforeAction();
+        long currentTime = System.currentTimeMillis();
         DatabaseRef sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseSource, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
         DatabaseRef targetDatabase = this.databaseRefManager.getDatabaseRef(databaseTarget, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
 
@@ -311,6 +336,8 @@ abstract public class AbstractIntegrationTest {
             }
         }
         assertThat(sourceNumberBytesRead).isEqualTo(targetNumberBytesRead);
+        this.reportIntegration.setDiffTime(System.currentTimeMillis() - currentTime);
+        this.logger.info("Diff against source and target database finished after {}", humanize.Humanize.duration(this.reportIntegration.getDiffTime()));
     }
 
     protected boolean isServerListening(DatabaseType databaseType) throws DatabaseExtractionException {
@@ -355,6 +382,7 @@ abstract public class AbstractIntegrationTest {
     }
 
     public void populateDataToDatabaseRefFromFile(File fakeData, DatabaseRef databaseServer) throws CannotFindDatabaseDumperException, IOException, InterruptedException {
+        long currentTime = System.currentTimeMillis();
         logger.info("Populating fake data on server: {} - database {} will be created with data from file {} which has size of {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath(), humanize.Humanize.binaryPrefix(fakeData.length()));
         DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseServer);
         String[] restoreCommandLine = databaseDriver.getRestoreCommandLine();
@@ -387,8 +415,8 @@ abstract public class AbstractIntegrationTest {
             logger.warn("Retry {}/{}: fail to populate data.", i, populateDataRetry);
             i++;
         }
-
-        logger.info("Finished to populate fake data on server: {}", databaseServer.getHost());
+        this.reportIntegration.setPopulateToDatabaseTime(System.currentTimeMillis() - currentTime);
+        logger.info("Finished to populate fake data on server: {} \n Duration: {}", databaseServer.getHost(), humanize.Humanize.duration(this.reportIntegration.getPopulateToDatabaseTime()));
     }
 
     protected void dropDatabase(DatabaseType databaseType) throws IOException, InterruptedException {
