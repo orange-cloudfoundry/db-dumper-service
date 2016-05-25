@@ -159,10 +159,10 @@ abstract public class AbstractIntegrationTest {
             return;
         }
         if (serviceIdSource != null && !serviceIdSource.isEmpty()) {
-            this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdSource));
+            this.deleteServiceInstance(serviceIdSource);
         }
         if (serviceIdTarget != null && !serviceIdTarget.isEmpty()) {
-            this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(serviceIdTarget));
+            this.deleteServiceInstance(serviceIdTarget);
         }
         Iterable<DatabaseDumpFile> databaseDumpFiles = this.dumpFileRepo.findAll();
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
@@ -181,41 +181,61 @@ abstract public class AbstractIntegrationTest {
         this.cleanDatabase(currentDatabaseType);
     }
 
+    protected void deleteServiceInstance(String instanceId) throws ServiceBrokerAsyncRequiredException, ServiceBrokerException {
+        this.dbDumperServiceInstanceService.deleteServiceInstance(this.requestForge.createDeleteServiceRequest(instanceId));
+    }
+
     abstract public String getDbParamsForDump(DatabaseType databaseType);
 
     abstract public String getDbParamsForRestore(DatabaseType databaseType);
 
-    protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
+    protected void createSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
+        this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForDump(databaseType), serviceIdSource));
+        if (!this.isFinishedAction(serviceIdSource)) {
+            fail("Creating dump for source database failed");
+        }
+    }
+
+    protected void createTargetDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
+        this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForRestore(databaseType), serviceIdTarget));
+        if (!this.isFinishedAction(serviceIdTarget)) {
+            fail("Creating dump for target database failed");
+        }
+    }
+
+    protected void restoreSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
+        this.dbDumperServiceInstanceService.updateServiceInstance(this.requestForge.createRestoreRequest(this.getDbParamsForRestore(databaseType), serviceIdSource));
+        if (!this.isFinishedAction(serviceIdSource)) {
+            fail("Restoring dump failed");
+        }
+    }
+
+    protected void loadServiceIds(DatabaseType databaseType) {
         serviceIdSource = databaseType.toString() + "-service-source";
         serviceIdTarget = databaseType.toString() + "-service-target";
+    }
+
+    protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
+        this.loadServiceIds(databaseType);
         this.currentDatabaseType = databaseType;
         this.doBeforeTest(databaseType);
 
         this.loadBeforeAction();
         long currentTime = System.currentTimeMillis();
-        this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForDump(databaseType), serviceIdSource));
-        if (!this.isFinishedAction(serviceIdSource)) {
-            fail("Creating dump for source database failed");
-        }
+        createSourceDatabaseDump(databaseType);
         this.reportIntegration.setDumpDatabaseSourceTime(System.currentTimeMillis() - currentTime);
         logger.info("Dump database source finished after {}", humanize.Humanize.duration(this.reportIntegration.getDumpDatabaseSourceTime()));
 
         this.loadBeforeAction();
         currentTime = System.currentTimeMillis();
-        this.dbDumperServiceInstanceService.updateServiceInstance(this.requestForge.createRestoreRequest(this.getDbParamsForRestore(databaseType), serviceIdSource));
-        if (!this.isFinishedAction(serviceIdSource)) {
-            fail("Restoring dump failed");
-        }
+        this.restoreSourceDatabaseDump(databaseType);
         this.reportIntegration.setRestoreDatabaseSourceToTargetTime(System.currentTimeMillis() - currentTime);
         logger.info("Restore database source to database target finished after {}", humanize.Humanize.duration(this.reportIntegration.getRestoreDatabaseSourceToTargetTime()));
 
 
         this.loadBeforeAction();
         currentTime = System.currentTimeMillis();
-        this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForRestore(databaseType), serviceIdTarget));
-        if (!this.isFinishedAction(serviceIdTarget)) {
-            fail("Creating dump for target database failed");
-        }
+        this.createTargetDatabaseDump(databaseType);
         this.reportIntegration.setDumpDatabaseTargetTime(System.currentTimeMillis() - currentTime);
         logger.info("Dump database target finished after {}", humanize.Humanize.duration(this.reportIntegration.getDumpDatabaseTargetTime()));
         this.diffSourceAndTargetDatabase(databaseType);
@@ -268,33 +288,33 @@ abstract public class AbstractIntegrationTest {
         this.dumpAndRestoreTest(databaseType);
     }
 
+    protected InputStream getDatabaseStream(String database) throws DatabaseExtractionException, ServiceKeyException, IOException {
+        this.loadBeforeAction();
+        DatabaseRef databaseRef = this.databaseRefManager.getDatabaseRef(database, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
+
+        assertThat(databaseRef.getDatabaseDumpFiles().size() > 0)
+                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", database))
+                .isTrue();
+        assertThat(databaseRef.getDatabaseDumpFiles().get(0)).isNotNull();
+        String fileSource = databaseRef.getName() + "/" + databaseRef.getDatabaseDumpFiles().get(databaseRef.getDatabaseDumpFiles().size() - 1).getFileName();
+
+        this.loadBeforeAction();
+        this.databaseRefManager.deleteServiceKey(databaseRef);
+        return this.filer.retrieveWithStream(fileSource);
+    }
+
+    protected InputStream getSourceStream(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
+        return this.getDatabaseStream(this.getDbParamsForDump(databaseType));
+    }
+
+    protected InputStream getTargetStream(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
+        return this.getDatabaseStream(this.getDbParamsForRestore(databaseType));
+    }
 
     public void diffSourceAndTargetDatabase(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
-        String databaseSource = this.getDbParamsForDump(databaseType);
-        String databaseTarget = this.getDbParamsForRestore(databaseType);
-
-        this.loadBeforeAction();
         long currentTime = System.currentTimeMillis();
-        DatabaseRef sourceDatabase = this.databaseRefManager.getDatabaseRef(databaseSource, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
-        DatabaseRef targetDatabase = this.databaseRefManager.getDatabaseRef(databaseTarget, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
-
-        assertThat(sourceDatabase.getDatabaseDumpFiles().size() > 0)
-                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseSource))
-                .isTrue();
-        assertThat(targetDatabase.getDatabaseDumpFiles().size() > 0)
-                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseTarget))
-                .isTrue();
-        assertThat(sourceDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
-        assertThat(targetDatabase.getDatabaseDumpFiles().get(0)).isNotNull();
-        String fileSource = sourceDatabase.getName() + "/" + sourceDatabase.getDatabaseDumpFiles().get(sourceDatabase.getDatabaseDumpFiles().size() - 1).getFileName();
-        String fileTarget = targetDatabase.getName() + "/" + targetDatabase.getDatabaseDumpFiles().get(targetDatabase.getDatabaseDumpFiles().size() - 1).getFileName();
-
-        this.loadBeforeAction();
-        this.databaseRefManager.deleteServiceKey(sourceDatabase);
-        this.databaseRefManager.deleteServiceKey(targetDatabase);
-
-        InputStream sourceStream = this.filer.retrieveWithStream(fileSource);
-        InputStream targetStream = this.filer.retrieveWithStream(fileTarget);
+        InputStream sourceStream = this.getSourceStream(databaseType);
+        InputStream targetStream = this.getTargetStream(databaseType);
 
 
         int sourceRead = 0;
@@ -331,7 +351,7 @@ abstract public class AbstractIntegrationTest {
                 assertThat(new String(targetBytes)).isEqualTo(new String(sourceBytes));
             } else {
                 assertThat(Arrays.equals(targetBytes, sourceBytes))
-                        .overridingErrorMessage(String.format("Dumps files between database source '%s' and database target '%s' diverged.", databaseSource, databaseTarget))
+                        .overridingErrorMessage(String.format("Dumps files between database source and database target diverged."))
                         .isTrue();
             }
         }
@@ -407,10 +427,7 @@ abstract public class AbstractIntegrationTest {
             dumpFileInputStream.close();
             outputStream.close();
             if (i >= populateDataRetry) {
-                throw new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
-                        + this.getInputStreamToStringFromProcess(process.getErrorStream())
-                        + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
-                );
+                throw this.generateInterruptedExceptionFromProcess(process);
             }
             logger.warn("Retry {}/{}: fail to populate data.", i, populateDataRetry);
             i++;
@@ -450,14 +467,31 @@ abstract public class AbstractIntegrationTest {
 
     protected void runCommands(List<String[]> commands) throws IOException, InterruptedException {
         for (String[] command : commands) {
-            Process process = this.runCommandLine(command);
-            process.waitFor();
-            if (process.exitValue() != 0) {
-                throw new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
-                        + this.getInputStreamToStringFromProcess(process.getErrorStream())
-                        + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
-                );
-            }
+            this.runCommand(command);
+        }
+    }
+
+    protected InterruptedException generateInterruptedExceptionFromProcess(Process process) throws IOException {
+        return new InterruptedException("\nError during process (exit code is " + process.exitValue() + "): \n"
+                + this.getInputStreamToStringFromProcess(process.getErrorStream())
+                + "\n" + this.getInputStreamToStringFromProcess(process.getInputStream())
+        );
+    }
+
+    protected void runCommand(String[] command) throws IOException, InterruptedException {
+        this.runCommand(command, false);
+    }
+
+    protected void runCommand(String[] command, boolean showStdout) throws IOException, InterruptedException {
+        Process process = null;
+        if (showStdout) {
+            process = this.runCommandLineWithStdoutShowed(command);
+        } else {
+            process = this.runCommandLine(command);
+        }
+        process.waitFor();
+        if (process.exitValue() != 0) {
+            throw this.generateInterruptedExceptionFromProcess(process);
         }
     }
 
@@ -474,8 +508,7 @@ abstract public class AbstractIntegrationTest {
         return outputFromProcess;
     }
 
-    protected Process
-    runCommandLine(String[] commandLine) throws IOException, InterruptedException {
+    protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
         logger.info("Running command line: " + String.join(" ", commandLine));
 
         ProcessBuilder pb = new ProcessBuilder(commandLine);
@@ -484,6 +517,14 @@ abstract public class AbstractIntegrationTest {
         return process;
     }
 
+    protected Process runCommandLineWithStdoutShowed(String[] commandLine) throws IOException, InterruptedException {
+        logger.info("Running command line: " + String.join(" ", commandLine));
+
+        ProcessBuilder pb = new ProcessBuilder(commandLine);
+        pb.inheritIO();
+        Process process = pb.start();
+        return process;
+    }
 
     public boolean isFinishedAction(String serviceInstanceId) {
 

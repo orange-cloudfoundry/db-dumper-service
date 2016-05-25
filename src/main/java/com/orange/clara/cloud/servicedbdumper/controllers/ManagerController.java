@@ -145,11 +145,9 @@ public class ManagerController {
         String passwordRequest = "";
         String authorization = request.getHeader("Authorization");
         if (authorization != null && authorization.startsWith("Basic")) {
-            // Authorization: Basic base64credentials
             String base64Credentials = authorization.substring("Basic".length()).trim();
             String credentials = new String(Base64.getDecoder().decode(base64Credentials),
                     Charset.forName("UTF-8"));
-            // credentials = username:password
             String[] values = credentials.split(":", 2);
             userRequest = values[0];
             passwordRequest = values[1];

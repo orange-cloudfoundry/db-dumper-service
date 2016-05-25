@@ -21,8 +21,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -157,10 +155,8 @@ public class AcceptanceLocalTest extends AbstractIntegrationWithRealCfClientTest
                 getFileSize().toString(),
                 fakeDataGenerated.getAbsolutePath()
         };
-        List<String[]> commands = new ArrayList<>();
-        commands.add(command);
         long currentTime = System.currentTimeMillis();
-        this.runCommands(commands);
+        this.runCommand(command);
         this.reportIntegration.setPopulateFakeDataTime(System.currentTimeMillis() - currentTime);
         logger.info("Time duration to create fake data from command line: {}", humanize.Humanize.duration(this.reportIntegration.getPopulateFakeDataTime()));
         super.populateDataToDatabaseRefFromFile(fakeDataGenerated, databaseServer);
