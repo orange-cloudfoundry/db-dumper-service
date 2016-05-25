@@ -113,7 +113,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected void deleteServiceInstance(String instanceId) throws ServiceBrokerAsyncRequiredException, ServiceBrokerException {
-        String command = String.format("%s delete %s", this.dbDumperCli(), instanceId);
+        String command = String.format("%s delete %s -f", this.dbDumperCli(), instanceId);
         try {
             this.runCommand(command.split(" "), true);
         } catch (IOException | InterruptedException e) {
@@ -143,7 +143,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected void restoreSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
-        String command = String.format("%s restore %s --source-instance %s --recent", this.dbDumperCli(), this.getDbParamsForDump(databaseType), this.getDbParamsForRestore(databaseType));
+        String command = String.format("%s restore %s --source-instance %s --recent", this.dbDumperCli(), this.getDbParamsForRestore(databaseType), this.getDbParamsForDump(databaseType));
         try {
             this.runCommand(command.split(" "), true);
         } catch (IOException | InterruptedException e) {
