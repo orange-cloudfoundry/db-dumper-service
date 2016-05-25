@@ -99,7 +99,8 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
         Process proc = null;
         try {
             proc = rt.exec(this.dbDumperCli());
-        } catch (IOException e) {
+            proc.waitFor();
+        } catch (IOException | InterruptedException e) {
             return false;
         }
         int exitVal = proc.exitValue();
