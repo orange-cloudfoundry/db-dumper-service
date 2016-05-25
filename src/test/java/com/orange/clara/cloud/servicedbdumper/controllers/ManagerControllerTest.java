@@ -165,6 +165,18 @@ public class ManagerControllerTest {
     }
 
     @Test
+    public void when_user_wants_to_download_dump_file_with_original_file_and_user_password_are_correct_it_should_download_the_content() throws Exception {
+
+        //format to basic auth header
+        String login = userShowable + ":" + passwordShowable;
+        String loginEncoded = Base64.getEncoder().encodeToString(login.getBytes());
+
+        mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.DOWNLOAD_DUMP_FILE_ROOT + "/" + databaseDumpFileShowable.getId() + "?original=1").header("Authorization", "Basic " + loginEncoded))
+                .andExpect(status().isOk())
+                .andExpect(content().string(textForFiler));
+    }
+
+    @Test
     public void when_user_want_to_see_dump_file_in_raw_and_dump_file_is_showable_it_should_return_dump_file_in_raw() throws Exception {
 
         mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.RAW_DUMP_FILE_ROOT + "/" + databaseDumpFileShowable.getId()))

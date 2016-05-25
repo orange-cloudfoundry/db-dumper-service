@@ -1,6 +1,6 @@
 /target
 *.iml
-/orange-manifest.yml
+/*-manifest.yml
 application-orange.yml
 /bin/user
 /bin/acceptance_orange

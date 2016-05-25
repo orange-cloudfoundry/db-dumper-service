@@ -19,10 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
@@ -140,7 +137,7 @@ public class ManagerController {
 
 
     @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request)
+    public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request, @RequestParam(value = "original", required = false) String original)
             throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDatabase(databaseDumpFile.getDatabaseRef());
@@ -165,10 +162,21 @@ public class ManagerController {
         HttpHeaders respHeaders = new HttpHeaders();
         String fileName = databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        respHeaders.setContentLength(this.filer.getContentLength(fileName));
-        respHeaders.setContentDispositionFormData("attachment", fileName);
+        InputStream inputStream = null;
+        if (original == null || original.isEmpty()) {
+            respHeaders.setContentLength(this.filer.getContentLength(fileName));
+            inputStream = this.filer.retrieveWithOriginalStream(fileName);
+        } else {
+            inputStream = this.filer.retrieveWithStream(fileName);
+            File file = new File(fileName);
+            String[] filenames = file.getName().split("\\.");
+            if (filenames.length >= 2) {
+                fileName = filenames[0] + "." + filenames[1];
+            }
 
-        InputStream inputStream = this.filer.retrieveWithOriginalStream(fileName);
+        }
+        File file = new File(fileName);
+        respHeaders.setContentDispositionFormData("attachment", file.getName());
         InputStreamResource isr = new InputStreamResource(inputStream);
         return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
     }

@@ -31,6 +31,16 @@ ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+
+RUN curl -L "https://cli.run.pivotal.io/stable?release=linux64-binary" -o cf.tgz \
+    && tar -xvf cf.tgz \
+    && chmod +x cf \
+    && mv cf /usr/bin
+
+RUN curl -L "https://github.com/Orange-OpenSource/db-dumper-cli-plugin/releases/download/v1.1.0/db-dumper_linux_amd64" -o db-dumper \
+    && chmod +x db-dumper \
+    && cf install-plugin ./db-dumper -f
+
 WORKDIR $GOPATH
 
 CMD ["mvn"]

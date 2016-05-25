@@ -38,7 +38,7 @@ public class TestListener extends RunListener {
 
     private void formatReport(ReportIntegration reportIntegration) {
         String title = "---------" + reportIntegration.getName() + "---------";
-        logger.info("\n\u001b[0;34m{}\u001B[0;0m", title);
+        logger.info("\u001b[0;34m{}\u001B[0;0m", title);
         if (reportIntegration.isSkipped()) {
             logger.info("\u001b[1;36mResult: {}\u001B[0;0m", "\u001B[1;33mSkipped");
             logger.info("\u001b[1;36mSkip reason\u001B[0;0m: {}", reportIntegration.getSkippedReason());
