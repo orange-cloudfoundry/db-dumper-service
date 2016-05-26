@@ -7,7 +7,7 @@ mysql_version="5.7.11"
 mysql_global_version="5.7"
 mariadb_version="10.1.14"
 mongodb_version="3.3.2"
-postgresql_version="9.5.1"
+postgresql_version="9.5.3"
 #####################################################################################
 #mysql
 #####################################################################################
@@ -19,7 +19,7 @@ if [ "$1" == "--prefer-mysql" ]; then
     if hash curl 2>/dev/null; then
         RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
     else
-        wget -o "${filepath}" "$fileurl"
+        wget -O "${filepath}" "$fileurl"
         RESPONSE=$?
     fi
     if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
@@ -34,7 +34,7 @@ if [ "$1" == "--prefer-mysql" ]; then
     rm -Rf "$finalfile"
     rm "$filepath"
 else
-    fileurl="http://mariadb.kisiek.net/mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
+    fileurl="http://nyc2.mirrors.digitalocean.com/mariadb/mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
     filepath="mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
     finalfile="mariadb-${mariadb_version}-linux-glibc_214-x86_64"
     echo "Installing mysql dump and restore binaries from mariadb. "
@@ -42,7 +42,7 @@ else
     if hash curl 2>/dev/null; then
         RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
     else
-        wget -o "${filepath}" "$fileurl"
+        wget -O "${filepath}" "$fileurl"
         RESPONSE=$?
     fi
     if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
@@ -69,7 +69,7 @@ echo "Installing mongodb dump and restore binaries..."
 if hash curl 2>/dev/null; then
     RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
 else
-    wget -o "${filepath}" "$fileurl"
+    wget -O "${filepath}" "$fileurl"
     RESPONSE=$?
 fi
 if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
@@ -99,7 +99,7 @@ echo "Installing postgresql dump and restore binaries..."
 if hash curl 2>/dev/null; then
     RESPONSE=$(curl --write-out %{http_code} -L -o "${filepath}" "$fileurl")
 else
-    wget -o "${filepath}" "$fileurl"
+    wget -O "${filepath}" "$fileurl"
     RESPONSE=$?
 fi
 if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then

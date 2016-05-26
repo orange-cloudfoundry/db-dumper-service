@@ -402,6 +402,7 @@ abstract public class AbstractIntegrationTest {
     }
 
     public void populateDataToDatabaseRefFromFile(File fakeData, DatabaseRef databaseServer) throws CannotFindDatabaseDumperException, IOException, InterruptedException {
+        this.reportIntegration.setFakeDataFileSize(fakeData.length());
         long currentTime = System.currentTimeMillis();
         logger.info("Populating fake data on server: {} - database {} will be created with data from file {} which has size of {}", databaseServer.getHost(), DATABASE_SOURCE_NAME, fakeData.getAbsolutePath(), humanize.Humanize.binaryPrefix(fakeData.length()));
         DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseServer);

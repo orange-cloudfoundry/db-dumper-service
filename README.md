@@ -72,6 +72,15 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 - The service broker will run task asynchronously.
 - The user token is needed when you want to dump or/and restore a database by its service name to check if your user is able to access to this service (We are waiting for token delegation implementation to not mandatory the user token)
 
+### Use with a Cloud Foundry cli plugin
+
+You can either use the cli plugin associated to this broker:
+
+1. Download the latest release of the [db-dumper-cli-plugin](https://github.com/Orange-OpenSource/db-dumper-cli-plugin) here: https://github.com/Orange-OpenSource/db-dumper-cli-plugin/releases
+2. Install it to your cli with this command: `cf install-plugin "path/of/db-dumper-cli-plugin" -f`
+
+**Note**: You can use this service without cli plugin, it was made only to have a more convenient way to use it than using broker parameters.
+
 ### Create a dump by passing a database uri
 
 This command will create a dump for you: 

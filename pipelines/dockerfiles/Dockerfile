@@ -41,6 +41,13 @@ RUN curl -L "https://github.com/Orange-OpenSource/db-dumper-cli-plugin/releases/
     && chmod +x db-dumper \
     && cf install-plugin ./db-dumper -f
 
+RUN curl -L https://github.com/rlmcpherson/s3gof3r/releases/download/v0.5.0/gof3r_0.5.0_linux_amd64.tar.gz -o gof3r_0.5.0_linux_amd64.tar.gz \
+    && tar -xvf gof3r_0.5.0_linux_amd64.tar.gz \
+    && chmod +x gof3r_0.5.0_linux_amd64/gof3r \
+    && mv gof3r_0.5.0_linux_amd64/gof3r /usr/bin \
+    && rm gof3r_0.5.0_linux_amd64.tar.gz \
+    && rm -Rf gof3r_0.5.0_linux_amd64
+
 WORKDIR $GOPATH
 
 CMD ["mvn"]

@@ -60,6 +60,9 @@ jobs:
         test_accept_file_size: 1Mb
         test_timeout_creating_service: {{test_timeout_creating_service}}
         test_timeout_action: {{test_timeout_action}}
+        AWS_ACCESS_KEY_ID: {{AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: {{AWS_SECRET_ACCESS_KEY}}
+        GOPHER_BUCKET: {{GOPHER_BUCKET}}
       file: db-dumper-service/pipelines/ci/acceptance-task.yml
       on_failure:
         put: slack-alert
@@ -103,6 +106,9 @@ jobs:
         test_accept_file_size: 100Mb
         test_timeout_creating_service: {{test_timeout_creating_service}}
         test_timeout_action: {{test_timeout_action}}
+        AWS_ACCESS_KEY_ID: {{AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: {{AWS_SECRET_ACCESS_KEY}}
+        GOPHER_BUCKET: {{GOPHER_BUCKET}}
       file: db-dumper-service/pipelines/ci/acceptance-task.yml
       on_failure:
         put: slack-alert
@@ -146,6 +152,9 @@ jobs:
         test_accept_file_size: 500Mb
         test_timeout_creating_service: {{test_timeout_creating_service}}
         test_timeout_action: {{test_timeout_action}}
+        AWS_ACCESS_KEY_ID: {{AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: {{AWS_SECRET_ACCESS_KEY}}
+        GOPHER_BUCKET: {{GOPHER_BUCKET}}
       file: db-dumper-service/pipelines/ci/acceptance-task.yml
       on_failure:
         put: slack-alert
@@ -189,6 +198,9 @@ jobs:
         test_accept_file_size: 1gb
         test_timeout_creating_service: {{test_timeout_creating_service}}
         test_timeout_action: {{test_timeout_action}}
+        AWS_ACCESS_KEY_ID: {{AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: {{AWS_SECRET_ACCESS_KEY}}
+        GOPHER_BUCKET: {{GOPHER_BUCKET}}
       file: db-dumper-service/pipelines/ci/acceptance-task.yml
       on_failure:
         put: slack-alert
@@ -232,6 +244,9 @@ jobs:
         test_accept_file_size: 2gb
         test_timeout_creating_service: {{test_timeout_creating_service}}
         test_timeout_action: {{test_timeout_action}}
+        AWS_ACCESS_KEY_ID: {{AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: {{AWS_SECRET_ACCESS_KEY}}
+        GOPHER_BUCKET: {{GOPHER_BUCKET}}
       file: db-dumper-service/pipelines/ci/acceptance-task.yml
       on_failure:
         put: slack-alert

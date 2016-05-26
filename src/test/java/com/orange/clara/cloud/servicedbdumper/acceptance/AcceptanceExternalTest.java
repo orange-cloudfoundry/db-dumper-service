@@ -115,7 +115,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
     protected void deleteServiceInstance(String instanceId) throws ServiceBrokerAsyncRequiredException, ServiceBrokerException {
         String command = String.format("%s delete %s -f", this.dbDumperCli(), instanceId);
         try {
-            this.runCommand(command.split(" "), true);
+            this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
             throw new ServiceBrokerException(e.getMessage(), e);
         }
@@ -125,7 +125,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
     protected void createSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
         String command = String.format("%s create %s --plan %s", this.dbDumperCli(), this.getDbParamsForDump(databaseType), this.servicePlanAcceptDbDumper);
         try {
-            this.runCommand(command.split(" "), true);
+            this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
             throw new ServiceBrokerException(e.getMessage(), e);
         }
@@ -135,7 +135,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
     protected void createTargetDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
         String command = String.format("%s create %s --plan %s", this.dbDumperCli(), this.getDbParamsForRestore(databaseType), this.servicePlanAcceptDbDumper);
         try {
-            this.runCommand(command.split(" "), true);
+            this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
             throw new ServiceBrokerException(e.getMessage(), e);
         }

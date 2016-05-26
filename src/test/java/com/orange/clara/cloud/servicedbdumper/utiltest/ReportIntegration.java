@@ -1,5 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.utiltest;
 
+import java.util.UUID;
+
 /**
  * Copyright (C) 2016 Orange
  * <p>
@@ -11,18 +13,20 @@ package com.orange.clara.cloud.servicedbdumper.utiltest;
  * Date: 20/05/2016
  */
 public class ReportIntegration {
+    private String id;
     private String name;
     private long populateFakeDataTime = 0L;
     private long populateToDatabaseTime = 0L;
     private long dumpDatabaseSourceTime = 0L;
     private long restoreDatabaseSourceToTargetTime = 0L;
     private long dumpDatabaseTargetTime = 0L;
+    private long fakeDataFileSize = 0L;
     private long diffTime = 0L;
     private boolean skipped = false;
     private String skippedReason = "";
 
     public ReportIntegration(String name) {
-        this.name = name;
+        this.setName(name);
     }
 
     public long getPopulateFakeDataTime() {
@@ -78,6 +82,8 @@ public class ReportIntegration {
     }
 
     public void setName(String name) {
+        UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
+        this.id = uuid.toString();
         this.name = name;
     }
 
@@ -95,5 +101,17 @@ public class ReportIntegration {
 
     public void setSkippedReason(String skippedReason) {
         this.skippedReason = skippedReason;
+    }
+
+    public long getFakeDataFileSize() {
+        return fakeDataFileSize;
+    }
+
+    public void setFakeDataFileSize(long fakeDataFileSize) {
+        this.fakeDataFileSize = fakeDataFileSize;
+    }
+
+    public String getId() {
+        return id;
     }
 }

@@ -1,11 +1,17 @@
 package com.orange.clara.cloud.servicedbdumper.utiltest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.RunListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,6 +25,8 @@ import java.util.List;
  * Date: 20/05/2016
  */
 public class TestListener extends RunListener {
+    protected static final String DIRECTORY_REPORTS = "reports";
+    protected static final String FILE_FORMAT = "dd-MM-yyyy_HHmm";
     protected Logger logger = LoggerFactory.getLogger(TestListener.class);
 
     @Override
@@ -27,6 +35,7 @@ public class TestListener extends RunListener {
         for (ReportIntegration reportIntegration : reportIntegrations) {
             this.formatReport(reportIntegration);
         }
+        this.createReportFile();
         super.testRunFinished(result);
     }
 
@@ -50,6 +59,7 @@ public class TestListener extends RunListener {
             logger.info("\u001b[1;36mCreate fake data duration\u001B[0;0m: {}", humanize.Humanize.duration(reportIntegration.getPopulateFakeDataTime()));
 
         }
+        logger.info("\u001b[1;36mFake data file size (in bytes)\u001B[0;0m: {}", reportIntegration.getFakeDataFileSize());
         logger.info("\u001b[1;36mPopulate fake data duration\u001B[0;0m: {}", humanize.Humanize.duration(reportIntegration.getPopulateToDatabaseTime()));
         logger.info("\u001b[1;36mDump database source duration\u001B[0;0m: {}", humanize.Humanize.duration(reportIntegration.getDumpDatabaseSourceTime()));
         logger.info("\u001b[1;36mRestore database source to database target duration\u001B[0;0m: {}", humanize.Humanize.duration(reportIntegration.getRestoreDatabaseSourceToTargetTime()));
@@ -65,5 +75,19 @@ public class TestListener extends RunListener {
             separator += "-";
         }
         return separator + "\n";
+    }
+
+    private void createReportFile() throws IOException, URISyntaxException {
+        Date d = new Date();
+        SimpleDateFormat form = new SimpleDateFormat(FILE_FORMAT);
+        ClassLoader classLoader = getClass().getClassLoader();
+        File jsonFile = new File(DIRECTORY_REPORTS + File.separator + form.format(d) + ".json");
+
+        File dir = jsonFile.getParentFile();
+        if (!dir.isDirectory()) {
+            dir.mkdirs();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(jsonFile, ReportManager.getAllReports());
     }
 }
