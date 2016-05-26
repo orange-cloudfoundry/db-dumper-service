@@ -145,7 +145,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
     protected void restoreSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
         String command = String.format("%s restore %s --source-instance %s --recent", this.dbDumperCli(), this.getDbParamsForRestore(databaseType), this.getDbParamsForDump(databaseType));
         try {
-            this.runCommand(command.split(" "), true);
+            this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
             throw new ServiceBrokerException(e.getMessage(), e);
         }
