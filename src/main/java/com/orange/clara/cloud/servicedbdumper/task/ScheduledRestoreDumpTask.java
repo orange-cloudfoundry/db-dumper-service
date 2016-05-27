@@ -39,16 +39,12 @@ public class ScheduledRestoreDumpTask {
     @Scheduled(fixedDelay = 5000)
     public void restoreDump() throws AsyncTaskException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.RESTORE_DUMP, JobEvent.START);
-
         logger.debug("Running: restore dump scheduled task ...");
-
         for (Job job : jobs) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
             this.restoreDumpTask.runTask(job.getId());
         }
-
         logger.debug("Finished: restore dump scheduled task ...");
-
     }
 }

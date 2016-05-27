@@ -80,7 +80,6 @@ public class TestListener extends RunListener {
     private void createReportFile() throws IOException, URISyntaxException {
         Date d = new Date();
         SimpleDateFormat form = new SimpleDateFormat(FILE_FORMAT);
-        ClassLoader classLoader = getClass().getClassLoader();
         File jsonFile = new File(DIRECTORY_REPORTS + File.separator + form.format(d) + ".json");
 
         File dir = jsonFile.getParentFile();
@@ -88,6 +87,6 @@ public class TestListener extends RunListener {
             dir.mkdirs();
         }
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(jsonFile, ReportManager.getAllReports());
+        mapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, ReportManager.getAllReports());
     }
 }

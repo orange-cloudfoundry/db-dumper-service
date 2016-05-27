@@ -11,3 +11,4 @@ application-orange.yml
 /jq*
 /generate-sql-data
 /reports
+/trace.txt
