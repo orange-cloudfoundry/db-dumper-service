@@ -54,6 +54,11 @@ public class TestListener extends RunListener {
             logger.info(this.createSeparator(title.length()));
             return;
         }
+        if (reportIntegration.isFailed()) {
+            logger.info("\u001b[1;36mResult: {}\u001B[0;0m", "\u001B[0;31mFailed");
+            logger.info(this.createSeparator(title.length()));
+            return;
+        }
         logger.info("\u001b[1;36mResult\u001B[0;0m: {}", "\u001B[0;32mPassed\u001B[0;0m");
         if (reportIntegration.getPopulateFakeDataTime() != 0L) {
             logger.info("\u001b[1;36mCreate fake data duration\u001B[0;0m: {}", humanize.Humanize.duration(reportIntegration.getPopulateFakeDataTime()));

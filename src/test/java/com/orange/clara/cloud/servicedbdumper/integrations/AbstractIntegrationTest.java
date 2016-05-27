@@ -223,22 +223,23 @@ abstract public class AbstractIntegrationTest {
         this.loadBeforeAction();
         long currentTime = System.currentTimeMillis();
         createSourceDatabaseDump(databaseType);
-        this.reportIntegration.setDumpDatabaseSourceTime(System.currentTimeMillis() - currentTime);
+        this.reportIntegration.setDumpDatabaseSourceTime((System.currentTimeMillis() - currentTime) / 1000);
         logger.info("Dump database source finished after {}", humanize.Humanize.duration(this.reportIntegration.getDumpDatabaseSourceTime()));
 
         this.loadBeforeAction();
         currentTime = System.currentTimeMillis();
         this.restoreSourceDatabaseDump(databaseType);
-        this.reportIntegration.setRestoreDatabaseSourceToTargetTime(System.currentTimeMillis() - currentTime);
+        this.reportIntegration.setRestoreDatabaseSourceToTargetTime((System.currentTimeMillis() - currentTime) / 1000);
         logger.info("Restore database source to database target finished after {}", humanize.Humanize.duration(this.reportIntegration.getRestoreDatabaseSourceToTargetTime()));
 
 
         this.loadBeforeAction();
         currentTime = System.currentTimeMillis();
         this.createTargetDatabaseDump(databaseType);
-        this.reportIntegration.setDumpDatabaseTargetTime(System.currentTimeMillis() - currentTime);
+        this.reportIntegration.setDumpDatabaseTargetTime((System.currentTimeMillis() - currentTime) / 1000);
         logger.info("Dump database target finished after {}", humanize.Humanize.duration(this.reportIntegration.getDumpDatabaseTargetTime()));
         this.diffSourceAndTargetDatabase(databaseType);
+        this.reportIntegration.setFailed(false);
     }
 
     protected void loadBeforeAction() {
@@ -356,7 +357,7 @@ abstract public class AbstractIntegrationTest {
             }
         }
         assertThat(sourceNumberBytesRead).isEqualTo(targetNumberBytesRead);
-        this.reportIntegration.setDiffTime(System.currentTimeMillis() - currentTime);
+        this.reportIntegration.setDiffTime((System.currentTimeMillis() - currentTime) / 1000);
         this.logger.info("Diff against source and target database finished after {}", humanize.Humanize.duration(this.reportIntegration.getDiffTime()));
     }
 
@@ -433,7 +434,7 @@ abstract public class AbstractIntegrationTest {
             logger.warn("Retry {}/{}: fail to populate data.", i, populateDataRetry);
             i++;
         }
-        this.reportIntegration.setPopulateToDatabaseTime(System.currentTimeMillis() - currentTime);
+        this.reportIntegration.setPopulateToDatabaseTime((System.currentTimeMillis() - currentTime) / 1000);
         logger.info("Finished to populate fake data on server: {} \n Duration: {}", databaseServer.getHost(), humanize.Humanize.duration(this.reportIntegration.getPopulateToDatabaseTime()));
     }
 

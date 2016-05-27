@@ -23,6 +23,7 @@ public class ReportIntegration {
     private long fakeDataFileSize = 0L;
     private long diffTime = 0L;
     private boolean skipped = false;
+    private boolean failed = true;
     private String skippedReason = "";
 
     public ReportIntegration(String name) {
@@ -109,6 +110,14 @@ public class ReportIntegration {
 
     public void setFakeDataFileSize(long fakeDataFileSize) {
         this.fakeDataFileSize = fakeDataFileSize;
+    }
+
+    public boolean isFailed() {
+        return failed;
+    }
+
+    public void setFailed(boolean failed) {
+        this.failed = failed;
     }
 
     public String getId() {
