@@ -130,7 +130,7 @@ echo "Done installing postgresql binaries."
 #rutil - redis tool to restore and dump
 #####################################################################################
 echo "Installing redis dump and restore tool (rutil)..."
-go get -v github.com/pampa/rutil
+go get -v github.com/ArthurHlt/rutil
 mkdir -p "${WD}/src/main/resources/binaries/redis/bin"
 sudo cp "${GOPATH}/bin/rutil" "${WD}/src/main/resources/binaries/redis/bin"
 echo "Done installing redis tool."
