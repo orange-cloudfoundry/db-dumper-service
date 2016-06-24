@@ -1,0 +1,63 @@
+@startuml
+sprite $clock [20x20/16z] {
+RL1R4iGW2FD5GIJtl-w2Tcix8nyg8KX8IX6i1fXAUaA60nx0-ACTw5IO2yNhXepygjKFiWaAhEvlgi7R1oYzWZ0IExbSUOCTh46ZtYAzsYIgMOdCE6VfGI-k
+oJYg5rH7L2k7UbbzMBC2Mxsn7g_RU_KhPSxWUvkN5ZbfFkxsUD2s1qUlZfu6-l7-1m00
+}
+actor Developer
+control "db-dumper-service"
+database "Database to dump"
+database "Database to restore to"
+participant Filer
+
+== Dump a database ==
+
+Developer -> "db-dumper-service" : create dump request for a database
+note left
+    the diagram show that
+    Developer interacting
+    directly with 
+    db-dumper-service
+    but between them there 
+    is Cloud Foundry
+end note
+"db-dumper-service" -> Developer : respond dump creation started
+group dump creation ran asynchronously with jobs
+    ...
+    "db-dumper-service" -> "db-dumper-service" : Start a dump job <$clock>
+    activate "db-dumper-service"
+    "Database to dump" -[#blue]> "db-dumper-service" : Dump the database
+    note right
+        blue arrows represent
+        streams
+    end note
+    "db-dumper-service" -[#blue]> Filer : Save directly inside the Filer
+    "db-dumper-service" -> "db-dumper-service" : Stop the job & change status to finish
+    destroy "db-dumper-service"
+end
+
+== Restore a database ==
+
+Developer -> "db-dumper-service" : create restore request for a database from a dump
+"db-dumper-service" -> Developer : respond restore creation started
+group restore creation ran asynchronously with jobs
+    ...
+    "db-dumper-service" -> "db-dumper-service" : Start a restore job <$clock>
+    activate "db-dumper-service"
+    Filer -[#blue]> "db-dumper-service" : Download the dump from the Filer
+    "db-dumper-service" -[#blue]> "Database to restore to" : Restore the database when downloading dump
+    "db-dumper-service" -> "db-dumper-service" : Stop the job & change status to finish
+    destroy "db-dumper-service"
+end
+
+== Polling by Developer to know when dump or restore action is finished ==
+
+Developer -> "db-dumper-service" : retrieve the job
+activate "Developer"
+"db-dumper-service" -> Developer : get the current status of the job
+alt job is not finished
+ Developer -> Developer : retry
+else job is finished
+ Developer -x Developer : finished
+ destroy Developer
+end
+@enduml

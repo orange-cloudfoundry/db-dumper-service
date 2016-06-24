@@ -1,0 +1,42 @@
+@startuml
+actor Developer
+control "db-dumper-service"
+participant UAA
+participant Filer
+participant "Cloud Controller"
+
+== Secure download ==
+
+Developer -> "db-dumper-service" : Ask for download with generated credentials over basic auth
+note left
+    the diagram admit that
+    Developer give always
+    correct credentials
+end note
+Filer -[#blue]> "db-dumper-service" : Retrieve file from storage service
+"db-dumper-service" -[#blue]> Developer : Send back the file
+
+== Secure Dashboard with UAA ==
+
+Developer -> "db-dumper-service" : Try to access dashboard
+"db-dumper-service" -> Developer : Redirect to UAA login page
+Developer -> UAA : Login over UAA
+UAA -> Developer : Redirect to dashboard
+Developer -> "db-dumper-service" : Access dashboard
+"db-dumper-service" -> Developer : Give dashboard page
+
+== Secure Dashboard without UAA ==
+
+Developer -> "db-dumper-service" : Try to access dashboard with credentials over basic auth
+"db-dumper-service" -> "db-dumper-service" : Check credentials
+"db-dumper-service" -> Developer : Give dashboard page
+
+== Save database with service name ==
+Developer -> "db-dumper-service" : Send token and service name to dump it
+"db-dumper-service" -> "Cloud Controller" : Use token sent to check if developper has access
+"Cloud Controller" -> "db-dumper-service" : Sent user has access to service
+note left
+    it send a boolean
+end note
+"db-dumper-service" -> Developer : respond dump creation started
+@enduml
