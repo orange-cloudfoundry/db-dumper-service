@@ -12,11 +12,11 @@ More details in the specifications at https://docs.google.com/document/d/1Y5vwWj
 
 See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with label "service-db-dumper"
 
-## Requirement
+## Requirements
 
 - [Cloud Foundry](http://cloudfoundry.org/) (>=192) with service broker api 2.6 at least
-- A s3 service to store dump (e.g: [p-riakcs](http://docs.pivotal.io/p-riakcs/), [s3-cf-service-broker](https://github.com/cloudfoundry-community/s3-cf-service-broker) or aws s3 given with cups)
-- A database service to store model (e.g: [p-mysql](http://docs.pivotal.io/p-mysql/), [cleardb](http://docs.pivotal.io/p-mysql/))
+- A s3 service to store dumps (e.g: [p-riakcs](http://docs.pivotal.io/p-riakcs/), [s3-cf-service-broker](https://github.com/cloudfoundry-community/s3-cf-service-broker) or aws s3 given with cups)
+- A database service to store models (e.g: [p-mysql](http://docs.pivotal.io/p-mysql/), [cleardb](http://docs.pivotal.io/p-mysql/))
 
 
 ## Installation in 5 Minutes
@@ -25,15 +25,15 @@ See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with l
 2. Unzip the latest downloaded file
 3. Create a s3 service instance in your cloud foundry instance (e.g for [p-riakcs](http://docs.pivotal.io/p-riakcs/): `cf cs p-riakcs developer riak-db-dumper-service`)
 4. Create a database service instance in your cloud foundry instance (e.g for [p-mysql](http://docs.pivotal.io/p-mysql/): `cf cs p-mysql 100mb mysql-db-dumper-service`)
-5. Update the manifest (`manifest.yml`) file in the unzipped folder (**Note**: If you don't want to use uaa to login into dashboard, remove *uaa* profile in `spring_profiles_active`
-6. Add cloudfoundry user which has access role for db-dumper-service following `cf_admin_user` and `cf_admin_password` var in manifest (This required to find database by their service name)
+5. Update the manifest (`manifest.yml`) file in the unzipped folder (**Note**: If you don't want to use uaa to protect access to dashboards, remove *uaa* profile from `spring_profiles_active`)
+6. Add cloudfoundry user which has access role for db-dumper-service following `cf_admin_user` and `cf_admin_password` var in manifest (This required to lookup databases by their service name using CC API)
 7. Push to your Cloud Foundry (in the manifest.yml folder: `cf push`)
-8. Enable service broker by doing:
+8. Register and enable the service broker with:
 ```
 $ cf create-service-broker db-dumper-service broker-user-from-manifest broker-password-from-manifest https://db-dumper-service.your.domain
 $ cf enable-service-access db-dumper-service
 ```
-9. You're done
+
 
 ## Configure your UAA (Optional if you remove uaa profile)
 
@@ -69,17 +69,17 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 ## How to use
 
 **Note**:
-- The service broker will run task asynchronously.
-- The user token is needed when you want to dump or/and restore a database by its service name to check if your user is able to access to this service (We are waiting for token delegation implementation to not mandatory the user token)
+- The service broker will run tasks asynchronously.
+- The user token is needed when you want to dump or/and restore a database by its service name to check if your user is able to access to this service (We are waiting for [token delegation implementation](https://docs.google.com/document/d/1DoAbJa_YiGIJbOZ_zPzakh7sc4TB9Tmadq41cfSX0dw/edit?usp=sharing) to remove the need for a  mandatory user token)
 
 ### Use with a Cloud Foundry cli plugin
 
-You can either use the cli plugin associated to this broker:
+You may use the cli plugin associated to this broker:
 
 1. Download the latest release of the [db-dumper-cli-plugin](https://github.com/Orange-OpenSource/db-dumper-cli-plugin) here: https://github.com/Orange-OpenSource/db-dumper-cli-plugin/releases
 2. Install it to your cli with this command: `cf install-plugin "path/of/db-dumper-cli-plugin" -f`
 
-**Note**: You can use this service without cli plugin, it was made only to have a more convenient way to use it than using broker parameters.
+**Note**: You can use this service without cli plugin, it was made only to have a more convenient way to use it than using broker arbitrary parameters.
 
 ### Create a dump by passing a database uri
 
@@ -132,21 +132,21 @@ cf ds db-dumper-service experimental service-name
 
 ### User access
 
-Users can see their dumps by using dashboard, you can found it to this address: https://db-dumper-service.my.domain/manage
+Users can see their dumps by using the dashboard URL accessible in each service instance, which has format:  https://db-dumper-service.my.domain/manage
 
 Preview:
 ![Screenshot user](https://rawgit.com/Orange-OpenSource/db-dumper-service/master/src/main/resources/static/images/preview/user-page.png?refresh)
 
 ### Admin access
 
-Admin can access to his own page by going to https://db-dumper-service.my.domain/manage/admin (user and password has been set in the manifest, see `admin_username` and `admin_password`)
+Admins have access to a backoffice UI available at https://db-dumper-service.my.domain/manage/admin (protected by basic auth with user and password set in the manifest, see `admin_username` and `admin_password`)
 
 Preview:
 ![Screenshot user](https://rawgit.com/Orange-OpenSource/db-dumper-service/master/src/main/resources/static/images/preview/admin-page.png)
 
 ### Manage jobs
 
-Sometimes, async jobs need to be managed, you can access to it with this url: https://db-dumper-service.my.domain/admin/control/jobs
+Sometimes, async jobs need to be managed, admins can use the job backoffice UI at https://db-dumper-service.my.domain/admin/control/jobs
 
 Preview:
 ![Screenshot user](https://rawgit.com/Orange-OpenSource/db-dumper-service/master/src/main/resources/static/images/preview/jobs.png)
@@ -164,7 +164,7 @@ Preview:
 
 ### Prepare environment
 
-To run integration test on a non linux system you will have to install and run each database you wanna test:
+To run integration tests on a non linux system you will have to install and run each database type you want to test:
 
 - MySQL (or mariadb which is preferred one): https://downloads.mariadb.org/mariadb/repositories/#mirror=urbach
 - PostgreSQL: http://www.postgresql.org/download/
@@ -176,7 +176,7 @@ To run integration test on a non linux system you will have to install and run e
  - To dump and restore: https://github.com/pampa/rutil
 
 
-You will need to set java properties or env var (replace '.' by '_' ) to point dump and restore binaries for each database:
+You will need to set java properties or env vars (replace '.' by '_' ) to specify ``dump`` and ``restore`` binaries path for each database type:
 
 | Properties                | Example Location                           |
 | ------------------------- |:------------------------------------------:|
