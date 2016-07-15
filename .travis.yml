@@ -49,3 +49,4 @@ env:
   - cloud_controller_url=https://api.run.pivotal.io
   - int_cf_service_name_mongodb=skipped-cause-mongolab-have-issue
   - int_cf_service_name_redis=blocked-cause-of-pws
+  - int_cf_service_name_postgresql=skipped-cause-elephantsql-generate-random-values
