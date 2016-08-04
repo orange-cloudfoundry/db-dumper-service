@@ -195,6 +195,9 @@ public class FakeS3Client implements S3Client {
             System.arraycopy(currentContent, 0, toWrite, 0, currentContent.length);
             System.arraycopy(partOriginalBytes, 0, toWrite, currentContent.length, partOriginalBytes.length);
             Files.write(toWrite, fileToFeed);
+            currentContent = null;
+            toWrite = null;
+            partOriginalBytes = null;
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }

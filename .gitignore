@@ -12,3 +12,4 @@ application-orange.yml
 /generate-sql-data
 /reports
 /trace.txt
+/**/*MemoryLeak*

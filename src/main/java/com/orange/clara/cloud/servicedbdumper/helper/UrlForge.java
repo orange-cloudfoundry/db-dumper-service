@@ -22,7 +22,7 @@ import java.net.URI;
 public class UrlForge {
     public final static String DOWNLOAD_ROUTE = Routes.MANAGE_ROOT + Routes.DOWNLOAD_DUMP_FILE_ROOT;
     public final static String SHOW_ROUTE = Routes.MANAGE_ROOT + Routes.SHOW_DUMP_FILE_ROOT;
-    ;
+
     @Autowired
     @Qualifier("appUri")
     protected String appUri;

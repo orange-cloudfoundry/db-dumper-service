@@ -45,7 +45,7 @@ public class UploadS3StreamImpl implements UploadS3Stream {
     private Integer chunkSize = DEFAULT_CHUNK_SIZE; //set a chunk to 5MB
 
     @PostConstruct
-    private void injectS3Client() {
+    protected void injectS3Client() {
         this.s3Client = this.blobStoreContext.unwrapApi(S3Client.class);
     }
 
@@ -64,22 +64,35 @@ public class UploadS3StreamImpl implements UploadS3Stream {
         Integer partNum = 1;
         Payload part = null;
         int bytesRead = 0;
+        byte[] chunk = null;
         boolean shouldContinue = true;
+        SortedMap<Integer, String> etags = Maps.newTreeMap();
         try {
-            SortedMap<Integer, String> etags = Maps.newTreeMap();
             while (shouldContinue) {
-                byte[] chunk = new byte[chunkSize];
+                chunk = new byte[chunkSize];
                 bytesRead = ByteStreams.read(content, chunk, 0, chunk.length);
                 if (bytesRead != chunk.length) {
                     shouldContinue = false;
                     chunk = Arrays.copyOf(chunk, bytesRead);
                     if (chunk.length == 0) {
+                        //something from jvm causing memory leak, we try to help jvm which seems working.
+                        //but PLEASE DON'T REPLICATE AT HOME !
+                        chunk = null;
+                        part = null;
+                        System.gc();
+                        //
                         break;
                     }
                 }
                 part = new ByteArrayPayload(chunk);
                 prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);
                 partNum++;
+                //something from jvm causing memory leak, we try to help jvm which seems working.
+                //but PLEASE DON'T REPLICATE AT HOME !
+                chunk = null;
+                part = null;
+                System.gc();
+                //
             }
             return this.completeMultipartUpload(bucketName, key, uploadId, etags);
         } catch (RuntimeException ex) {
@@ -92,8 +105,7 @@ public class UploadS3StreamImpl implements UploadS3Stream {
         int i = 1;
         while (true) {
             try {
-                String complete = this.s3Client.completeMultipartUpload(bucketName, key, uploadId, parts);
-                return complete;
+                return this.s3Client.completeMultipartUpload(bucketName, key, uploadId, parts);
             } catch (Exception e) {
                 logger.warn("Retry {} to complete upload on S3.", i);
                 if (i >= retry) {
@@ -110,7 +122,7 @@ public class UploadS3StreamImpl implements UploadS3Stream {
         while (true) {
             try {
                 eTag = s3Client.uploadPart(container, key, numPart, uploadId, chunkedPart);
-                etags.put(Integer.valueOf(numPart), eTag);
+                etags.put(numPart, eTag);
                 break;
             } catch (Exception e) {
                 logger.warn("Retry {}/{} to upload on S3 for container {}.", i, retry, container);

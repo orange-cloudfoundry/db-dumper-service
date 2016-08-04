@@ -54,10 +54,10 @@ public class S3Filer implements Filer {
             outputStream.flush();
             outputStream.close();
         } catch (IOException e) {
-            inputStream.close();
             throw e;
+        } finally {
+            inputStream.close();
         }
-        inputStream.close();
     }
 
     @Override
