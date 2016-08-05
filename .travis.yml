@@ -26,12 +26,12 @@ after_success:
 - export PATH=$PATH:$HOME/jpm/bin
 - jpm install com.codacy:codacy-coverage-reporter:assembly
 - codacy-coverage-reporter -l Java -r target/site/jacoco/jacoco.xml
+- bin/push-report
 - mvn -B clean install -DskipTests=true
 - mkdir -p db-dumper-service/target
 - cp target/db-dumper-service-1.2.0.war db-dumper-service/target
 - cp manifest.yml db-dumper-service/
 - zip -r db-dumper-service ./db-dumper-service/*
-- bin/push-report
 deploy:
   provider: releases
   api_key:
