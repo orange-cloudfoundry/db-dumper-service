@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e # Exit with nonzero exit code if anything fails
 
-mvn -DskipTests=true site
+mvn surefire-report:report-only
+mvn -DskipTests=true -o site
 
 TARGET_BRANCH="test-result"
 REPO="https://ArthurHlt:${GH_TOKEN}@github.com/Orange-OpenSource/db-dumper-service.git"
