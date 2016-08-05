@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e # Exit with nonzero exit code if anything fails
+
+mvn -DskipTests=true -o site
+
+TARGET_BRANCH="test-result"
+REPO="https://ArthurHlt:${GH_TOKEN}@github.com/Orange-OpenSource/db-dumper-service.git"
+cp -r target/site /tmp
+cd /tmp/site
+git config user.name "Travis CI"
+git config user.email "$COMMIT_AUTHOR_EMAIL"
+git init
+git remote add origin ${REPO}
+git add ./
+git commit -m "update report"
+git push origin report --force
+cd -

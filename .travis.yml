@@ -19,7 +19,8 @@ install:
 script:
 - mvn -B clean verify -P all-tests jacoco:report
 after_success:
-- curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >t.jar
+- curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar
+  >t.jar
 - java -jar t.jar -u init
 - rm t.jar
 - export PATH=$PATH:$HOME/jpm/bin
@@ -30,6 +31,7 @@ after_success:
 - cp target/db-dumper-service-1.2.0.war db-dumper-service/target
 - cp manifest.yml db-dumper-service/
 - zip -r db-dumper-service ./db-dumper-service/*
+- bin/push-report
 deploy:
   provider: releases
   api_key:
@@ -50,3 +52,4 @@ env:
   - int_cf_service_name_mongodb=skipped-cause-mongolab-have-issue
   - int_cf_service_name_redis=blocked-cause-of-pws
   - int_cf_service_name_postgresql=skipped-cause-elephantsql-generate-random-values
+  - secure: Er/DZGUE/P8z7gFxPPIz1MOrzyH2VamG3V2bP/dZKQBCNYDFmWiIQUdVkA4HaRP+snjqQE1zHQS8vtcfM1AXAmTJPV59UTCI++bcL2hTNFmHKlUz4OZFTl6zAesL7aIKEFotHwg9YoEg7hZuZimCIgOA3jIatLgoMCHlkDcAcqA8GC4F2gAQ+qxePLwBIXcKjh8tm4LZuy8p17zRQpQ7rM68aAumdf9lWlqIPNwBaG5gQBeC3vutjf08bGeSPU93331Rltqbm6lliVUyuB6FZyb1WD+5ZjfR7i5TBeXvLIfelNzsyzZU1d2sd6dZeiqaH8PKk863t3fVZExx0TBcOsHwGV+q9ZMT3iQSJuP51F9jiLjWC4csfl5XplaOdX11EwrlQNMmYpYVvHCgb0HN7JJhqkfiSXCRJlpVCMme4U6jc7PMokuUsP+2HNVis8aB1uQEjNgUgepfKeR2PpXV0kq27+UDt9ukehbb2gKO5O7JHP/t4n8b7OjYUn/vZ9B584peqHf9aw5IjSGkP+xt07YxIrTIMMPsMjJ7ev+SUtMo/FexHZq3YhTS+njlMPTxB1jKNICrwwZ3jiZoaTg9W8rYSInB2275lNKQYq5jOgF+3VFboBrQB6j6POiryNuk9e8Nc2SwfQHjLC9eutOPNZET/7eonYPhz2qy4lI2sJ8=

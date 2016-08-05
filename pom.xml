@@ -199,11 +199,7 @@
             <name>Spring Releases</name>
             <url>http://repo.spring.io/release</url>
         </repository>
-        <repository>
-            <id>jfrog-oss</id>
-            <name>JFrog OSS snapshot repository</name>
-            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-        </repository>
+
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -239,6 +235,11 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>jfrog-oss</id>
+            <name>JFrog OSS snapshot repository</name>
+            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -344,4 +345,13 @@
             </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.19.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
