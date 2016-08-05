@@ -1,7 +1,6 @@
 #!/bin/bash
-set -e # Exit with nonzero exit code if anything fails
 
-mvn surefire-report:report-only
+mvn -DskipTests=true site
 mvn -DskipTests=true -o site
 
 TARGET_BRANCH="test-result"
