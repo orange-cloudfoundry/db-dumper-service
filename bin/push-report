@@ -3,8 +3,7 @@
 mvn -DskipTests=true site
 mvn dependency:get -DgroupId=org.apache.maven.skins -DartifactId=maven-default-skin -Dversion=1.0 -DrepoUrl=http://repo.maven.apache.org/maven2
 mvn -DskipTests=true -o site
-
-TARGET_BRANCH="test-result"
+BRANCH="report"
 REPO="https://ArthurHlt:${GH_TOKEN}@github.com/Orange-OpenSource/db-dumper-service.git"
 cp -r target/site /tmp
 cd /tmp/site
@@ -12,7 +11,8 @@ git init
 git config user.name "Travis CI"
 git config user.email "$COMMIT_AUTHOR_EMAIL"
 git remote add origin ${REPO}
+git checkout -b $BRANCH
 git add ./
 git commit -m "update report"
-git push origin report --force &> /dev/null
+git push origin $BRANCH --force &> /dev/null
 cd -
