@@ -6,6 +6,7 @@ mvn -DskipTests=true -o site
 BRANCH="report"
 REPO="https://ArthurHlt:${GH_TOKEN}@github.com/Orange-OpenSource/db-dumper-service.git"
 cp -r target/site /tmp
+OLD_PWD=`pwd`
 cd /tmp/site
 git init
 git config user.name "Travis CI"
@@ -15,4 +16,4 @@ git checkout -b $BRANCH
 git add ./
 git commit -m "update report"
 git push origin $BRANCH --force &> /dev/null
-cd -
+cd $OLD_PWD
