@@ -5,6 +5,7 @@ import com.orange.clara.cloud.servicedbdumper.fake.cloudfoundry.CloudFoundryClie
 import com.orange.clara.cloud.servicedbdumper.integrations.config.FakeCloudFoundryClientConfig;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

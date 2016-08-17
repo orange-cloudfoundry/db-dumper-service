@@ -60,6 +60,9 @@ public class DatabaseRefManager {
         if (token == null || token.isEmpty()) {
             throw new ServiceKeyException("You must pass your token (param: cf_user_token)");
         }
+        if (org == null || org.isEmpty() || space == null || space.isEmpty()) {
+            throw new ServiceKeyException("Space and org parameters can't be empty. (params: space, org)");
+        }
         String sanitizedToken = this.sanitizeToken(token);
         CloudServiceKey cloudServiceKey = this.serviceKeyManager.createServiceKey(uriOrServiceName, sanitizedToken, org, space);
         return this.getDatabaseRefFromServiceKey(cloudServiceKey, org, space);

@@ -111,7 +111,7 @@ public class DatabaseRefManagerTest {
     }
 
     @Test
-    public void udpate_database_ref_without_database_service_give_the_same_database_ref() throws DatabaseExtractionException, ServiceKeyException {
+    public void update_database_ref_without_database_service_give_the_same_database_ref() throws DatabaseExtractionException, ServiceKeyException {
         DatabaseRef databaseRef = new DatabaseRef("mydb", URI.create(this.generateUri()));
 
         DatabaseRef updatedDatabaseRef = this.databaseRefManager.updateDatabaseRef(databaseRef);
