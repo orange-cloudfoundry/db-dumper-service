@@ -87,7 +87,7 @@ public class DatabaseRefManagerTest {
         credentials.put("uri", this.generateUri());
         MockCloudServiceKey mockCloudServiceKey = new MockCloudServiceKey(credentials, serviceName);
         this.serviceKeyManager.setCloudServiceKey(mockCloudServiceKey);
-        assertDatabaseRef(this.databaseRefManager.getDatabaseRef(serviceName, token, null, null), mockCloudServiceKey);
+        assertDatabaseRef(this.databaseRefManager.getDatabaseRef(serviceName, token, "org", "space"), mockCloudServiceKey);
     }
 
     @Test
