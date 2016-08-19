@@ -5,8 +5,26 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.orange.clara.cloud</groupId>
+    <name>db-dumper-service</name>
     <artifactId>db-dumper-service</artifactId>
     <version>1.2.1</version>
+    <description>A Cloud Foundry service broker to dump and restore database on demand</description>
+    <url>https://github.com/Orange-OpenSource/</url>
+    <organization>
+        <name>Orange</name>
+        <url>https://github.com/Orange-OpenSource</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>ArthurHlt</id>
+            <email>arthur.halet@orange.com</email>
+            <name>Arthur Halet</name>
+            <url>https://github.com/ArthurHlt</url>
+            <organization>Orange</organization>
+            <organizationUrl>https://github.com/Orange-OpenSource</organizationUrl>
+        </developer>
+    </developers>
     <packaging>war</packaging>
 
     <parent>
