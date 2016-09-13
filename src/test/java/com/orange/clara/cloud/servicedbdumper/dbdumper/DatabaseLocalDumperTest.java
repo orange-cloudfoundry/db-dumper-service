@@ -66,7 +66,7 @@ public class DatabaseLocalDumperTest {
     @Test
     public void create_command_line_for_dump_postgres() throws Exception {
         String[] expected = String.format(
-                "%s --dbname=postgresql://%s:%s@%s:%s/%s --no-owner --no-privileges",
+                "%s --dbname=postgresql://%s:%s@%s:%s/%s --clean --no-owner --no-privileges",
                 this.dumpBinaries.getAbsolutePath(),
                 this.user,
                 this.password,
@@ -168,6 +168,9 @@ public class DatabaseLocalDumperTest {
         String[] expected = {
                 dumpBinaries.getAbsolutePath(),
                 "--routines",
+                "--single-transaction",
+                "--add-drop-table",
+                "--flush-logs",
                 "--skip-comments",
                 "--host=" + this.host,
                 "--port=" + this.port,

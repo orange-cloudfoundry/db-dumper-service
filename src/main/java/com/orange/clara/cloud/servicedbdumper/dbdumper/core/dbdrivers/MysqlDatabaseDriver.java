@@ -20,7 +20,7 @@ public class MysqlDatabaseDriver extends AbstractDatabaseDriver implements Datab
 
     @Override
     public String[] getDumpCommandLine() {
-        return String.format("%s --routines --skip-comments --host=%s --port=%s --user=%s --password=%s %s",
+        return String.format("%s --routines --single-transaction --add-drop-table --flush-logs --skip-comments --host=%s --port=%s --user=%s --password=%s %s",
                 this.binaryDump.getAbsolutePath(),
                 this.databaseRef.getHost(),
                 this.databaseRef.getPort(),
