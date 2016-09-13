@@ -170,7 +170,6 @@ public class DatabaseLocalDumperTest {
                 "--routines",
                 "--single-transaction",
                 "--add-drop-table",
-                "--flush-logs",
                 "--skip-comments",
                 "--host=" + this.host,
                 "--port=" + this.port,
