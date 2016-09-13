@@ -18,7 +18,7 @@ env:
   filer_type: GzipS3 # this is create a compressed dump and send to S3 -- other value is: S3 (this will send dump to S3 without compression)
   dump_delete_expiration_days: 5
   use_ssl: false # If you will be on https set this value to true
-  CF_TARGET: https://your.uaa.url.com # url of your uaa (set it if you want to also use uaa)
+  CF_TARGET: https://your.uaa.url.com # url of your uaa (set it if you want to also use uaa). This url is also used to download the TLS certificate and trust it as valid for the cloudcontroller URL
   cloud_controller_url: https://your.api.cf.url.com # url of your cloudfoundry api
   security_oauth2_client_clientId: your-client-id-uaa
   security_oauth2_client_clientSecret: your-client-secret-uaa
