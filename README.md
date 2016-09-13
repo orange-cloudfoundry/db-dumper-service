@@ -33,7 +33,7 @@ curl -O -L $LATEST_RELEASE_URL
 3. Create a s3 service instance in your cloud foundry instance (e.g for [p-riakcs](http://docs.pivotal.io/p-riakcs/): `cf cs p-riakcs developer riak-db-dumper-service`)
 4. Create a database service instance in your cloud foundry instance (e.g for [p-mysql](http://docs.pivotal.io/p-mysql/): `cf cs p-mysql 100mb mysql-db-dumper-service`)
 5. Update the manifest (`manifest.yml`) file in the unzipped folder (**Note**: If you don't want to use uaa to protect access to dashboards, remove *uaa* profile from `spring_profiles_active`)
-6. Add cloudfoundry user which has access role for db-dumper-service following `cf_admin_user` and `cf_admin_password` var in manifest (This required to lookup databases by their service name using CC API)
+6. Add cloudfoundry API user following `cf_admin_user` and `cf_admin_password` var in manifest (This required for db-dumper to lookup databases by their service name using CC API. A  ``cloudcontroller.read`` permission is required on all spaces with db instances to dump. Alternatively, ``cloudcontroller.admin`` permission could be granted to this user to access any service instance in any space)
 7. Push to your Cloud Foundry (in the manifest.yml folder: `cf push`)
 8. Register and enable the service broker with:
 ```
