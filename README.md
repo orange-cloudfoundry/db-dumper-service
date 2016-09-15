@@ -119,9 +119,9 @@ cf update-service test -c '{"action": "restore", "db":"my-mysql-restore-db", "cf
 ```
 
 
-### Update a dump
+### Add a new dump
 
-If you want to update a dump you can use this command but it will replace your actual dump:
+If you want to create a new dump you can use this command:
 
 ```
 cf update-service test -c '{"action": "dump"}'
