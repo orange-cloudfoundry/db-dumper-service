@@ -1,13 +1,14 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
+import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
 import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,8 +27,8 @@ public class CoreCredentials implements Credentials {
     private UrlForge urlForge;
 
     @Override
-    public List<DbDumperCredential> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
-        List<DbDumperCredential> dbDumperCredentials = new ArrayList<>();
+    public List<DbDumperCredential> getDumpsCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
+        List<DbDumperCredential> dbDumperCredentials = Lists.newArrayList();
         List<DatabaseDumpFile> databaseDumpFiles = dbDumperServiceInstance.getDatabaseDumpFiles();
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
             dbDumperCredentials.add(new DbDumperCredential(
@@ -39,6 +40,15 @@ public class CoreCredentials implements Credentials {
                     databaseDumpFile.getSize(),
                     databaseDumpFile.getDeleted()
             ));
+        }
+        return dbDumperCredentials;
+    }
+
+    @Override
+    public List<DbDumperCredential> getDumpsCredentials(DatabaseRef databaseRef) {
+        List<DbDumperCredential> dbDumperCredentials = Lists.newArrayList();
+        for (DbDumperServiceInstance dbDumperServiceInstance : databaseRef.getDbDumperServiceInstances()) {
+            dbDumperCredentials.addAll(this.getDumpsCredentials(dbDumperServiceInstance));
         }
         return dbDumperCredentials;
     }

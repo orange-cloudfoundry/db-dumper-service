@@ -1,5 +1,6 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 
@@ -16,5 +17,7 @@ import java.util.List;
  * Date: 26/11/2015
  */
 public interface Credentials {
-    List<DbDumperCredential> getCredentials(DbDumperServiceInstance dbDumperServiceInstance);
+    List<DbDumperCredential> getDumpsCredentials(DbDumperServiceInstance dbDumperServiceInstance);
+
+    List<DbDumperCredential> getDumpsCredentials(DatabaseRef databaseRef);
 }

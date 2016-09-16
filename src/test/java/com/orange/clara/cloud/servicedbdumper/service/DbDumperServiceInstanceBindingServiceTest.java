@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.service;
 
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
@@ -51,7 +52,6 @@ public class DbDumperServiceInstanceBindingServiceTest {
     private final static String planId = "plan-1";
     private final static String appGuid = "01-02";
     private final static DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance(serviceId, planId, "org-1", "space-1", "http://dashboard.com", null);
-    private final static CreateServiceInstanceBindingRequest createRequest = new CreateServiceInstanceBindingRequest(serviceDefinitionId, planId, appGuid, Maps.newHashMap()).withBindingId(bindingId).withServiceInstanceId(serviceId);
     private final static DeleteServiceInstanceBindingRequest deleteRequest = new DeleteServiceInstanceBindingRequest(bindingId, null, serviceId, planId);
     private final static DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding = new DbDumperServiceInstanceBinding(bindingId, dbDumperServiceInstance, appGuid);
     @InjectMocks
@@ -63,14 +63,21 @@ public class DbDumperServiceInstanceBindingServiceTest {
     DbDumperServiceInstanceRepo repositoryInstance;
     @Mock
     Credentials credentials;
+    private Map<String, Object> parameters;
+    private CreateServiceInstanceBindingRequest createRequest;
     private DbDumperCredential dbDumperCredential1;
     private DbDumperCredential dbDumperCredential2;
     private DbDumperCredential dbDumperCredential3;
     private List<DbDumperCredential> dbDumperCredentials;
+    private DatabaseRef databaseRef;
 
     @Before
     public void init() {
         initMocks(this);
+        parameters = Maps.newHashMap();
+        createRequest = new CreateServiceInstanceBindingRequest(serviceDefinitionId, planId, appGuid, parameters)
+                .withBindingId(bindingId)
+                .withServiceInstanceId(serviceId);
         this.dbDumperCredential1 = this.forgeDbDumperCredential(1, false);
         this.dbDumperCredential2 = this.forgeDbDumperCredential(2, false);
         this.dbDumperCredential3 = this.forgeDbDumperCredential(3, true);
@@ -123,7 +130,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
         assertThat(instanceBinding).isNotNull();
         assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
         assertThat(instanceBinding.getId()).isEqualTo(bindingId);
-        assertCredentials(instanceBinding);
+        assertCredentials(instanceBinding, this.dbDumperCredentials);
     }
 
     @Test
@@ -133,10 +140,36 @@ public class DbDumperServiceInstanceBindingServiceTest {
         assertThat(instanceBinding).isNotNull();
         assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
         assertThat(instanceBinding.getId()).isEqualTo(bindingId);
-        assertCredentials(instanceBinding);
+        assertCredentials(instanceBinding, this.dbDumperCredentials);
     }
 
-    public void assertCredentials(ServiceInstanceBinding serviceInstanceBinding) {
+    @Test
+    public void when_creating_service_instance_binding_with_service_id_existing_and_with_parameter_to_see_all_dump_to_false_it_should_give_a_correct_service_instance_binding() throws ServiceInstanceBindingExistsException, ServiceBrokerException {
+        when(repositoryInstanceBinding.findOne(anyString())).thenReturn(null);
+        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS, false);
+        ServiceInstanceBinding instanceBinding = this.instanceBindingService.createServiceInstanceBinding(createRequest);
+        assertThat(instanceBinding).isNotNull();
+        assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
+        assertThat(instanceBinding.getId()).isEqualTo(bindingId);
+        assertCredentials(instanceBinding, this.dbDumperCredentials);
+    }
+
+    @Test
+    public void when_creating_service_instance_binding_with_service_id_existing_and_user_ask_to_see_all_dumps_it_should_give_a_correct_service_instance_binding() throws ServiceInstanceBindingExistsException, ServiceBrokerException {
+        when(repositoryInstanceBinding.findOne(anyString())).thenReturn(null);
+        DbDumperCredential dbDumperCredential = this.forgeDbDumperCredential(dbDumperCredentials.size() + 1, true);
+        List<DbDumperCredential> dumperCredentials = Arrays.asList(dbDumperCredential1, dbDumperCredential2, dbDumperCredential3, dbDumperCredential);
+        when(credentials.getDumpsCredentials((DatabaseRef) notNull())).thenReturn(dumperCredentials);
+        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS, true);
+
+        ServiceInstanceBinding instanceBinding = this.instanceBindingService.createServiceInstanceBinding(createRequest);
+        assertThat(instanceBinding).isNotNull();
+        assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
+        assertThat(instanceBinding.getId()).isEqualTo(bindingId);
+        assertCredentials(instanceBinding, dumperCredentials);
+    }
+
+    public void assertCredentials(ServiceInstanceBinding serviceInstanceBinding, List<DbDumperCredential> dbDumperCredentials) {
         Map<String, Object> credentials = serviceInstanceBinding.getCredentials();
         List<Map<String, Object>> dumpFiles = (List<Map<String, Object>>) credentials.get("dumps");
         SimpleDateFormat dateFormater = new SimpleDateFormat(this.dateFormat);

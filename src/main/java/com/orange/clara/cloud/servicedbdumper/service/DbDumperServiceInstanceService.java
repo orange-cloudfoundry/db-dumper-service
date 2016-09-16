@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import static com.orange.clara.cloud.servicedbdumper.helper.ParameterParser.getParameter;
+
 /**
  * Copyright (C) 2015 Orange
  * <p>
@@ -218,9 +220,9 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
-        String srcUrl = this.getParameter(parameters, SRC_URL_PARAMETER, null);
+        String srcUrl = getParameter(parameters, SRC_URL_PARAMETER, null);
         if (srcUrl == null) {
-            srcUrl = this.getParameter(parameters, NEW_SRC_URL_PARAMETER);
+            srcUrl = getParameter(parameters, NEW_SRC_URL_PARAMETER);
         }
         DatabaseRef databaseRef = this.getDatabaseRefFromParams(parameters, srcUrl);
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
@@ -228,18 +230,10 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         this.jobFactory.createJobCreateDump(dbDumperServiceInstance);
     }
 
-    private String getParameter(Map<String, Object> parameters, String parameter) throws ServiceBrokerException {
-        String param = this.getParameter(parameters, parameter, null);
-        if (param == null) {
-            throw new ServiceBrokerException("You need to set '" + parameter + "' parameter.");
-        }
-        return param;
-    }
-
     private DatabaseRef getDatabaseRefFromParams(Map<String, Object> parameters, String dbUrlOrService) throws ServiceBrokerException {
-        String token = this.getParameter(parameters, CF_USER_TOKEN_PARAMETER, null);
-        String org = this.getParameter(parameters, ORG_PARAMETER, null);
-        String space = this.getParameter(parameters, SPACE_PARAMETER, null);
+        String token = getParameter(parameters, CF_USER_TOKEN_PARAMETER, null);
+        String org = getParameter(parameters, ORG_PARAMETER, null);
+        String space = getParameter(parameters, SPACE_PARAMETER, null);
         try {
             return this.databaseRefManager.getDatabaseRef(dbUrlOrService, token, org, space);
         } catch (ServiceKeyException | DatabaseExtractionException e) {
@@ -247,23 +241,12 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
     }
 
-    private String getParameter(Map<String, Object> parameters, String parameter, String defaultValue) throws ServiceBrokerException {
-        if (parameters == null) {
-            return defaultValue;
-        }
-        Object paramObject = parameters.get(parameter);
-        if (paramObject == null) {
-            return defaultValue;
-        }
-        return paramObject.toString();
-    }
-
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
-        String targetUrl = this.getParameter(parameters, TARGET_URL_PARAMETER, null);
+        String targetUrl = getParameter(parameters, TARGET_URL_PARAMETER, null);
         if (targetUrl == null) {
-            targetUrl = this.getParameter(parameters, NEW_TARGET_URL_PARAMETER);
+            targetUrl = getParameter(parameters, NEW_TARGET_URL_PARAMETER);
         }
-        String createdAtString = this.getParameter(parameters, CREATED_AT_PARAMETER, null);
+        String createdAtString = getParameter(parameters, CREATED_AT_PARAMETER, null);
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromParams(parameters, targetUrl);
         if (createdAtString == null || createdAtString.isEmpty()) {
             this.jobFactory.createJobRestoreDump(databaseRefTarget, null, dbDumperServiceInstance);

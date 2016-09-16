@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.service;
 
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
@@ -23,6 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static com.orange.clara.cloud.servicedbdumper.helper.ParameterParser.getParameter;
+
 /**
  * Copyright (C) 2015 Orange
  * <p>
@@ -35,7 +38,7 @@ import java.util.Map;
  */
 @Service
 public class DbDumperServiceInstanceBindingService implements ServiceInstanceBindingService {
-
+    public final static String SEE_ALL_DUMPS = "see_all_dumps";
     @Autowired
     @Qualifier(value = "dateFormat")
     protected String dateFormat;
@@ -63,13 +66,20 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         if (dbDumperServiceInstance == null || dbDumperServiceInstance.isDeleted()) {
             throw new ServiceBrokerException("Cannot find instance: " + request.getServiceInstanceId());
         }
+
         DbDumperServiceInstanceBinding serviceInstanceBinding = new DbDumperServiceInstanceBinding(
                 request.getBindingId(),
                 dbDumperServiceInstance,
                 request.getAppGuid()
         );
+        String seeAllDumps = getParameter(request.getParameters(), SEE_ALL_DUMPS, null);
+        Map<String, Object> credentials = null;
+        if (seeAllDumps == null || seeAllDumps.equals("false")) {
+            credentials = this.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
+        } else {
+            credentials = this.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef());
+        }
 
-        Map<String, Object> credentials = this.getCredentials(serviceInstanceBinding.getDbDumperServiceInstance());
         repositoryInstanceBinding.save(serviceInstanceBinding);
         return new ServiceInstanceBinding(
                 request.getBindingId(),
@@ -99,8 +109,12 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         return serviceInstanceBinding;
     }
 
+    private Map<String, Object> getCredentials(DatabaseRef databaseRef) {
+        return this.extractCredentials(this.credentials.getDumpsCredentials(databaseRef));
+    }
+
     private Map<String, Object> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
-        return this.extractCredentials(this.credentials.getCredentials(dbDumperServiceInstance));
+        return this.extractCredentials(this.credentials.getDumpsCredentials(dbDumperServiceInstance));
     }
 
     private Map<String, Object> extractCredentials(List<DbDumperCredential> dbDumperCredentials) {
