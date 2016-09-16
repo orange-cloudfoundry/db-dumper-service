@@ -21,12 +21,19 @@ See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with l
 
 ## Installation in 5 Minutes
 
-1. Download latest release.zip in [releases](/releases) (current: https://github.com/Orange-OpenSource/db-dumper-service/releases/download/v1.1.0/db-dumper-service.zip )
+1. Download latest release.zip in [releases](/releases) 
+
+```sh
+LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/orange-cloudfoundry/db-dumper-service/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+echo "Downloading $LATEST_RELEASE_URL"
+curl -O -L $LATEST_RELEASE_URL
+```
+
 2. Unzip the latest downloaded file
 3. Create a s3 service instance in your cloud foundry instance (e.g for [p-riakcs](http://docs.pivotal.io/p-riakcs/): `cf cs p-riakcs developer riak-db-dumper-service`)
 4. Create a database service instance in your cloud foundry instance (e.g for [p-mysql](http://docs.pivotal.io/p-mysql/): `cf cs p-mysql 100mb mysql-db-dumper-service`)
 5. Update the manifest (`manifest.yml`) file in the unzipped folder (**Note**: If you don't want to use uaa to protect access to dashboards, remove *uaa* profile from `spring_profiles_active`)
-6. Add cloudfoundry user which has access role for db-dumper-service following `cf_admin_user` and `cf_admin_password` var in manifest (This required to lookup databases by their service name using CC API)
+6. Add cloudfoundry API user following `cf_admin_user` and `cf_admin_password` var in manifest (This required for db-dumper to lookup databases by their service name using CC API. A  ``cloudcontroller.read`` permission is required on all spaces with db instances to dump. Alternatively, ``cloudcontroller.admin`` permission could be granted to this user to access any service instance in any space)
 7. Push to your Cloud Foundry (in the manifest.yml folder: `cf push`)
 8. Register and enable the service broker with:
 ```
@@ -112,9 +119,9 @@ cf update-service test -c '{"action": "restore", "db":"my-mysql-restore-db", "cf
 ```
 
 
-### Update a dump
+### Add a new dump
 
-If you want to update a dump you can use this command but it will replace your actual dump:
+If you want to create a new dump you can use this command:
 
 ```
 cf update-service test -c '{"action": "dump"}'
