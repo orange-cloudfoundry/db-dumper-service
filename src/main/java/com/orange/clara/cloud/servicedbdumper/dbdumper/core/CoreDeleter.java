@@ -2,7 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +31,8 @@ public class CoreDeleter extends AbstractCoreDbAction implements Deleter {
 
     @Override
     @Transactional
-    public void deleteAll(DatabaseRef databaseRef) {
-        List<DatabaseDumpFile> databaseDumpFileList = new ArrayList<>(databaseRef.getDatabaseDumpFiles());
+    public void deleteAll(DbDumperServiceInstance dbDumperServiceInstance) {
+        List<DatabaseDumpFile> databaseDumpFileList = new ArrayList<>(dbDumperServiceInstance.getDatabaseDumpFiles());
         databaseDumpFileList.forEach(this::delete);
     }
 
@@ -40,14 +40,14 @@ public class CoreDeleter extends AbstractCoreDbAction implements Deleter {
     @Transactional
     public void delete(DatabaseDumpFile databaseDumpFile) {
         String fileName = this.getFileName(databaseDumpFile);
-        DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
+        DbDumperServiceInstance dbDumperServiceInstance = databaseDumpFile.getDbDumperServiceInstance();
         this.filer.delete(fileName);
         logger.info(String.format("Delete file '%s' from s3", fileName));
 
-        databaseRef.removeDatabaseDumpFile(databaseDumpFile);
-        logger.info(String.format("Delete file '%s' from database_ref '%s'", fileName, databaseRef.getDatabaseName()));
+        dbDumperServiceInstance.removeDatabaseDumpFile(databaseDumpFile);
+        logger.info(String.format("Delete file '%s' from database_ref '%s'", fileName, dbDumperServiceInstance.getDatabaseRef().getDatabaseName()));
 
-        databaseRefRepo.save(databaseRef);
+        serviceInstanceRepo.save(dbDumperServiceInstance);
         this.databaseDumpFileRepo.delete(databaseDumpFile);
         logger.info(String.format("Delete file '%s' from database", fileName));
     }

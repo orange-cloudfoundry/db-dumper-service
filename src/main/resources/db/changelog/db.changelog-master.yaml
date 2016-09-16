@@ -425,3 +425,67 @@ databaseChangeLog:
           onUpdate: CASCADE
           referencedColumnNames: uuid
           referencedTableName: database_service
+  - changeSet:
+      id: 3
+      author: arthurhalet
+      changes:
+      - addColumn:
+          tableName: database_dump_file
+          columns:
+          - column:
+              name: service_instance_id
+              type: varchar(255)
+              constraints:
+                nullable: true
+  - changeSet:
+      id: 4
+      author: arthurhalet
+      changes:
+      - sqlFile:
+          encoding: utf8
+          path: migrate-database-dump-files.sql
+          relativeToChangelogFile: true
+  - changeSet:
+      id: 5
+      author: arthurhalet
+      changes:
+      - addNotNullConstraint:
+          columnDataType: varchar(255)
+          columnName: service_instance_id
+          tableName: database_dump_file
+      - dropNotNullConstraint:
+          tableName: db_dumper_service_instance
+          columnName: database_ref_id
+          columnDataType: varchar(255)
+      - dropUniqueConstraint:
+          constraintName: unique_database_dump_file_created_at
+          tableName: database_dump_file
+      - dropColumn:
+          tableName: database_dump_file
+          columnName: database_ref_id
+      - addUniqueConstraint:
+          columnNames: created_at, service_instance_id
+          constraintName: unique_database_dump_file_created_at
+          tableName: database_dump_file
+      - addForeignKeyConstraint:
+          baseColumnNames: service_instance_id
+          baseTableName: database_dump_file
+          constraintName: fk_database_dump_file_db_dumper_service_instance
+          deferrable: false
+          initiallyDeferred: false
+          onDelete: CASCADE
+          onUpdate: RESTRICT
+          referencedColumnNames: service_instance_id
+          referencedTableName: db_dumper_service_instance
+      - addColumn:
+          tableName: db_dumper_service_instance
+          columns:
+          - column:
+              name: deleted
+              type: boolean
+              defaultValueBoolean: false
+              constraints:
+                nullable: false
+      - dropColumn:
+          columnName: deleted
+          tableName: database_ref

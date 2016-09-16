@@ -27,5 +27,7 @@ public interface Filer {
 
     long getContentLength(String filename);
 
+    boolean exists(String filename);
+
     String getAppendedFileExtension();
 }

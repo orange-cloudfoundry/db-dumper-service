@@ -2,7 +2,6 @@ package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
@@ -42,9 +41,8 @@ public class DeleteDumpTask {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
-        DatabaseRef databaseRef = job.getDatabaseRefSrc();
-        this.deleter.deleteAll(databaseRef);
-        this.jobFactory.createJobDeleteDatabaseRef(job.getDatabaseRefSrc());
+        this.deleter.deleteAll(job.getDbDumperServiceInstance());
+        this.jobFactory.createJobDeleteDbDumperServiceInstance(job.getDbDumperServiceInstance());
 
         job.setJobEvent(JobEvent.FINISHED);
         jobRepo.save(job);

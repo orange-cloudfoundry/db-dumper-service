@@ -2,7 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.fake.dbdumper.mocked;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 
 /**
  * Copyright (C) 2016 Orange
@@ -27,8 +27,8 @@ public class DeleterMock implements Deleter {
     }
 
     @Override
-    public void deleteAll(DatabaseRef databaseRef) {
-        for (DatabaseDumpFile databaseDumpFile : databaseRef.getDatabaseDumpFiles()) {
+    public void deleteAll(DbDumperServiceInstance dbDumperServiceInstance) {
+        for (DatabaseDumpFile databaseDumpFile : dbDumperServiceInstance.getDatabaseDumpFiles()) {
             this.delete(databaseDumpFile);
         }
     }

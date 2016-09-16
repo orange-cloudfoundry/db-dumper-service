@@ -6,6 +6,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -46,7 +47,7 @@ public class RestoreDumpTaskTest extends AbstractTaskTest {
     @Test
     public void when_dump_restore_failed_it_should_update_the_job_to_be_failed() throws ExecutionException, InterruptedException, RestoreException, AsyncTaskException {
         this.assertJobStatusBefore();
-        doThrow(new RestoreException("error")).when(restorer).restore((DatabaseRef) notNull(), (DatabaseRef) notNull(), anyObject());
+        doThrow(new RestoreException("error")).when(restorer).restore((DbDumperServiceInstance) notNull(), (DatabaseRef) notNull(), anyObject());
         Future<Boolean> result = this.restoreDumpTask.runTask(1);
         assertThat(job.getJobEvent()).isEqualTo(JobEvent.ERRORED);
         assertThat(job.getErrorMessage()).isNotEmpty();

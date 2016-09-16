@@ -77,6 +77,11 @@ public class EchoFiler implements Filer {
     }
 
     @Override
+    public boolean exists(String filename) {
+        return false;
+    }
+
+    @Override
     public String getAppendedFileExtension() {
         return "";
     }

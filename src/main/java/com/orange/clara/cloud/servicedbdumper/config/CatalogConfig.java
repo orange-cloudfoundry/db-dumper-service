@@ -128,6 +128,9 @@ public class CatalogConfig {
                 && (this.quotas.get(0).equals("experimental") || this.quotas.get(0).equals("unlimited"))) {
             return Arrays.asList(this.createDefaultPlan(this.quotas.get(0)));
         }
+        if (this.isFree) {
+            return Arrays.asList(this.createDefaultPlan("unlimited"));
+        }
         List<Plan> plans = Lists.newArrayList();
         int formulasSize = this.formulas.size();
         for (int i = 0; i < this.quotas.size(); i++) {
@@ -137,7 +140,7 @@ public class CatalogConfig {
                     quota,
                     "This is a db-dumper-service plan.  All services are created equally.",
                     getPlanMetadata(this.getCostFromQuota(quota, formula)),
-                    this.isFree));
+                    false));
         }
         return plans;
     }

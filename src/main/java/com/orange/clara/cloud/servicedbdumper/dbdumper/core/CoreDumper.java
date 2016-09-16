@@ -6,6 +6,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,13 +34,14 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
     @Override
     @Transactional
-    public void dump(DatabaseRef databaseRef) throws DumpException {
+    public void dump(DbDumperServiceInstance dbDumperServiceInstance) throws DumpException {
+        DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
         try {
             DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseRef);
-            String fileName = this.generateFileName(databaseDriver);
+            String fileName = this.generateFileName(databaseRef, databaseDriver);
             logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
             this.runDump(databaseDriver, databaseRef.getName() + "/" + fileName);
-            this.createDatabaseDumpFile(databaseRef, fileName, databaseDriver.isDumpShowable());
+            this.createDatabaseDumpFile(dbDumperServiceInstance, fileName, databaseDriver.isDumpShowable());
         } catch (Exception e) {
             this.logOutputFromProcess();
             throw new DumpException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
@@ -75,18 +77,18 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
         }
     }
 
-    private void createDatabaseDumpFile(DatabaseRef databaseRef, String fileName, boolean isDumpShowable) {
+    private void createDatabaseDumpFile(DbDumperServiceInstance dbDumperServiceInstance, String fileName, boolean isDumpShowable) {
         SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
         Date today = new Date();
         try {
             today = form.parse(form.format(new Date()));
         } catch (ParseException e) { // should have no error
         }
-        if (this.databaseDumpFileRepo.findByDatabaseRefAndCreatedAt(databaseRef, today) == null) {
+        if (this.databaseDumpFileRepo.findByDbDumperServiceInstanceAndCreatedAt(dbDumperServiceInstance, today) == null) {
             String user = this.generateUser();
             String password = this.generatePassword();
-            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, databaseRef, user, password, isDumpShowable,
-                    this.filer.getContentLength(databaseRef.getName() + "/" + fileName)));
+            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, dbDumperServiceInstance, user, password, isDumpShowable,
+                    this.filer.getContentLength(dbDumperServiceInstance.getDatabaseRef().getName() + "/" + fileName)));
         }
     }
 

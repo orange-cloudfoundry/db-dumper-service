@@ -45,8 +45,9 @@ public class CoreCredentialsTest extends AbstractCoreTester {
     @Test
     public void get_credentials_give_the_right_list_of_db_dumper_credentials() throws DatabaseExtractionException {
         DatabaseRef databaseRef = this.generateDatabaseRef("mysql://mydb.com/database");
-        DatabaseDumpFile databaseDumpFile1 = this.generateDatabaseDumpFile(1, databaseRef);
-        DatabaseDumpFile databaseDumpFile2 = this.generateDatabaseDumpFile(2, databaseRef);
+        DbDumperServiceInstance dbDumperServiceInstance = this.generateDbDumperServiceInstance(databaseRef);
+        DatabaseDumpFile databaseDumpFile1 = this.generateDatabaseDumpFile(1, dbDumperServiceInstance);
+        DatabaseDumpFile databaseDumpFile2 = this.generateDatabaseDumpFile(2, dbDumperServiceInstance);
         Date date = new Date();
         databaseDumpFile1.setCreatedAt(date);
         databaseDumpFile2.setCreatedAt(date);
@@ -54,8 +55,6 @@ public class CoreCredentialsTest extends AbstractCoreTester {
         DbDumperCredential dbDumperCredential1 = new DbDumperCredential(1, date, fakeUrl + "1", fakeUrl + "1", databaseDumpFile1.getFileName(), databaseDumpFile1.getSize(), databaseDumpFile1.getDeleted());
         DbDumperCredential dbDumperCredential2 = new DbDumperCredential(2, date, fakeUrl + "2", fakeUrl + "2", databaseDumpFile2.getFileName(), databaseDumpFile2.getSize(), databaseDumpFile2.getDeleted());
         List<DbDumperCredential> expectedDumperCredentials = Arrays.asList(dbDumperCredential1, dbDumperCredential2);
-
-        DbDumperServiceInstance dbDumperServiceInstance = this.generateDbDumperServiceInstance(databaseRef);
 
         when(urlForge.createDownloadLink(databaseDumpFile1)).thenReturn(fakeUrl + databaseDumpFile1.getId());
         when(urlForge.createDownloadLink(databaseDumpFile2)).thenReturn(fakeUrl + databaseDumpFile2.getId());

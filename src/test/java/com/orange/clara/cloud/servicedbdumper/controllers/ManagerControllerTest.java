@@ -10,10 +10,9 @@ import com.orange.clara.cloud.servicedbdumper.fake.configuration.FilerConfigCont
 import com.orange.clara.cloud.servicedbdumper.fake.dbdumper.mocked.DeleterMock;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseServiceRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperPlan;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.repo.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,6 +85,8 @@ public class ManagerControllerTest {
     @Autowired
     private DbDumperServiceInstanceRepo dbDumperServiceInstanceRepo;
     @Autowired
+    private DbDumperPlanRepo dbDumperPlanRepo;
+    @Autowired
     @Qualifier("testTextForFiler")
     private String textForFiler;
 
@@ -93,29 +94,51 @@ public class ManagerControllerTest {
     @Before
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
+        DbDumperPlan dbDumperPlan = new DbDumperPlan("1", "plan", 100L);
+        dbDumperPlan = dbDumperPlanRepo.save(dbDumperPlan);
+
         dbDumperServiceInstanceRepo.deleteAll();
         databaseDumpFileRepo.deleteAll();
         databaseServiceRepo.deleteAll();
         databaseRefRepo.deleteAll();
         DatabaseRef databaseRef;
-        if (!databaseRefRepo.exists(databaseNameNotShowable)) {
+        DbDumperServiceInstance dbDumperServiceInstance;
+        if (!databaseRefRepo.exists(databaseNameShowable)) {
             databaseRef = new DatabaseRef(databaseNameShowable, URI.create("mysql://foo:bar@mymysql-1/mydb"));
             databaseRefRepo.save(databaseRef);
         } else {
             databaseRef = databaseRefRepo.findOne(databaseNameShowable);
         }
+        if (!dbDumperServiceInstanceRepo.exists(databaseNameShowable)) {
+            dbDumperServiceInstance = new DbDumperServiceInstance(databaseNameShowable, "unlimited", "org", "space", "dashboard", dbDumperPlan);
+        } else {
+            dbDumperServiceInstance = dbDumperServiceInstanceRepo.findOne(databaseNameShowable);
+        }
+        dbDumperServiceInstance.setDatabaseRef(databaseRef);
+        dbDumperServiceInstanceRepo.save(dbDumperServiceInstance);
+
         DatabaseRef databaseRefDeleted;
+        DbDumperServiceInstance dbDumperServiceDeleted;
         if (!databaseRefRepo.exists(databaseNameNotShowable)) {
             databaseRefDeleted = new DatabaseRef(databaseNameNotShowable, URI.create("mysql://foo:bar@mymysql-2/mydb"));
-            databaseRefDeleted.setDeleted(true);
             databaseRefRepo.save(databaseRefDeleted);
         } else {
             databaseRefDeleted = databaseRefRepo.findOne(databaseNameNotShowable);
         }
+
+        if (!dbDumperServiceInstanceRepo.exists(databaseNameNotShowable)) {
+            dbDumperServiceDeleted = new DbDumperServiceInstance(databaseNameNotShowable, "unlimited", "org", "space", "dashboard", dbDumperPlan);
+            dbDumperServiceDeleted.setDeleted(true);
+        } else {
+            dbDumperServiceDeleted = dbDumperServiceInstanceRepo.findOne(databaseNameNotShowable);
+        }
+        dbDumperServiceDeleted.setDatabaseRef(databaseRefDeleted);
+        dbDumperServiceInstanceRepo.save(dbDumperServiceDeleted);
+
         if (databaseDumpFileShowableId != null && databaseDumpFileRepo.exists(databaseDumpFileShowableId)) {
             databaseDumpFileShowable = databaseDumpFileRepo.findOne(databaseDumpFileShowableId);
         } else {
-            databaseDumpFileShowable = new DatabaseDumpFile(fileNameShowable, databaseRef, userShowable, passwordShowable, true, sizeShowable);
+            databaseDumpFileShowable = new DatabaseDumpFile(fileNameShowable, dbDumperServiceInstance, userShowable, passwordShowable, true, sizeShowable);
             databaseDumpFileRepo.save(databaseDumpFileShowable);
             databaseDumpFileShowableId = databaseDumpFileShowable.getId();
         }
@@ -123,14 +146,14 @@ public class ManagerControllerTest {
         if (databaseDumpFileNotShowableId != null && databaseDumpFileRepo.exists(databaseDumpFileNotShowableId)) {
             databaseDumpFileNotShowable = databaseDumpFileRepo.findOne(databaseDumpFileNotShowableId);
         } else {
-            databaseDumpFileNotShowable = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, false, sizeNotShowable);
+            databaseDumpFileNotShowable = new DatabaseDumpFile(fileNameNotShowable, dbDumperServiceInstance, userNotShowable, passwordNotShowable, false, sizeNotShowable);
             databaseDumpFileRepo.save(databaseDumpFileNotShowable);
             databaseDumpFileNotShowableId = databaseDumpFileNotShowable.getId();
         }
         if (databaseDumpFileDeletedId != null && databaseDumpFileRepo.exists(databaseDumpFileDeletedId)) {
             databaseDumpFileDeleted = databaseDumpFileRepo.findOne(databaseDumpFileDeletedId);
         } else {
-            databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, databaseRef, userNotShowable, passwordNotShowable, true, sizeNotShowable);
+            databaseDumpFileDeleted = new DatabaseDumpFile(fileNameNotShowable, dbDumperServiceInstance, userNotShowable, passwordNotShowable, true, sizeNotShowable);
             databaseDumpFileDeleted.setDeleted(true);
             databaseDumpFileRepo.save(databaseDumpFileDeleted);
             databaseDumpFileDeletedId = databaseDumpFileDeleted.getId();
@@ -138,7 +161,7 @@ public class ManagerControllerTest {
         if (databaseDumpFileWithDeletedDbId != null && databaseDumpFileRepo.exists(databaseDumpFileWithDeletedDbId)) {
             databaseDumpFileWithDeletedDb = databaseDumpFileRepo.findOne(databaseDumpFileWithDeletedDbId);
         } else {
-            databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, databaseRefDeleted, userNotShowable, passwordNotShowable, true, sizeNotShowable);
+            databaseDumpFileWithDeletedDb = new DatabaseDumpFile(fileNameNotShowable, dbDumperServiceDeleted, userNotShowable, passwordNotShowable, true, sizeNotShowable);
             databaseDumpFileRepo.save(databaseDumpFileWithDeletedDb);
             databaseDumpFileWithDeletedDbId = databaseDumpFileWithDeletedDb.getId();
         }
@@ -198,13 +221,13 @@ public class ManagerControllerTest {
         DeleterMock deleterMock = (DeleterMock) this.deleter;
         deleterMock.resetNumberCallDelete();
         mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.DELETE_DUMP_FILE_ROOT + "/" + databaseDumpFileShowable.getId()))
-                .andExpect(redirectedUrl(String.format(Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseDumpFileShowable.getDatabaseRef().getName())));
+                .andExpect(redirectedUrl(String.format(Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseDumpFileShowable.getDbDumperServiceInstance().getDatabaseRef().getName())));
 
         mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.DELETE_DUMP_FILE_ROOT + "/" + databaseDumpFileNotShowable.getId()))
-                .andExpect(redirectedUrl(String.format(Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseDumpFileNotShowable.getDatabaseRef().getName())));
+                .andExpect(redirectedUrl(String.format(Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseDumpFileNotShowable.getDbDumperServiceInstance().getDatabaseRef().getName())));
 
         mockMvc.perform(get(Routes.MANAGE_ROOT + Routes.DELETE_DUMP_FILE_ROOT + "/" + databaseDumpFileDeleted.getId()))
-                .andExpect(redirectedUrl(String.format(Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseDumpFileDeleted.getDatabaseRef().getName())));
+                .andExpect(redirectedUrl(String.format(Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/%s", databaseDumpFileDeleted.getDbDumperServiceInstance().getDatabaseRef().getName())));
         assertThat(deleterMock.getNumberCallDelete()).isEqualTo(2);
     }
 

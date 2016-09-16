@@ -28,6 +28,7 @@ public class DatabaseDumpFile {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     private String fileName;
     @Column(name = "created_at")
     private Date createdAt;
@@ -36,8 +37,9 @@ public class DatabaseDumpFile {
     private Date deletedAt;
 
     @ManyToOne
-    @JoinColumn(name = "database_ref_id")
-    private DatabaseRef databaseRef;
+    @JoinColumn(name = "service_instance_id")
+    private DbDumperServiceInstance dbDumperServiceInstance;
+
     private Boolean deleted;
     private Long size;
 
@@ -49,33 +51,33 @@ public class DatabaseDumpFile {
         this.password = "";
     }
 
-    public DatabaseDumpFile(String fileName, DatabaseRef databaseRef, String user, String password, boolean showable, long size) {
+    public DatabaseDumpFile(String fileName, DbDumperServiceInstance dbDumperServiceInstance, String user, String password, boolean showable, long size) {
         this();
         this.fileName = fileName;
         this.user = user;
         this.password = password;
         this.showable = showable;
         this.size = size;
-        this.setDatabaseRef(databaseRef);
+        this.setDbDumperServiceInstance(dbDumperServiceInstance);
     }
 
-    public DatabaseDumpFile(File file, DatabaseRef databaseRef, String user, String password, boolean showable, long size) {
+    public DatabaseDumpFile(File file, DbDumperServiceInstance dbDumperServiceInstance, String user, String password, boolean showable, long size) {
         this();
         this.user = user;
         this.password = password;
         this.showable = showable;
         this.size = size;
         this.setFileName(file);
-        this.setDatabaseRef(databaseRef);
+        this.setDbDumperServiceInstance(dbDumperServiceInstance);
     }
 
-    public DatabaseRef getDatabaseRef() {
-        return databaseRef;
+    public DbDumperServiceInstance getDbDumperServiceInstance() {
+        return dbDumperServiceInstance;
     }
 
-    public void setDatabaseRef(DatabaseRef databaseRef) {
-        this.databaseRef = databaseRef;
-        databaseRef.addDatabaseDumpFile(this);
+    public void setDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+        this.dbDumperServiceInstance = dbDumperServiceInstance;
+        dbDumperServiceInstance.addDatabaseDumpFile(this);
     }
 
     public int getId() {
@@ -90,12 +92,12 @@ public class DatabaseDumpFile {
         return this.fileName;
     }
 
-    public void setFileName(File file) {
-        this.fileName = file.getName();
-    }
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void setFileName(File file) {
+        this.fileName = file.getName();
     }
 
     public File getFile() {

@@ -1,5 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
+import com.google.common.collect.Lists;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +18,18 @@ import java.util.List;
  */
 @Entity
 public class DbDumperServiceInstance {
+    @OneToMany(mappedBy = "dbDumperServiceInstance", fetch = FetchType.EAGER)
+    protected List<DatabaseDumpFile> databaseDumpFiles;
     @Id
     private String serviceInstanceId;
     private String planId;
     private String organizationGuid;
     private String spaceGuid;
     private String dashboardUrl;
-
+    private Boolean deleted;
     @ManyToOne
     @JoinColumn(name = "db_dumper_plan_id")
     private DbDumperPlan dbDumperPlan;
-
     @ManyToOne
     @JoinColumn(name = "database_ref_id")
     private DatabaseRef databaseRef;
@@ -35,7 +38,9 @@ public class DbDumperServiceInstance {
     private List<DbDumperServiceInstanceBinding> dbDumperServiceInstanceBindings;
 
     public DbDumperServiceInstance() {
+        this.deleted = false;
         this.dbDumperServiceInstanceBindings = new ArrayList<>();
+        this.databaseDumpFiles = new ArrayList<>();
     }
 
     public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DbDumperPlan dbDumperPlan) {
@@ -107,6 +112,18 @@ public class DbDumperServiceInstance {
         this.dashboardUrl = dashboardUrl;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
     public DatabaseRef getDatabaseRef() {
         return databaseRef;
     }
@@ -114,6 +131,48 @@ public class DbDumperServiceInstance {
     public void setDatabaseRef(DatabaseRef databaseRef) {
         this.databaseRef = databaseRef;
         this.databaseRef.addDbDumperServiceInstance(this);
+    }
+
+    public List<DatabaseDumpFile> getDatabaseDumpFiles() {
+        return databaseDumpFiles;
+    }
+
+    public void setDatabaseDumpFiles(List<DatabaseDumpFile> databaseDumpFiles) {
+        this.databaseDumpFiles = databaseDumpFiles;
+    }
+
+    public List<DatabaseDumpFile> getDatabaseDumpFilesDeleted() {
+        List<DatabaseDumpFile> databaseDumpFilesDeleted = Lists.newArrayList();
+        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {
+            if (databaseDumpFile.isDeleted()) {
+                databaseDumpFilesDeleted.add(databaseDumpFile);
+            }
+        }
+        return databaseDumpFilesDeleted;
+    }
+
+    public List<DatabaseDumpFile> getDatabaseDumpFilesNotDeleted() {
+        List<DatabaseDumpFile> databaseDumpFilesNotDeleted = Lists.newArrayList();
+        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {
+            if (!databaseDumpFile.isDeleted()) {
+                databaseDumpFilesNotDeleted.add(databaseDumpFile);
+            }
+        }
+        return databaseDumpFilesNotDeleted;
+    }
+
+    public void addDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
+        if (this.databaseDumpFiles.contains(databaseDumpFile)) {
+            return;
+        }
+        this.databaseDumpFiles.add(databaseDumpFile);
+    }
+
+    public void removeDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
+        if (!this.databaseDumpFiles.contains(databaseDumpFile)) {
+            return;
+        }
+        this.databaseDumpFiles.remove(databaseDumpFile);
     }
 
     public DbDumperPlan getDbDumperPlan() {

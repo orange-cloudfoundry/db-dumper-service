@@ -85,6 +85,11 @@ public class S3Filer implements Filer {
     }
 
     @Override
+    public boolean exists(String filename) {
+        return blobStore.blobExists(filename);
+    }
+
+    @Override
     public String getAppendedFileExtension() {
         return "";
     }

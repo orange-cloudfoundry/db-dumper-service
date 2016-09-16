@@ -4,7 +4,9 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDr
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,9 @@ public abstract class AbstractCoreDbAction {
 
     @Autowired
     protected DatabaseDumpFileRepo databaseDumpFileRepo;
+
+    @Autowired
+    protected DbDumperServiceInstanceRepo serviceInstanceRepo;
 
     protected InputStream errorProcess;
     protected InputStream outputProcess;
@@ -138,12 +143,18 @@ public abstract class AbstractCoreDbAction {
     }
 
     protected String getFileName(DatabaseDumpFile databaseDumpFile) {
-        return databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+        return databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
     }
 
-    protected String generateFileName(DatabaseDriver databaseDriver) {
+    protected String generateFileName(DatabaseRef databaseRef, DatabaseDriver databaseDriver) {
         Date d = new Date();
         SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
-        return form.format(d) + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();
+        String filename = form.format(d) + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();
+        int i = 1;
+        while (this.filer.exists(databaseRef.getName() + "/" + filename)) {
+            filename = form.format(d) + "(" + i + ")" + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();
+            i++;
+        }
+        return filename;
     }
 }

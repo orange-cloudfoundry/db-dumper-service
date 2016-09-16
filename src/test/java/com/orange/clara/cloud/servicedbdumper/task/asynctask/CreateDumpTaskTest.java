@@ -4,7 +4,7 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -42,7 +42,7 @@ public class CreateDumpTaskTest extends AbstractTaskTest {
     @Test
     public void when_dump_creation_failed_it_should_update_the_job_to_be_failed() throws DumpException, ExecutionException, InterruptedException, AsyncTaskException {
         this.assertJobStatusBefore();
-        doThrow(new DumpException("error")).when(dumper).dump((DatabaseRef) notNull());
+        doThrow(new DumpException("error")).when(dumper).dump((DbDumperServiceInstance) notNull());
         Future<Boolean> result = this.createDumpTask.runTask(1);
         assertThat(job.getJobEvent()).isEqualTo(JobEvent.ERRORED);
         assertThat(job.getErrorMessage()).isNotEmpty();

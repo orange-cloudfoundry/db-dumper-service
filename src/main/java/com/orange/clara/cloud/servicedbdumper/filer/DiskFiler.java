@@ -82,6 +82,11 @@ public class DiskFiler implements Filer {
     }
 
     @Override
+    public boolean exists(String filename) {
+        return this.getFile(filename).exists();
+    }
+
+    @Override
     public String getAppendedFileExtension() {
         return "";
     }

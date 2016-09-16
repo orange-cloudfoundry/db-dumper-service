@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 
 /**
  * Copyright (C) 2015 Orange
@@ -14,7 +14,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
  * Date: 25/11/2015
  */
 public interface Deleter {
-    void deleteAll(DatabaseRef databaseRef);
+    void deleteAll(DbDumperServiceInstance dbDumperServiceInstance);
 
     void delete(DatabaseDumpFile databaseDumpFile);
 }

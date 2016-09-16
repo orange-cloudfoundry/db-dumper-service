@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 
 import java.util.Date;
 
@@ -16,7 +17,7 @@ import java.util.Date;
  * Date: 24/11/2015
  */
 public interface Restorer {
-    void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget, Date date) throws RestoreException;
+    void restore(DbDumperServiceInstance dbDumperServiceInstance, DatabaseRef databaseRefTarget, Date date) throws RestoreException;
 
-    void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws RestoreException;
+    void restore(DbDumperServiceInstance dbDumperServiceInstance, DatabaseRef databaseRefTarget) throws RestoreException;
 }

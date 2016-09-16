@@ -11,5 +11,5 @@ package com.orange.clara.cloud.servicedbdumper.model;
  * Date: 25/11/2015
  */
 public enum JobType {
-    CREATE_DUMP, DELETE_DUMPS, RESTORE_DUMP, DELETE_DATABASE_REF
+    CREATE_DUMP, DELETE_DUMPS, RESTORE_DUMP, DELETE_DB_DUMPER_SERVICE_INSTANCE
 }

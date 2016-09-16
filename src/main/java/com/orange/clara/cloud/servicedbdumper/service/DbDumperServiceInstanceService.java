@@ -100,20 +100,26 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Override
     public ServiceInstance createServiceInstance(CreateServiceInstanceRequest request) throws ServiceInstanceExistsException, ServiceBrokerException {
         DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
-        if (dbDumperServiceInstance != null) {
+        if (dbDumperServiceInstance != null && !dbDumperServiceInstance.isDeleted()) {
             throw new ServiceInstanceExistsException(new ServiceInstance(request));
         }
         DbDumperPlan dbDumperPlan = dbDumperPlanRepo.findOne(request.getPlanId());
         if (dbDumperPlan == null) {
             throw new ServiceBrokerException("Plan '" + request.getPlanId() + "' is not available.");
         }
-        dbDumperServiceInstance = new DbDumperServiceInstance(
-                request.getServiceInstanceId(),
-                request.getPlanId(),
-                request.getOrganizationGuid(),
-                request.getSpaceGuid(),
-                appUri + DASHBOARD_ROUTE,
-                dbDumperPlan);
+        if (dbDumperServiceInstance != null && dbDumperServiceInstance.isDeleted()) {
+            dbDumperServiceInstance.setDeleted(false);
+        }
+        if (dbDumperServiceInstance == null) {
+            dbDumperServiceInstance = new DbDumperServiceInstance(
+                    request.getServiceInstanceId(),
+                    request.getPlanId(),
+                    request.getOrganizationGuid(),
+                    request.getSpaceGuid(),
+                    appUri + DASHBOARD_ROUTE,
+                    dbDumperPlan);
+        }
+
         this.createDump(request.getParameters(), dbDumperServiceInstance);
         return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbDumperServiceInstance.getDatabaseRef().getName()).withAsync(true);
     }
@@ -121,7 +127,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Override
     public ServiceInstance getServiceInstance(String serviceInstanceId) {
         DbDumperServiceInstance instance = repository.findOne(serviceInstanceId);
-        if (instance == null) {
+        if (instance == null || instance.isDeleted()) {
             return null;
         }
         ServiceInstanceLastOperation serviceInstanceLastOperation = null;
@@ -153,21 +159,20 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     @Transactional
     public ServiceInstance deleteServiceInstance(DeleteServiceInstanceRequest request) throws ServiceBrokerException {
         DbDumperServiceInstance dbDumperServiceInstance = repository.findOne(request.getServiceInstanceId());
-        if (dbDumperServiceInstance == null) {
+        if (dbDumperServiceInstance == null || dbDumperServiceInstance.isDeleted()) {
             logger.warn("The service instance '" + request.getServiceInstanceId() + "' doesn't exist. Defaulting to say to cloud controller that instance is deleted.");
             return new ServiceInstance(request);
         }
         String dbRefName = dbDumperServiceInstance.getDatabaseRef().getName();
         this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
-        DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
-        databaseRef.removeDbDumperServiceInstance(dbDumperServiceInstance);
-        this.databaseRefRepo.save(databaseRef);
+
+
         this.serviceInstanceBindingRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
-        repository.delete(dbDumperServiceInstance);
-        if (databaseRef.getDbDumperServiceInstances().size() == 0) {
-            databaseRef.setDeleted(true);
-        }
-        this.jobFactory.createJobDeleteDatabaseRef(databaseRef);
+
+        dbDumperServiceInstance.setDeleted(true);
+        repository.save(dbDumperServiceInstance);
+
+        this.jobFactory.createJobDeleteDbDumperServiceInstance(dbDumperServiceInstance);
         return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbRefName).withAsync(false);
     }
 
@@ -175,7 +180,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     public ServiceInstance updateServiceInstance(UpdateServiceInstanceRequest request) throws ServiceInstanceUpdateNotSupportedException, ServiceBrokerException, ServiceInstanceDoesNotExistException {
         DbDumperServiceInstance instance = repository.findOne(request.getServiceInstanceId());
         ServiceInstance serviceInstance = new ServiceInstance(request);
-        if (instance == null) {
+        if (instance == null || instance.isDeleted()) {
             throw new ServiceInstanceDoesNotExistException(request.getServiceInstanceId());
         }
         Map<String, Object> parameters = request.getParameters();
@@ -218,10 +223,6 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             srcUrl = this.getParameter(parameters, NEW_SRC_URL_PARAMETER);
         }
         DatabaseRef databaseRef = this.getDatabaseRefFromParams(parameters, srcUrl);
-        if (databaseRef.isDeleted()) {
-            databaseRef.setDeleted(false);
-            databaseRefRepo.save(databaseRef);
-        }
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
         repository.save(dbDumperServiceInstance);
         this.jobFactory.createJobCreateDump(dbDumperServiceInstance);

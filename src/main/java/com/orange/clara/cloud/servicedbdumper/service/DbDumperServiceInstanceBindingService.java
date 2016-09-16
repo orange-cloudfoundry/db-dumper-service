@@ -59,12 +59,13 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
                             request.getAppGuid()
                     ));
         }
-        if (repositoryInstance.findOne(request.getServiceInstanceId()) == null) {
+        DbDumperServiceInstance dbDumperServiceInstance = repositoryInstance.findOne(request.getServiceInstanceId());
+        if (dbDumperServiceInstance == null || dbDumperServiceInstance.isDeleted()) {
             throw new ServiceBrokerException("Cannot find instance: " + request.getServiceInstanceId());
         }
         DbDumperServiceInstanceBinding serviceInstanceBinding = new DbDumperServiceInstanceBinding(
                 request.getBindingId(),
-                repositoryInstance.findOne(request.getServiceInstanceId()),
+                dbDumperServiceInstance,
                 request.getAppGuid()
         );
 

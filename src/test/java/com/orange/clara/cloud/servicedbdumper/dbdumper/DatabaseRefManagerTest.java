@@ -116,13 +116,11 @@ public class DatabaseRefManagerTest {
 
         DatabaseRef updatedDatabaseRef = this.databaseRefManager.updateDatabaseRef(databaseRef);
 
-        assertThat(updatedDatabaseRef.getDatabaseDumpFiles()).hasSize(0);
         assertThat(updatedDatabaseRef.getDatabaseService()).isNull();
         assertThat(updatedDatabaseRef.getName()).isEqualTo(databaseRef.getName());
         assertThat(updatedDatabaseRef.getType()).isEqualTo(databaseRef.getType());
         assertThat(updatedDatabaseRef.getUser()).isEqualTo(databaseRef.getUser());
         assertThat(updatedDatabaseRef.getPassword()).isEqualTo(databaseRef.getPassword());
-        assertThat(updatedDatabaseRef.getDeleted()).isEqualTo(databaseRef.getDeleted());
         assertThat(updatedDatabaseRef.getHost()).isEqualTo(databaseRef.getHost());
         assertThat(updatedDatabaseRef.getDatabaseName()).isEqualTo(databaseRef.getDatabaseName());
     }
@@ -151,7 +149,6 @@ public class DatabaseRefManagerTest {
 
         DatabaseRef updatedDatabaseRef = this.databaseRefManager.updateDatabaseRef(databaseRef);
 
-        assertThat(updatedDatabaseRef.getDatabaseDumpFiles()).hasSize(0);
         assertThat(updatedDatabaseRef.getDatabaseService()).isNotNull();
 
         DatabaseService updatedDatabaseService = updatedDatabaseRef.getDatabaseService();
@@ -160,7 +157,6 @@ public class DatabaseRefManagerTest {
         assertThat(updatedDatabaseRef.getType()).isEqualTo(databaseRef.getType());
         assertThat(updatedDatabaseRef.getUser()).isEqualTo(newUser);
         assertThat(updatedDatabaseRef.getPassword()).isEqualTo(newPassword);
-        assertThat(updatedDatabaseRef.getDeleted()).isEqualTo(databaseRef.getDeleted());
         assertThat(updatedDatabaseRef.getHost()).isEqualTo(newHost);
         assertThat(updatedDatabaseRef.getDatabaseName()).isEqualTo(newDatabaseName);
 
@@ -265,8 +261,6 @@ public class DatabaseRefManagerTest {
 
     private void assertDatabaseRef(DatabaseRef databaseRef, String uuid) {
         assertThat(databaseRef).isNotNull();
-        assertThat(databaseRef.getDatabaseDumpFiles()).hasSize(0);
-        assertThat(databaseRef.getDeleted()).isFalse();
         assertThat(databaseRef.getName()).isEqualTo(uuid);
         assertThat(databaseRef.getHost()).isEqualTo(host);
         assertThat(databaseRef.getPort()).isEqualTo(databaseType.getDefaultPort());

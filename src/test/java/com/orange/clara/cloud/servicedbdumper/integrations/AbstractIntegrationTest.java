@@ -14,7 +14,9 @@ import com.orange.clara.cloud.servicedbdumper.integrations.model.DatabaseAccess;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.utiltest.ReportIntegration;
 import com.orange.clara.cloud.servicedbdumper.utiltest.ReportManager;
 import org.cloudfoundry.community.servicebroker.exception.*;
@@ -84,6 +86,8 @@ abstract public class AbstractIntegrationTest {
 
     @Autowired
     protected DatabaseRefManager databaseRefManager;
+    @Autowired
+    protected DbDumperServiceInstanceRepo serviceInstanceRepo;
     protected DatabaseType currentDatabaseType;
     protected String serviceIdSource;
     protected String serviceIdTarget;
@@ -166,7 +170,7 @@ abstract public class AbstractIntegrationTest {
         }
         Iterable<DatabaseDumpFile> databaseDumpFiles = this.dumpFileRepo.findAll();
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
-            String filePath = databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+            String filePath = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
             try {
                 this.filer.delete(filePath);
                 this.dumpFileRepo.delete(databaseDumpFile);
@@ -289,15 +293,16 @@ abstract public class AbstractIntegrationTest {
         this.dumpAndRestoreTest(databaseType);
     }
 
-    protected InputStream getDatabaseStream(String database) throws DatabaseExtractionException, ServiceKeyException, IOException {
+    protected InputStream getDatabaseStream(String serviceId) throws DatabaseExtractionException, ServiceKeyException, IOException {
         this.loadBeforeAction();
-        DatabaseRef databaseRef = this.databaseRefManager.getDatabaseRef(database, requestForge.getUserToken(), requestForge.getOrg(), requestForge.getSpace());
+        DbDumperServiceInstance dbDumperServiceInstance = this.serviceInstanceRepo.findOne(serviceId);
+        DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
 
-        assertThat(databaseRef.getDatabaseDumpFiles().size() > 0)
-                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", database))
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles().size() > 0)
+                .overridingErrorMessage(String.format("Database '%s' should have least one dump file.", databaseRef.getName()))
                 .isTrue();
-        assertThat(databaseRef.getDatabaseDumpFiles().get(0)).isNotNull();
-        String fileSource = databaseRef.getName() + "/" + databaseRef.getDatabaseDumpFiles().get(databaseRef.getDatabaseDumpFiles().size() - 1).getFileName();
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles().get(0)).isNotNull();
+        String fileSource = databaseRef.getName() + "/" + dbDumperServiceInstance.getDatabaseDumpFiles().get(dbDumperServiceInstance.getDatabaseDumpFiles().size() - 1).getFileName();
 
         this.loadBeforeAction();
         this.databaseRefManager.deleteServiceKey(databaseRef);
@@ -305,11 +310,11 @@ abstract public class AbstractIntegrationTest {
     }
 
     protected InputStream getSourceStream(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
-        return this.getDatabaseStream(this.getDbParamsForDump(databaseType));
+        return this.getDatabaseStream(serviceIdSource);
     }
 
     protected InputStream getTargetStream(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
-        return this.getDatabaseStream(this.getDbParamsForRestore(databaseType));
+        return this.getDatabaseStream(serviceIdTarget);
     }
 
     public void diffSourceAndTargetDatabase(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {

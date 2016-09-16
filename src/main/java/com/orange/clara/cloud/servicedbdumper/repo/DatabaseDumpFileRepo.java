@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.repo;
 
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,13 +21,12 @@ import java.util.List;
 @Repository
 public interface DatabaseDumpFileRepo extends
         PagingAndSortingRepository<DatabaseDumpFile, Integer> {
-    DatabaseDumpFile findFirstByDatabaseRefOrderByCreatedAtDesc(DatabaseRef databaseRef);
 
-    List<DatabaseDumpFile> findByDatabaseRefOrderByCreatedAtDesc(DatabaseRef databaseRef);
+    DatabaseDumpFile findFirstByDbDumperServiceInstanceOrderByCreatedAtDesc(DbDumperServiceInstance dbDumperServiceInstance);
 
     List<DatabaseDumpFile> findByDeletedTrueOrderByDeletedAtAsc();
 
-    DatabaseDumpFile findByDatabaseRefAndCreatedAt(DatabaseRef databaseRef, Date date);
+    DatabaseDumpFile findByDbDumperServiceInstanceAndCreatedAt(DbDumperServiceInstance dbDumperServiceInstance, Date date);
 
-    DatabaseDumpFile findFirstByDatabaseRefAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(DatabaseRef databaseRef, Date date);
+    DatabaseDumpFile findFirstByDbDumperServiceInstanceAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(DbDumperServiceInstance dbDumperServiceInstance, Date date);
 }

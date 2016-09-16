@@ -1,12 +1,10 @@
 package com.orange.clara.cloud.servicedbdumper.task;
 
 import com.orange.clara.cloud.servicedbdumper.exception.JobCreationException;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.Job;
-import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
-import com.orange.clara.cloud.servicedbdumper.model.JobType;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseServiceRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.slf4j.Logger;
@@ -31,9 +29,9 @@ import java.util.List;
  * Date: 25/11/2015
  */
 @Component
-public class ScheduledDeleteDatabaseRefTask {
+public class ScheduledDeleteDbDumperServiceInstanceTask {
 
-    private Logger logger = LoggerFactory.getLogger(ScheduledDeleteDatabaseRefTask.class);
+    private Logger logger = LoggerFactory.getLogger(ScheduledDeleteDbDumperServiceInstanceTask.class);
 
     @Autowired
     private JobRepo jobRepo;
@@ -45,25 +43,28 @@ public class ScheduledDeleteDatabaseRefTask {
     private DatabaseServiceRepo databaseServiceRepo;
 
     @Autowired
+    private DbDumperServiceInstanceRepo serviceInstanceRepo;
+
+    @Autowired
     @Qualifier("jobFactory")
     private JobFactory jobFactory;
 
     @Scheduled(fixedDelay = 5000)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void deleteDatabaseRef() throws JobCreationException {
-        List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DATABASE_REF, JobEvent.START);
+    public void deleteDbDumperServiceInstance() throws JobCreationException {
+        List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DB_DUMPER_SERVICE_INSTANCE, JobEvent.START);
 
         logger.debug("Running: delete database reference scheduled task ...");
 
         for (Job job : jobs) {
             job.setJobEvent(JobEvent.RUNNING);
             jobRepo.save(job);
-            DatabaseRef databaseRef = job.getDatabaseRefSrc();
-            if (!databaseRef.isDeleted()) {
+            DbDumperServiceInstance dbDumperServiceInstance = job.getDbDumperServiceInstance();
+            if (!dbDumperServiceInstance.isDeleted()) {
                 continue;
             }
-            if (databaseRef.getDatabaseDumpFiles().size() > 0) {
-                this.jobFactory.createJobDeleteDumps(databaseRef, null);
+            if (dbDumperServiceInstance.getDatabaseDumpFiles().size() > 0) {
+                this.jobFactory.createJobDeleteDumps(dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);
 
                 job.setJobEvent(JobEvent.FINISHED);
                 jobRepo.save(job);
@@ -71,18 +72,15 @@ public class ScheduledDeleteDatabaseRefTask {
             }
             job.setDatabaseRefSrc(null);
             jobRepo.save(job);
-            if (databaseRef.getDatabaseService() != null) {
-                try {
-                    databaseServiceRepo.delete(databaseRef.getDatabaseService());
-                } catch (Exception e) {
-                    job.setJobEvent(JobEvent.ERRORED);
-                    job.setErrorMessage(e.getMessage());
-                    jobRepo.save(job);
-                    continue;
-                }
-            }
             try {
-                databaseRefRepo.delete(databaseRef);
+                DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
+                databaseRef.removeDbDumperServiceInstance(dbDumperServiceInstance);
+                this.databaseRefRepo.save(databaseRef);
+
+                if (databaseRef.getDbDumperServiceInstances().size() == 0) {
+                    this.deleteDatabaseRef(dbDumperServiceInstance.getDatabaseRef());
+                }
+                serviceInstanceRepo.delete(dbDumperServiceInstance);
             } catch (Exception e) {
                 job.setJobEvent(JobEvent.ERRORED);
                 job.setErrorMessage(e.getMessage());
@@ -90,10 +88,18 @@ public class ScheduledDeleteDatabaseRefTask {
                 continue;
             }
 
+
             job.setJobEvent(JobEvent.FINISHED);
             jobRepo.save(job);
         }
         logger.debug("Finished: delete database reference scheduled task ...");
 
+    }
+
+    private void deleteDatabaseRef(DatabaseRef databaseRef) {
+        if (databaseRef.getDatabaseService() != null) {
+            databaseServiceRepo.delete(databaseRef.getDatabaseService());
+        }
+        databaseRefRepo.delete(databaseRef);
     }
 }

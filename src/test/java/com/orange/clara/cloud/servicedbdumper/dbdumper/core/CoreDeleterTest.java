@@ -2,15 +2,17 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
-import com.orange.clara.cloud.servicedbdumper.fake.filer.EchoFiler;
-import com.orange.clara.cloud.servicedbdumper.fake.databasedrivers.EchoDatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
+import com.orange.clara.cloud.servicedbdumper.fake.databasedrivers.EchoDatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.fake.filer.EchoFiler;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -48,17 +50,23 @@ public class CoreDeleterTest extends AbstractCoreTester {
     @Mock
     DatabaseRefRepo databaseRefRepo;
 
+    @Mock
+    DbDumperServiceInstanceRepo serviceInstanceRepo;
+
     DatabaseRef databaseRef;
 
     DatabaseDumpFile databaseDumpFile;
+
+    DbDumperServiceInstance dbDumperServiceInstance;
 
     @Before
     public void init() throws DatabaseExtractionException {
         initMocks(this);
         databaseRef = this.generateDatabaseRef(DB_URI);
-        databaseDumpFile = this.generateDatabaseDumpFile(1, databaseRef);
-        this.generateDatabaseDumpFile(2, databaseRef);
-        assertThat(databaseRef.getDatabaseDumpFiles()).hasSize(2);
+        dbDumperServiceInstance = this.generateDbDumperServiceInstance(databaseRef);
+        databaseDumpFile = this.generateDatabaseDumpFile(1, dbDumperServiceInstance);
+        this.generateDatabaseDumpFile(2, dbDumperServiceInstance);
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(2);
         DatabaseDriver databaseDriver = new EchoDatabaseDriver();
         Filer filer = new EchoFiler("testit");
         this.coreDeleter.filer = filer;
@@ -68,14 +76,14 @@ public class CoreDeleterTest extends AbstractCoreTester {
     @Test
     public void delete_database_dump_from_database_ref_remove_all_database_dump_from_database_ref() throws CannotFindDatabaseDumperException {
         when(databaseRefRepo.save((DatabaseRef) notNull())).thenReturn(null);
-        this.coreDeleter.deleteAll(databaseRef);
-        assertThat(databaseRef.getDatabaseDumpFiles()).hasSize(0);
+        this.coreDeleter.deleteAll(dbDumperServiceInstance);
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(0);
     }
 
     @Test
     public void delete_database_dump_remove_dump_from_database_ref() throws CannotFindDatabaseDumperException {
         when(databaseRefRepo.save((DatabaseRef) notNull())).thenReturn(null);
         this.coreDeleter.delete(databaseDumpFile);
-        assertThat(databaseRef.getDatabaseDumpFiles()).hasSize(1);
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(1);
     }
 }

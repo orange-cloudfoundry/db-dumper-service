@@ -23,12 +23,12 @@ public abstract class AbstractCoreTester {
         return new DatabaseRef("mydb", URI.create(uri));
     }
 
-    protected DatabaseDumpFile generateDatabaseDumpFile(DatabaseRef databaseRef) throws DatabaseExtractionException {
-        return new DatabaseDumpFile("myfile", databaseRef, "user", "password", true, 1);
+    protected DatabaseDumpFile generateDatabaseDumpFile(DbDumperServiceInstance dbDumperServiceInstance) throws DatabaseExtractionException {
+        return new DatabaseDumpFile("myfile", dbDumperServiceInstance, "user", "password", true, 1);
     }
 
-    protected DatabaseDumpFile generateDatabaseDumpFile(int id, DatabaseRef databaseRef) throws DatabaseExtractionException {
-        DatabaseDumpFile databaseDumpFile = new DatabaseDumpFile("myfile" + id, databaseRef, "user", "password", true, 1);
+    protected DatabaseDumpFile generateDatabaseDumpFile(int id, DbDumperServiceInstance dbDumperServiceInstance) throws DatabaseExtractionException {
+        DatabaseDumpFile databaseDumpFile = new DatabaseDumpFile("myfile" + id, dbDumperServiceInstance, "user", "password", true, 1);
         databaseDumpFile.setId(id);
         return databaseDumpFile;
     }

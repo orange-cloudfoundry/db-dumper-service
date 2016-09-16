@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.task.asynctask;
 
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
@@ -48,8 +49,11 @@ abstract public class AbstractTaskTest {
         initMocks(this);
         job = new Job();
         DatabaseRef databaseRef = new DatabaseRef("service-1", URI.create("mysql://user:pass@mysql.db:3306/mydb"));
+        DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance();
+        dbDumperServiceInstance.setDatabaseRef(databaseRef);
         job.setDatabaseRefSrc(databaseRef);
         job.setDatabaseRefTarget(databaseRef);
+        job.setDbDumperServiceInstance(dbDumperServiceInstance);
         when(jobRepo.findOne(anyInt())).thenReturn(job);
     }
 

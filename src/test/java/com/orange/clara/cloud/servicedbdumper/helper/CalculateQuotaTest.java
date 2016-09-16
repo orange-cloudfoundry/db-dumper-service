@@ -44,8 +44,8 @@ public class CalculateQuotaTest {
         databaseDumpFile2.setSize(size);
         databaseDumpFile1.setId(1);
         databaseDumpFile2.setId(2);
-        databaseRef.addDatabaseDumpFile(databaseDumpFile1);
-        databaseRef.addDatabaseDumpFile(databaseDumpFile2);
+        dbDumperServiceInstance1.addDatabaseDumpFile(databaseDumpFile1);
+        dbDumperServiceInstance1.addDatabaseDumpFile(databaseDumpFile2);
         dbDumperPlan.setSize(planSize);
         dbDumperPlan.setCost(cost);
     }

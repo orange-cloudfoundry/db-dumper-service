@@ -71,6 +71,11 @@ abstract public class AbstractGzipGenericFiler implements Filer {
     }
 
     @Override
+    public boolean exists(String filename) {
+        return this.originalFiler.exists(filename);
+    }
+
+    @Override
     public String getAppendedFileExtension() {
         return ".gzip";
     }

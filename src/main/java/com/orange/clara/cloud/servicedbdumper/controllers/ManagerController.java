@@ -8,6 +8,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,9 +58,9 @@ public class ManagerController {
     @ResponseBody
     public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
-        this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
+        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
         this.checkDumpShowable(databaseDumpFile);
-        String databaseName = databaseDumpFile.getDatabaseRef().getName();
+        String databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName();
         String fileName = databaseDumpFile.getFileName();
         fileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(fileName);
@@ -75,16 +76,16 @@ public class ManagerController {
         return content;
     }
 
-    private void checkDatabaseWithAccessRight(DatabaseRef databaseRef) throws UserAccessRightException {
-        this.checkDatabase(databaseRef);
-        if (!this.userAccessRight.haveAccessToServiceInstance(databaseRef)) {
+    private void checkDbDumperServiceInstanceWithAccessRight(DbDumperServiceInstance dbDumperServiceInstance) throws UserAccessRightException {
+        this.checkDbDumperServiceInstance(dbDumperServiceInstance);
+        if (!this.userAccessRight.haveAccessToServiceInstance(dbDumperServiceInstance)) {
             throw new UserAccessRightException("You don't have access to this instance");
         }
     }
 
-    private void checkDatabase(DatabaseRef databaseRef) throws UserAccessRightException {
-        if (databaseRef.isDeleted()) {
-            throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", databaseRef.getName()));
+    private void checkDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) throws UserAccessRightException {
+        if (dbDumperServiceInstance.isDeleted()) {
+            throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", dbDumperServiceInstance.getDatabaseRef().getName()));
         }
     }
 
@@ -100,9 +101,9 @@ public class ManagerController {
     @RequestMapping(Routes.SHOW_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
-        this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
+        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
         this.checkDumpShowable(databaseDumpFile);
-        String databaseName = databaseDumpFile.getDatabaseRef().getName();
+        String databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName();
         String fileName = databaseDumpFile.getFileName();
         String finalFileName = databaseName + "/" + fileName;
         InputStream inputStream = this.filer.retrieveWithStream(finalFileName);
@@ -114,8 +115,8 @@ public class ManagerController {
             content += "\n";
         }
         br.close();
-        if (databaseDumpFile.getDatabaseRef().getDatabaseService() != null) {
-            databaseName = databaseDumpFile.getDatabaseRef().getDatabaseService().getName();
+        if (databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getDatabaseService() != null) {
+            databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getDatabaseService().getName();
         }
         model.addAttribute("databaseName", databaseName);
         model.addAttribute("fileName", fileName);
@@ -127,8 +128,8 @@ public class ManagerController {
     @RequestMapping(Routes.DELETE_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
     public String delete(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
-        this.checkDatabaseWithAccessRight(databaseDumpFile.getDatabaseRef());
-        DatabaseRef databaseRef = databaseDumpFile.getDatabaseRef();
+        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
+        DatabaseRef databaseRef = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef();
         if (!databaseDumpFile.isDeleted()) {
             this.deleter.delete(databaseDumpFile);
         }
@@ -140,7 +141,8 @@ public class ManagerController {
     public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request, @RequestParam(value = "original", required = false) String original)
             throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
-        this.checkDatabase(databaseDumpFile.getDatabaseRef());
+        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
+        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
         String userRequest = "";
         String passwordRequest = "";
         String authorization = request.getHeader("Authorization");
@@ -158,7 +160,7 @@ public class ManagerController {
             return this.getErrorResponseEntityBasicAuth();
         }
         HttpHeaders respHeaders = new HttpHeaders();
-        String fileName = databaseDumpFile.getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+        String fileName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         InputStream inputStream = null;
         if (original == null || original.isEmpty()) {

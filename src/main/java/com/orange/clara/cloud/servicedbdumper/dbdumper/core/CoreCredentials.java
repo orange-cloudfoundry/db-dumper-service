@@ -28,7 +28,7 @@ public class CoreCredentials implements Credentials {
     @Override
     public List<DbDumperCredential> getCredentials(DbDumperServiceInstance dbDumperServiceInstance) {
         List<DbDumperCredential> dbDumperCredentials = new ArrayList<>();
-        List<DatabaseDumpFile> databaseDumpFiles = dbDumperServiceInstance.getDatabaseRef().getDatabaseDumpFiles();
+        List<DatabaseDumpFile> databaseDumpFiles = dbDumperServiceInstance.getDatabaseDumpFiles();
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
             dbDumperCredentials.add(new DbDumperCredential(
                     databaseDumpFile.getId(),

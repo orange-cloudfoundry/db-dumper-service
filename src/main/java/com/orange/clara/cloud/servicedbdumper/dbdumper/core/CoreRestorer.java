@@ -8,6 +8,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +33,10 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
 
     @Override
     @Transactional
-    public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget, Date date) throws RestoreException {
+    public void restore(DbDumperServiceInstance dbDumperServiceInstance, DatabaseRef databaseRefTarget, Date date) throws RestoreException {
+        DatabaseRef databaseRefSource = dbDumperServiceInstance.getDatabaseRef();
         logger.info("Restoring dump file from " + databaseRefSource.getName() + " to " + databaseRefTarget.getName() + " ...");
-        DatabaseDumpFile dumpFile = this.findDumpFile(databaseRefSource, date);
+        DatabaseDumpFile dumpFile = this.findDumpFile(dbDumperServiceInstance, date);
         if (dumpFile == null) {
             throw new RestoreCannotFindFileException(databaseRefSource);
         }
@@ -50,8 +52,8 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
     }
 
     @Override
-    public void restore(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws RestoreException {
-        this.restore(databaseRefSource, databaseRefTarget, null);
+    public void restore(DbDumperServiceInstance dbDumperServiceInstance, DatabaseRef databaseRefTarget) throws RestoreException {
+        this.restore(dbDumperServiceInstance, databaseRefTarget, null);
     }
 
 
@@ -80,10 +82,10 @@ public class CoreRestorer extends AbstractCoreDbAction implements Restorer {
         return dbDumpersFactory.getDatabaseDumper(databaseRefTarget);
     }
 
-    private DatabaseDumpFile findDumpFile(DatabaseRef databaseRefSource, Date date) {
+    private DatabaseDumpFile findDumpFile(DbDumperServiceInstance dbDumperServiceInstance, Date date) {
         if (date == null) {
-            return this.databaseDumpFileRepo.findFirstByDatabaseRefOrderByCreatedAtDesc(databaseRefSource);
+            return this.databaseDumpFileRepo.findFirstByDbDumperServiceInstanceOrderByCreatedAtDesc(dbDumperServiceInstance);
         }
-        return this.databaseDumpFileRepo.findFirstByDatabaseRefAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(databaseRefSource, date);
+        return this.databaseDumpFileRepo.findFirstByDbDumperServiceInstanceAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(dbDumperServiceInstance, date);
     }
 }

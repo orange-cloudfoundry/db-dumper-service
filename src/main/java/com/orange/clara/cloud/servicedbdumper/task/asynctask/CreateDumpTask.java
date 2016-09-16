@@ -43,7 +43,7 @@ public class CreateDumpTask {
     public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
         try {
-            this.dumper.dump(job.getDatabaseRefSrc());
+            this.dumper.dump(job.getDbDumperServiceInstance());
         } catch (DumpException e) {
             logger.error(String.format("Cannot create dump for '%s': %s", job.getDatabaseRefSrc().getName(), e.getMessage()));
             job.setJobEvent(JobEvent.ERRORED);

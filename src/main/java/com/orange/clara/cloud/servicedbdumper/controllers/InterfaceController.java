@@ -65,14 +65,29 @@ public class InterfaceController {
     private List<DatabaseRef> filteringDatabaseRef(List<DatabaseRef> databaseRefs) throws UserAccessRightException {
         List<DatabaseRef> databaseRefsFinal = Lists.newArrayList();
         for (DatabaseRef databaseRef : databaseRefs) {
-            if (databaseRef.isDeleted()
-                    || databaseRef.getDbDumperServiceInstances() == null
+            if (databaseRef.getDbDumperServiceInstances() == null
                     || !this.userAccessRight.haveAccessToServiceInstance(databaseRef)) {
+                continue;
+            }
+            List<DbDumperServiceInstance> serviceInstances = databaseRef.getDbDumperServiceInstances();
+            databaseRef.setDbDumperServiceInstances(this.filteringDbDumperServiceInstance(serviceInstances));
+            if (databaseRef.getDbDumperServiceInstances().size() == 0) {
                 continue;
             }
             databaseRefsFinal.add(databaseRef);
         }
         return databaseRefsFinal;
+    }
+
+    private List<DbDumperServiceInstance> filteringDbDumperServiceInstance(List<DbDumperServiceInstance> serviceInstances) throws UserAccessRightException {
+        List<DbDumperServiceInstance> serviceInstancesFinal = Lists.newArrayList();
+        for (DbDumperServiceInstance serviceInstance : serviceInstances) {
+            if (!this.userAccessRight.haveAccessToServiceInstance(serviceInstance)) {
+                continue;
+            }
+            serviceInstancesFinal.add(serviceInstance);
+        }
+        return serviceInstancesFinal;
     }
 
     @RequestMapping(Routes.MANAGE_LIST + "/{instanceId}")
@@ -82,7 +97,7 @@ public class InterfaceController {
             throw new UserAccessRightException("You don't have access to this instance");
         }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
-        if (serviceInstance != null && !serviceInstance.getDatabaseRef().isDeleted()) {
+        if (serviceInstance != null) {
             databaseRefs.add(serviceInstance.getDatabaseRef());
         }
         model.addAttribute("databaseRefs", databaseRefs);
@@ -102,9 +117,11 @@ public class InterfaceController {
             throw new UserAccessRightException("You don't have access to this instance");
         }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
-        if (!databaseRef.isDeleted()) {
-            databaseRefs.add(databaseRef);
-        }
+        databaseRefs.add(databaseRef);
+
+        List<DbDumperServiceInstance> serviceInstances = databaseRef.getDbDumperServiceInstances();
+        databaseRef.setDbDumperServiceInstances(this.filteringDbDumperServiceInstance(serviceInstances));
+
         model.addAttribute("databaseRefs", databaseRefs);
         model.addAttribute("urlForge", urlForge);
         model.addAttribute("currency", currency);

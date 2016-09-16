@@ -3,7 +3,7 @@
 name: db-dumper-service
 memory: 1G
 instances: 2 # db-dumper-service handle n instances
-path: ./target/db-dumper-service-1.2.1.war
+path: ./target/db-dumper-service-1.3.0.war
 host: db-dumper-service
 timeout: 180
 env:
@@ -16,7 +16,6 @@ env:
   cf_admin_user: dbdump3rus3r # user login of a cloudfoundry user for db-dumper-service
   cf_admin_password: dbdump3rpassw0rd # user password of a cloudfoundry user for db-dumper-service
   filer_type: GzipS3 # this is create a compressed dump and send to S3 -- other value is: S3 (this will send dump to S3 without compression)
-  dump_delete_expiration_days: 5
   use_ssl: false # If you will be on https set this value to true
   CF_TARGET: https://your.uaa.url.com # url of your uaa (set it if you want to also use uaa)
   cloud_controller_url: https://your.api.cf.url.com # url of your cloudfoundry api

@@ -5,10 +5,9 @@ import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumper
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.integrations.config.FakeCloudFoundryClientConfig;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.utiltest.ReportIntegration;
 import org.cloudfoundry.community.servicebroker.exception.*;
 import org.junit.Before;
@@ -43,8 +42,6 @@ import static org.fest.assertions.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class DeleteAfterPeriodDumpFromUriIT extends DumpAndRestoreDatabaseFromServiceNameToUriWithFakeCloudFoundryClientIT {
 
-    @Autowired
-    protected DbDumperServiceInstanceRepo serviceInstanceRepo;
 
     @Autowired
     protected DatabaseRefRepo databaseRefRepo;
@@ -99,26 +96,27 @@ public class DeleteAfterPeriodDumpFromUriIT extends DumpAndRestoreDatabaseFromSe
         logger.info("Dump database source finished");
 
         assertThat(this.serviceInstanceRepo.exists(serviceIdSource)).isTrue();
-        String databaseRefSourceName = this.serviceInstanceRepo.findOne(serviceIdSource).getDatabaseRef().getName();
+        DbDumperServiceInstance dbDumperServiceInstance = this.serviceInstanceRepo.findOne(serviceIdSource);
+        String databaseRefSourceName = dbDumperServiceInstance.getDatabaseRef().getName();
 
         this.deleteServiceInstance(serviceIdSource);
         logger.info("Service {} deleted", serviceIdSource);
 
         assertThat(this.databaseRefRepo.exists(databaseRefSourceName)).isTrue();
-        DatabaseRef databaseRefSource = this.databaseRefRepo.findOne(databaseRefSourceName);
-        assertThat(databaseRefSource.getDeleted()).isTrue();
-        assertThat(databaseRefSource.getDatabaseDumpFiles()).hasSize(1);
-        assertThat(databaseRefSource.getDatabaseDumpFiles().get(0).getDeleted()).isFalse();
+        dbDumperServiceInstance = this.serviceInstanceRepo.findOne(serviceIdSource);
+        assertThat(dbDumperServiceInstance.getDeleted()).isTrue();
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(1);
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles().get(0).getDeleted()).isFalse();
 
         this.loadBeforeAction();
         createSourceDatabaseDump(databaseType);
         logger.info("Dump database source after deletion finished");
 
         assertThat(this.databaseRefRepo.exists(databaseRefSourceName)).isTrue();
-        databaseRefSource = this.databaseRefRepo.findOne(databaseRefSourceName);
-        assertThat(databaseRefSource.getDeleted()).isFalse();
-        assertThat(databaseRefSource.getDatabaseDumpFiles()).hasSize(2);
-        assertThat(databaseRefSource.getDatabaseDumpFiles().get(0).getDeleted()).isFalse();
-        assertThat(databaseRefSource.getDatabaseDumpFiles().get(1).getDeleted()).isFalse();
+        dbDumperServiceInstance = this.serviceInstanceRepo.findOne(serviceIdSource);
+        assertThat(dbDumperServiceInstance.getDeleted()).isFalse();
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(2);
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles().get(0).getDeleted()).isFalse();
+        assertThat(dbDumperServiceInstance.getDatabaseDumpFiles().get(1).getDeleted()).isFalse();
     }
 }

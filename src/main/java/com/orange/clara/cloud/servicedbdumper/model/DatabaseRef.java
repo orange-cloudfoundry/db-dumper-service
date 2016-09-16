@@ -1,6 +1,5 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
-import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
 
@@ -30,10 +29,7 @@ public class DatabaseRef {
     protected String databaseName;
     @Enumerated(EnumType.STRING)
     protected DatabaseType type;
-    @OneToMany(mappedBy = "databaseRef", fetch = FetchType.EAGER)
-    protected List<DatabaseDumpFile> databaseDumpFiles;
     protected Integer port;
-    private Boolean deleted;
 
     @OneToOne
     @JoinColumn(name = "database_service_id")
@@ -43,8 +39,6 @@ public class DatabaseRef {
     private List<DbDumperServiceInstance> dbDumperServiceInstances;
 
     public DatabaseRef() {
-        this.deleted = false;
-        this.databaseDumpFiles = new ArrayList<>();
         this.dbDumperServiceInstances = new ArrayList<>();
     }
 
@@ -150,45 +144,6 @@ public class DatabaseRef {
         this.type = type;
     }
 
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public Boolean isDeleted() {
-        return deleted;
-    }
-
-    public List<DatabaseDumpFile> getDatabaseDumpFiles() {
-        return databaseDumpFiles;
-    }
-
-    public void setDatabaseDumpFiles(List<DatabaseDumpFile> databaseDumpFiles) {
-        this.databaseDumpFiles = databaseDumpFiles;
-    }
-
-    public List<DatabaseDumpFile> getDatabaseDumpFilesDeleted() {
-        List<DatabaseDumpFile> databaseDumpFilesDeleted = Lists.newArrayList();
-        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {
-            if (databaseDumpFile.isDeleted()) {
-                databaseDumpFilesDeleted.add(databaseDumpFile);
-            }
-        }
-        return databaseDumpFilesDeleted;
-    }
-
-    public List<DatabaseDumpFile> getDatabaseDumpFilesNotDeleted() {
-        List<DatabaseDumpFile> databaseDumpFilesNotDeleted = Lists.newArrayList();
-        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {
-            if (!databaseDumpFile.isDeleted()) {
-                databaseDumpFilesNotDeleted.add(databaseDumpFile);
-            }
-        }
-        return databaseDumpFilesNotDeleted;
-    }
 
     public void addDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
         if (this.dbDumperServiceInstances.contains(dbDumperServiceInstance)) {
@@ -202,20 +157,6 @@ public class DatabaseRef {
             return;
         }
         this.dbDumperServiceInstances.remove(dbDumperServiceInstance);
-    }
-
-    public void addDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
-        if (this.databaseDumpFiles.contains(databaseDumpFile)) {
-            return;
-        }
-        this.databaseDumpFiles.add(databaseDumpFile);
-    }
-
-    public void removeDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
-        if (!this.databaseDumpFiles.contains(databaseDumpFile)) {
-            return;
-        }
-        this.databaseDumpFiles.remove(databaseDumpFile);
     }
 
     public List<DbDumperServiceInstance> getDbDumperServiceInstances() {
@@ -263,9 +204,7 @@ public class DatabaseRef {
                 ", host='" + host + '\'' +
                 ", databaseName='" + databaseName + '\'' +
                 ", type=" + type +
-                ", databaseDumpFiles=" + databaseDumpFiles +
                 ", port=" + port +
-                ", deleted=" + deleted +
                 ", databaseService=" + databaseService +
                 ", dbDumperServiceInstances=" + dbDumperServiceInstances +
                 '}';

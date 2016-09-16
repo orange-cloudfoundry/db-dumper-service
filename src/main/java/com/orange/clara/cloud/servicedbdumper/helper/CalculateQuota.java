@@ -29,6 +29,7 @@ public class CalculateQuota {
         return size;
     }
 
+
     public static Float calculateFullPrice(DatabaseRef databaseRef) {
         Float price = 0.0F;
         for (DbDumperServiceInstance dbDumperServiceInstance : databaseRef.getDbDumperServiceInstances()) {
@@ -39,7 +40,15 @@ public class CalculateQuota {
     }
 
     public static Long calculateQuotaFree(DbDumperServiceInstance dbDumperServiceInstance) {
-        return calculateQuotaFree(dbDumperServiceInstance.getDatabaseRef());
+        DbDumperPlan dbDumperPlan = dbDumperServiceInstance.getDbDumperPlan();
+        if (dbDumperPlan.getSize() == null) {
+            return 0L;
+        }
+        Long quota = dbDumperPlan.getSize();
+        if (quota == null || quota == 0L) {
+            return 0L;
+        }
+        return quota - calculateDumpFullSize(dbDumperServiceInstance);
     }
 
     public static Long calculateQuotaFree(DatabaseRef databaseRef) {
@@ -51,7 +60,16 @@ public class CalculateQuota {
     }
 
     public static Long calculateQuotaUsedInPercent(DbDumperServiceInstance dbDumperServiceInstance) {
-        return calculateQuotaUsedInPercent(dbDumperServiceInstance.getDatabaseRef());
+        DbDumperPlan dbDumperPlan = dbDumperServiceInstance.getDbDumperPlan();
+        if (dbDumperPlan.getSize() == null) {
+            return 0L;
+        }
+        Long quota = dbDumperPlan.getSize();
+        Long percent = calculateDumpFullSize(dbDumperServiceInstance) * 100 / quota;
+        if (percent > 100) {
+            return 100L;
+        }
+        return percent;
     }
 
     public static Long calculateQuotaUsedInPercent(DatabaseRef databaseRef) {
@@ -67,13 +85,17 @@ public class CalculateQuota {
     }
 
     public static Long calculateDumpFullSize(DbDumperServiceInstance dbDumperServiceInstance) {
-        return calculateDumpFullSize(dbDumperServiceInstance.getDatabaseRef());
+        Long size = 0L;
+        for (DatabaseDumpFile databaseDumpFile : dbDumperServiceInstance.getDatabaseDumpFiles()) {
+            size += databaseDumpFile.getSize();
+        }
+        return size;
     }
 
     public static Long calculateDumpFullSize(DatabaseRef databaseRef) {
         Long size = 0L;
-        for (DatabaseDumpFile databaseDumpFile : databaseRef.getDatabaseDumpFiles()) {
-            size += databaseDumpFile.getSize();
+        for (DbDumperServiceInstance dbDumperServiceInstance : databaseRef.getDbDumperServiceInstances()) {
+            size += calculateDumpFullSize(dbDumperServiceInstance);
         }
         return size;
     }

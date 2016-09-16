@@ -43,7 +43,7 @@ public class RestoreDumpTask {
     public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
         try {
-            this.restorer.restore(job.getDatabaseRefSrc(), job.getDatabaseRefTarget(), job.getDumpDate());
+            this.restorer.restore(job.getDbDumperServiceInstance(), job.getDatabaseRefTarget(), job.getDumpDate());
         } catch (RestoreException e) {
             logger.error(String.format("Cannot restore dump for '%s' in '%s': %s", job.getDatabaseRefSrc().getDatabaseName(), job.getDatabaseRefTarget().getDatabaseName(), e.getMessage()));
             job.setJobEvent(JobEvent.ERRORED);
