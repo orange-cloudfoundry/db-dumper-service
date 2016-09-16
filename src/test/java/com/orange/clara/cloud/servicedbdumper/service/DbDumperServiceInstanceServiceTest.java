@@ -45,7 +45,6 @@ public class DbDumperServiceInstanceServiceTest {
     private final static String spaceId = "space-1";
     private final static String targetDatabase = "mysql://foo:bar@mysql.com:3306/mydb";
     private final static DbDumperPlan dbDumperPlan = new DbDumperPlan();
-    private final static DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance();
     private final static Map<String, Object> params = Maps.newHashMap();
     private final static CreateServiceInstanceRequest createRequest = new CreateServiceInstanceRequest(serviceDefinitionId, planId, orgId, spaceId, true, params).withServiceInstanceId(serviceId);
     private final static UpdateServiceInstanceRequest updateRequest = new UpdateServiceInstanceRequest(planId, true, params).withInstanceId(serviceId);
@@ -66,11 +65,13 @@ public class DbDumperServiceInstanceServiceTest {
     DatabaseRefRepo databaseRefRepo;
     @Mock
     DbDumperPlanRepo dbDumperPlanRepo;
+    private DbDumperServiceInstance dbDumperServiceInstance;
     private DatabaseRef databaseRef;
 
     @Before
     public void init() throws DatabaseExtractionException, ServiceKeyException {
         initMocks(this);
+        dbDumperServiceInstance = new DbDumperServiceInstance();
         params.clear();
         databaseRef = new DatabaseRef(serviceId, URI.create(targetDatabase));
         dbDumperServiceInstance.setDatabaseRef(databaseRef);

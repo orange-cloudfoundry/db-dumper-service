@@ -78,7 +78,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
         instanceBindingService.dateFormat = this.dateFormat;
 
         when(repositoryInstance.findOne(anyString())).thenReturn(dbDumperServiceInstance);
-        when(credentials.getCredentials((DbDumperServiceInstance) notNull())).thenReturn(dbDumperCredentials);
+        when(credentials.getDumpsCredentials((DbDumperServiceInstance) notNull())).thenReturn(dbDumperCredentials);
     }
 
     @Test

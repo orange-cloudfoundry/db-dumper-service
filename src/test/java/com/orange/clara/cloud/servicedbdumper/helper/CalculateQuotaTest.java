@@ -37,15 +37,20 @@ public class CalculateQuotaTest {
     @Before
     public void init() {
         dbDumperServiceInstance1.setDbDumperPlan(dbDumperPlan);
-        dbDumperServiceInstance2.setDbDumperPlan(dbDumperPlan);
         dbDumperServiceInstance1.setDatabaseRef(databaseRef);
+
         dbDumperServiceInstance2.setDatabaseRef(databaseRef);
+        dbDumperServiceInstance2.setDbDumperPlan(dbDumperPlan);
+
         databaseDumpFile1.setSize(size);
-        databaseDumpFile2.setSize(size);
         databaseDumpFile1.setId(1);
+
+        databaseDumpFile2.setSize(size);
         databaseDumpFile2.setId(2);
+
         dbDumperServiceInstance1.addDatabaseDumpFile(databaseDumpFile1);
         dbDumperServiceInstance1.addDatabaseDumpFile(databaseDumpFile2);
+
         dbDumperPlan.setSize(planSize);
         dbDumperPlan.setCost(cost);
     }
@@ -76,10 +81,10 @@ public class CalculateQuotaTest {
 
     @Test
     public void testCalculateQuotaFreeFromDbServiceInstance() throws Exception {
-        assertThat(calculateQuotaFree(dbDumperServiceInstance1)).isEqualTo(1848);
+        assertThat(calculateQuotaFree(dbDumperServiceInstance1)).isEqualTo(planSize - 2 * size);
 
-        databaseRef.setDbDumperServiceInstances(Lists.newArrayList());
-        assertThat(calculateQuotaFree(dbDumperServiceInstance1)).isEqualTo(0L);
+        dbDumperServiceInstance1.setDatabaseDumpFiles(Lists.newArrayList());
+        assertThat(calculateQuotaFree(dbDumperServiceInstance1)).isEqualTo(1024L);
     }
 
     @Test
@@ -92,9 +97,9 @@ public class CalculateQuotaTest {
 
     @Test
     public void testCalculateQuotaUsedInPercentFromDbServiceInstance() throws Exception {
-        assertThat(calculateQuotaUsedInPercent(dbDumperServiceInstance1)).isEqualTo(9);
+        assertThat(calculateQuotaUsedInPercent(dbDumperServiceInstance1)).isEqualTo(19);
 
-        databaseRef.setDbDumperServiceInstances(Lists.newArrayList());
+        dbDumperServiceInstance1.setDatabaseDumpFiles(Lists.newArrayList());
         assertThat(calculateQuotaUsedInPercent(dbDumperServiceInstance1)).isEqualTo(0);
     }
 
@@ -110,7 +115,7 @@ public class CalculateQuotaTest {
     public void testCalculateDumpFullSizeFromDbServiceInstance() throws Exception {
         assertThat(calculateDumpFullSize(dbDumperServiceInstance1)).isEqualTo(200);
 
-        databaseRef.setDbDumperServiceInstances(Lists.newArrayList());
+        dbDumperServiceInstance1.setDatabaseDumpFiles(Lists.newArrayList());
         assertThat(calculateQuotaUsedInPercent(dbDumperServiceInstance1)).isEqualTo(0);
     }
 }
