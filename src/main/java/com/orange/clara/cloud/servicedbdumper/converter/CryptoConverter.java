@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.security;
+package com.orange.clara.cloud.servicedbdumper.converter;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;

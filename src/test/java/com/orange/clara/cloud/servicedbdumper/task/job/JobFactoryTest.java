@@ -105,6 +105,18 @@ public class JobFactoryTest {
     }
 
     @Test
+    public void when_create_job_with_metadata_provided_it_should_create_a_job_with_metadate() {
+        Metadata metadata = new Metadata();
+        metadata.setTags(Arrays.asList("mytag"));
+        DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance();
+        jobFactory.createJobCreateDump(dbDumperServiceInstance, metadata);
+        assertThat(job).isNotNull();
+        assertThat(job.getMetadata()).isNotNull();
+        assertThat(job.getMetadata().getTags()).hasSize(1);
+        assertThat(job.getMetadata().getTags().get(0)).isEqualTo("mytag");
+    }
+
+    @Test
     public void when_create_job_with_database_ref_source_and_target_and_job_with_same_shape_already_exists_it_should_create_a_started_job() {
         DatabaseRef databaseRef = new DatabaseRef();
         DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance();

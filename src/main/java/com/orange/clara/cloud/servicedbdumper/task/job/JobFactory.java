@@ -40,7 +40,7 @@ public class JobFactory {
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
+    public Job createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
         Job job = new Job(jobType, databaseRefSrc, databaseRefTarget, dumpDate, dbDumperServiceInstance);
         if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.START, databaseRefSrc, databaseRefTarget).size() > 0
                 || this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.RUNNING, databaseRefSrc, databaseRefTarget).size() > 0) {
@@ -53,11 +53,11 @@ public class JobFactory {
                     )
             );
         }
-        this.jobRepo.save(job);
+        return this.jobRepo.save(job);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createJobWithDatabaseRefSrc(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+    public Job createJobWithDatabaseRefSrc(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
         Job job = new Job(jobType, databaseRefSrc, dbDumperServiceInstance);
         if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.START, databaseRefSrc).size() > 0
                 || this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.RUNNING, databaseRefSrc).size() > 0) {
@@ -69,7 +69,7 @@ public class JobFactory {
                     )
             );
         }
-        this.jobRepo.save(job);
+        return this.jobRepo.save(job);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -82,6 +82,13 @@ public class JobFactory {
         this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createJobCreateDump(DbDumperServiceInstance dbDumperServiceInstance, Metadata metadata) {
+        Job job = this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);
+        job.setMetadata(metadata);
+        this.jobRepo.save(job);
+    }
+
     public void createJobDeleteDumps(DbDumperServiceInstance dbDumperServiceInstance) {
         this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);
     }
@@ -90,9 +97,6 @@ public class JobFactory {
         this.createJob(JobType.RESTORE_DUMP, dbDumperServiceInstance.getDatabaseRef(), databaseRefTarget, createdAt, dbDumperServiceInstance);
     }
 
-    public void createJobCreateDump(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
-        this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, databaseRefSrc, dbDumperServiceInstance);
-    }
 
     public void createJobDeleteDumps(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
         this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, databaseRefSrc, dbDumperServiceInstance);

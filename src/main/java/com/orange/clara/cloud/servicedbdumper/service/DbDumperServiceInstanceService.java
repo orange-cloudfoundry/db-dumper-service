@@ -6,6 +6,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionExcept
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFileException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
+import com.orange.clara.cloud.servicedbdumper.helper.ParameterParser;
 import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.*;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
@@ -25,9 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static com.orange.clara.cloud.servicedbdumper.helper.ParameterParser.getParameter;
+import static com.orange.clara.cloud.servicedbdumper.helper.ParameterParser.getParameterAsString;
 
 /**
  * Copyright (C) 2015 Orange
@@ -51,6 +54,8 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     public final static String CF_USER_TOKEN_PARAMETER = "cf_user_token";
     public final static String ORG_PARAMETER = "org";
     public final static String SPACE_PARAMETER = "space";
+    public final static String METADATA_PARAMETER = "metadata";
+    public final static String TAGS_SUB_PARAMETER = "tags";
 
 
     private final static String DASHBOARD_ROUTE = Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/";
@@ -193,7 +198,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             throw new ServiceBrokerException("Action doesn't exist. you need to set this parameter: " + ACTION_PARAMETER + " valid value are: " + UpdateAction.showValues());
         }
         if (action.equals(UpdateAction.DUMP)) {
-            this.createDumpFromdbDumperServiceInstance(instance);
+            this.createDumpFromdbDumperServiceInstance(parameters, instance);
         } else if (action.equals(UpdateAction.RESTORE)) {
             try {
                 this.restoreDump(request.getParameters(), instance);
@@ -207,7 +212,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         return serviceInstance;
     }
 
-    private void createDumpFromdbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) throws ServiceInstanceDoesNotExistException, ServiceBrokerException {
+    private void createDumpFromdbDumperServiceInstance(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceInstanceDoesNotExistException, ServiceBrokerException {
         if (dbDumperServiceInstance.getDatabaseRef() == null) {
             throw new ServiceInstanceDoesNotExistException("There is no database set for this instance");
         }
@@ -216,24 +221,36 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         } catch (ServiceKeyException | DatabaseExtractionException e) {
             throw new ServiceBrokerException("An error occurred during dump: " + e.getMessage(), e);
         }
-        this.jobFactory.createJobCreateDump(dbDumperServiceInstance);
+        this.createJobToCreateDump(parameters, dbDumperServiceInstance);
     }
 
     private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
-        String srcUrl = getParameter(parameters, SRC_URL_PARAMETER, null);
+        String srcUrl = getParameterAsString(parameters, SRC_URL_PARAMETER, null);
         if (srcUrl == null) {
-            srcUrl = getParameter(parameters, NEW_SRC_URL_PARAMETER);
+            srcUrl = ParameterParser.getParameterAsString(parameters, NEW_SRC_URL_PARAMETER);
         }
         DatabaseRef databaseRef = this.getDatabaseRefFromParams(parameters, srcUrl);
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
         repository.save(dbDumperServiceInstance);
-        this.jobFactory.createJobCreateDump(dbDumperServiceInstance);
+        this.createJobToCreateDump(parameters, dbDumperServiceInstance);
+    }
+
+    private void createJobToCreateDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) {
+        Map<String, Object> metadataParameters = (Map<String, Object>) getParameter(parameters, METADATA_PARAMETER, null, Map.class);
+        if (metadataParameters == null) {
+            this.jobFactory.createJobCreateDump(dbDumperServiceInstance);
+            return;
+        }
+        List<String> tags = (List<String>) getParameter(metadataParameters, TAGS_SUB_PARAMETER, null, List.class);
+        Metadata metadata = new Metadata();
+        metadata.setTags(tags);
+        this.jobFactory.createJobCreateDump(dbDumperServiceInstance, metadata);
     }
 
     private DatabaseRef getDatabaseRefFromParams(Map<String, Object> parameters, String dbUrlOrService) throws ServiceBrokerException {
-        String token = getParameter(parameters, CF_USER_TOKEN_PARAMETER, null);
-        String org = getParameter(parameters, ORG_PARAMETER, null);
-        String space = getParameter(parameters, SPACE_PARAMETER, null);
+        String token = getParameterAsString(parameters, CF_USER_TOKEN_PARAMETER, null);
+        String org = getParameterAsString(parameters, ORG_PARAMETER, null);
+        String space = getParameterAsString(parameters, SPACE_PARAMETER, null);
         try {
             return this.databaseRefManager.getDatabaseRef(dbUrlOrService, token, org, space);
         } catch (ServiceKeyException | DatabaseExtractionException e) {
@@ -242,11 +259,11 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     }
 
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
-        String targetUrl = getParameter(parameters, TARGET_URL_PARAMETER, null);
+        String targetUrl = getParameterAsString(parameters, TARGET_URL_PARAMETER, null);
         if (targetUrl == null) {
-            targetUrl = getParameter(parameters, NEW_TARGET_URL_PARAMETER);
+            targetUrl = ParameterParser.getParameterAsString(parameters, NEW_TARGET_URL_PARAMETER);
         }
-        String createdAtString = getParameter(parameters, CREATED_AT_PARAMETER, null);
+        String createdAtString = getParameterAsString(parameters, CREATED_AT_PARAMETER, null);
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromParams(parameters, targetUrl);
         if (createdAtString == null || createdAtString.isEmpty()) {
             this.jobFactory.createJobRestoreDump(databaseRefTarget, null, dbDumperServiceInstance);

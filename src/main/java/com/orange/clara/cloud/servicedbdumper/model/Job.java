@@ -1,5 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
+import com.orange.clara.cloud.servicedbdumper.converter.MetadataConverter;
+
 import javax.persistence.*;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,6 +40,9 @@ public class Job {
     @Enumerated(EnumType.STRING)
     private JobType jobType;
 
+    @Convert(converter = MetadataConverter.class)
+    private Metadata metadata;
+
     private Date updatedAt;
 
     private Date dumpDate;
@@ -50,6 +55,13 @@ public class Job {
     }
 
     public Job(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+        this();
+        this.dbDumperServiceInstance = dbDumperServiceInstance;
+        this.jobType = jobType;
+        this.databaseRefSrc = databaseRefSrc;
+    }
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance, Metadata metadata) {
         this();
         this.dbDumperServiceInstance = dbDumperServiceInstance;
         this.jobType = jobType;
@@ -134,6 +146,14 @@ public class Job {
     public void setDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
         this.updatedAt = Calendar.getInstance().getTime();
         this.dbDumperServiceInstance = dbDumperServiceInstance;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
     }
 
     public String getErrorMessage() {

@@ -66,7 +66,8 @@ public class InterfaceController {
         List<DatabaseRef> databaseRefsFinal = Lists.newArrayList();
         for (DatabaseRef databaseRef : databaseRefs) {
             if (databaseRef.getDbDumperServiceInstances() == null
-                    || !this.userAccessRight.haveAccessToServiceInstance(databaseRef)) {
+                    || !this.userAccessRight.haveAccessToServiceInstance(databaseRef)
+                    || databaseRefsFinal.contains(databaseRef)) {
                 continue;
             }
             List<DbDumperServiceInstance> serviceInstances = databaseRef.getDbDumperServiceInstances();
@@ -82,7 +83,8 @@ public class InterfaceController {
     private List<DbDumperServiceInstance> filteringDbDumperServiceInstance(List<DbDumperServiceInstance> serviceInstances) throws UserAccessRightException {
         List<DbDumperServiceInstance> serviceInstancesFinal = Lists.newArrayList();
         for (DbDumperServiceInstance serviceInstance : serviceInstances) {
-            if (!this.userAccessRight.haveAccessToServiceInstance(serviceInstance)) {
+            if (!this.userAccessRight.haveAccessToServiceInstance(serviceInstance)
+                    || serviceInstancesFinal.contains(serviceInstance)) {
                 continue;
             }
             serviceInstancesFinal.add(serviceInstance);

@@ -11,17 +11,17 @@ import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionExcept
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
 import com.orange.clara.cloud.servicedbdumper.integrations.model.DatabaseAccess;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import com.orange.clara.cloud.servicedbdumper.service.DbDumperServiceInstanceBindingService;
 import com.orange.clara.cloud.servicedbdumper.utiltest.ReportIntegration;
 import com.orange.clara.cloud.servicedbdumper.utiltest.ReportManager;
 import org.cloudfoundry.community.servicebroker.exception.*;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstance;
+import org.cloudfoundry.community.servicebroker.model.ServiceInstanceBinding;
 import org.cloudfoundry.community.servicebroker.model.ServiceInstanceLastOperation;
+import org.cloudfoundry.community.servicebroker.service.ServiceInstanceBindingService;
 import org.cloudfoundry.community.servicebroker.service.ServiceInstanceService;
 import org.junit.After;
 import org.junit.Before;
@@ -56,6 +56,7 @@ import static org.junit.Assume.assumeTrue;
 abstract public class AbstractIntegrationTest {
     protected final static String DATABASE_SOURCE_NAME = "dbdumpertestsource";
     protected final static String DATABASE_TARGET_NAME = "dbdumpertesttarget";
+    protected final static String BINDING_ID = "db-dumper-service-binding";
     protected ReportIntegration reportIntegration;
     protected Map<DatabaseType, DatabaseAccess> databaseAccessMap = Maps.newHashMap();
 
@@ -67,6 +68,9 @@ abstract public class AbstractIntegrationTest {
 
     @Autowired
     protected ServiceInstanceService dbDumperServiceInstanceService;
+
+    @Autowired
+    protected ServiceInstanceBindingService serviceInstanceBindingService;
 
     @Value("${int.mysql.server:mysql://root@localhost/dbdumpertestsource}")
     protected String mysqlServer;
@@ -90,6 +94,7 @@ abstract public class AbstractIntegrationTest {
     protected DbDumperServiceInstanceRepo serviceInstanceRepo;
     protected DatabaseType currentDatabaseType;
     protected String serviceIdSource;
+    protected String bindingId;
     protected String serviceIdTarget;
     protected boolean skipCleaning;
     @Value("${test.timeout.action:3}")
@@ -123,8 +128,10 @@ abstract public class AbstractIntegrationTest {
         this.prefixReportName = humanize.Humanize.decamelize(this.getClass().getSimpleName()) + " ";
         skipCleaning = false;
         currentDatabaseType = null;
+        bindingId = null;
         serviceIdSource = null;
         serviceIdTarget = null;
+        this.requestForge.setMetadata(null);
         this.populateDatabaseAccessMap();
     }
 
@@ -161,6 +168,12 @@ abstract public class AbstractIntegrationTest {
     public void cleanAfterTest() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceBrokerAsyncRequiredException, ServiceBrokerException {
         if (this.skipCleaning) {
             return;
+        }
+        if (bindingId != null) {
+            try {
+                this.deleteBinding();
+            } catch (ServiceBrokerAsyncRequiredException | ServiceBrokerException e) {
+            }
         }
         if (serviceIdSource != null && !serviceIdSource.isEmpty()) {
             this.deleteServiceInstance(serviceIdSource);
@@ -200,6 +213,23 @@ abstract public class AbstractIntegrationTest {
         }
     }
 
+    protected void createSourceDatabaseDumpFromExistingService(DatabaseType databaseType) throws ServiceInstanceDoesNotExistException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerException, ServiceBrokerAsyncRequiredException {
+        this.dbDumperServiceInstanceService.updateServiceInstance(this.requestForge.createDumpFromExistingServiceRequest(this.getDbParamsForDump(databaseType), serviceIdSource));
+        if (!this.isFinishedAction(serviceIdSource)) {
+            fail("Creating new dump for source database failed");
+        }
+    }
+
+    protected ServiceInstanceBinding getBinding(Map<String, Object> params) throws ServiceInstanceBindingExistsException, ServiceBrokerException {
+        this.loadBeforeAction();
+        return this.serviceInstanceBindingService.createServiceInstanceBinding(this.requestForge.createBindingCreationRequest(serviceIdSource, bindingId, params));
+    }
+
+    protected ServiceInstanceBinding deleteBinding() throws ServiceBrokerAsyncRequiredException, ServiceBrokerException {
+        this.loadBeforeAction();
+        return this.serviceInstanceBindingService.deleteServiceInstanceBinding(this.requestForge.createBindingDeletionRequest(bindingId));
+    }
+
     protected void createTargetDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
         this.dbDumperServiceInstanceService.createServiceInstance(this.requestForge.createNewDumpRequest(this.getDbParamsForRestore(databaseType), serviceIdTarget));
         if (!this.isFinishedAction(serviceIdTarget)) {
@@ -217,6 +247,10 @@ abstract public class AbstractIntegrationTest {
     protected void loadServiceIds(DatabaseType databaseType) {
         serviceIdSource = databaseType.toString() + "-service-source";
         serviceIdTarget = databaseType.toString() + "-service-target";
+    }
+
+    protected void loadBindingId() {
+        bindingId = BINDING_ID;
     }
 
     protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
@@ -263,6 +297,66 @@ abstract public class AbstractIntegrationTest {
             }
         }
         return true;
+    }
+
+    @Test
+    public void when_binding_to_a_db_dumper_i_should_have_correct_information_about_my_dumps() throws InterruptedException, CannotFindDatabaseDumperException, DatabaseExtractionException, IOException, ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceDoesNotExistException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceBindingExistsException {
+        this.reportIntegration = ReportManager.createReportIntegration(prefixReportName + " - when binding to a db dumper i should have correct information about my dumps");
+        DatabaseType databaseType = DatabaseType.MYSQL;
+        Metadata metadata = new Metadata();
+        metadata.setTags(Arrays.asList("mytag"));
+
+        this.requestForge.setMetadata(metadata);
+
+        this.loadServiceIds(databaseType);
+        this.loadBindingId();
+
+        this.currentDatabaseType = databaseType;
+        this.doBeforeTest(databaseType);
+
+        this.loadBeforeAction();
+        createSourceDatabaseDump(databaseType);
+
+        this.requestForge.setMetadata(null);
+        this.loadBeforeAction();
+        createSourceDatabaseDumpFromExistingService(databaseType);
+
+        ServiceInstanceBinding serviceInstanceBinding = getBinding(Maps.newHashMap());
+        assertThat(serviceInstanceBinding.getCredentials().get("dumps")).isNotNull();
+        assertThat(serviceInstanceBinding.getCredentials().get("dumps")).isInstanceOfAny(List.class);
+
+        List<Map<String, Object>> credentials = (List<Map<String, Object>>) serviceInstanceBinding.getCredentials().get("dumps");
+        assertThat(credentials).hasSize(2);
+
+        deleteBinding();
+
+        Map<String, Object> parameters = Maps.newHashMap();
+        parameters.put(DbDumperServiceInstanceBindingService.FIND_BY_TAGS_KEY, Arrays.asList("mytag"));
+
+        serviceInstanceBinding = getBinding(parameters);
+
+        assertThat(serviceInstanceBinding.getCredentials().get("dumps")).isNotNull();
+        assertThat(serviceInstanceBinding.getCredentials().get("dumps")).isInstanceOfAny(List.class);
+
+        credentials = (List<Map<String, Object>>) serviceInstanceBinding.getCredentials().get("dumps");
+        assertThat(credentials).hasSize(1);
+
+        deleteBinding();
+
+        parameters = Maps.newHashMap();
+        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS_KEY, true);
+
+        serviceInstanceBinding = getBinding(parameters);
+
+        assertThat(serviceInstanceBinding.getCredentials().get("dumps")).isNotNull();
+        assertThat(serviceInstanceBinding.getCredentials().get("dumps")).isInstanceOfAny(List.class);
+
+        credentials = (List<Map<String, Object>>) serviceInstanceBinding.getCredentials().get("dumps");
+        assertThat(credentials).hasSize(2);
+
+        deleteBinding();
+
+        this.reportIntegration.setFailed(false);
     }
 
     @Test

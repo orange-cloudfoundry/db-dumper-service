@@ -2,11 +2,10 @@ package com.orange.clara.cloud.servicedbdumper.integrations;
 
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.helper.URICheck;
+import com.orange.clara.cloud.servicedbdumper.model.Metadata;
 import com.orange.clara.cloud.servicedbdumper.model.UpdateAction;
 import com.orange.clara.cloud.servicedbdumper.service.DbDumperServiceInstanceService;
-import org.cloudfoundry.community.servicebroker.model.CreateServiceInstanceRequest;
-import org.cloudfoundry.community.servicebroker.model.DeleteServiceInstanceRequest;
-import org.cloudfoundry.community.servicebroker.model.UpdateServiceInstanceRequest;
+import org.cloudfoundry.community.servicebroker.model.*;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -27,11 +26,13 @@ public class ServiceBrokerRequestForge {
 
     public String SERVICE_DEFINITION_ID = "db-dumper-service";
     public String SERVICE_PLAN_ID = "db-dumper-service-plan-experimental";
+    public String APP_GUID_ID = "my-app";
     private String spaceGuid;
     private String orgGuid;
     private String userToken;
     private String org;
     private String space;
+    private Metadata metadata;
 
     public CreateServiceInstanceRequest createNewDumpRequest(String db, String serviceInstanceId) {
         return new CreateServiceInstanceRequest(SERVICE_DEFINITION_ID, SERVICE_PLAN_ID, orgGuid, spaceGuid, true, this.getParams(db)).withServiceInstanceId(serviceInstanceId);
@@ -49,12 +50,28 @@ public class ServiceBrokerRequestForge {
         return new UpdateServiceInstanceRequest(SERVICE_PLAN_ID, true, params).withInstanceId(serviceInstanceId);
     }
 
+    public CreateServiceInstanceBindingRequest createBindingCreationRequest(String serviceInstanceId, String bindingId, Map<String, Object> params) {
+        return new CreateServiceInstanceBindingRequest("service-definition-id", SERVICE_PLAN_ID, APP_GUID_ID, params).withBindingId(bindingId).withServiceInstanceId(serviceInstanceId);
+    }
+
+    public CreateServiceInstanceBindingRequest createBindingCreationRequest(String serviceInstanceId, String bindingId) {
+        return createBindingCreationRequest(serviceInstanceId, bindingId, Maps.newHashMap());
+    }
+
+    public DeleteServiceInstanceBindingRequest createBindingDeletionRequest(String bindingId) {
+        return new DeleteServiceInstanceBindingRequest(bindingId, null, null, SERVICE_PLAN_ID);
+    }
+
     public DeleteServiceInstanceRequest createDeleteServiceRequest(String serviceInstanceId) {
         return new DeleteServiceInstanceRequest(serviceInstanceId, SERVICE_DEFINITION_ID, SERVICE_PLAN_ID, false);
     }
 
     public Map<String, Object> getParams(String db) {
         Map<String, Object> params = Maps.newHashMap();
+        Map<String, Object> metadataParams = this.getMetadataParams();
+        if (metadataParams != null) {
+            params.put(DbDumperServiceInstanceService.METADATA_PARAMETER, metadataParams);
+        }
         params.put(DbDumperServiceInstanceService.NEW_SRC_URL_PARAMETER, db);
         if (URICheck.isUri(db)) {
             return params;
@@ -62,7 +79,17 @@ public class ServiceBrokerRequestForge {
         params.put(DbDumperServiceInstanceService.CF_USER_TOKEN_PARAMETER, userToken);
         params.put(DbDumperServiceInstanceService.ORG_PARAMETER, org);
         params.put(DbDumperServiceInstanceService.SPACE_PARAMETER, space);
+
         return params;
+    }
+
+    private Map<String, Object> getMetadataParams() {
+        if (this.metadata == null || this.metadata.getTags() == null) {
+            return null;
+        }
+        Map<String, Object> metadataParams = Maps.newHashMap();
+        metadataParams.put(DbDumperServiceInstanceService.TAGS_SUB_PARAMETER, this.metadata.getTags());
+        return metadataParams;
     }
 
     @PostConstruct
@@ -112,5 +139,13 @@ public class ServiceBrokerRequestForge {
 
     public void setSpace(String space) {
         this.space = space;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
     }
 }

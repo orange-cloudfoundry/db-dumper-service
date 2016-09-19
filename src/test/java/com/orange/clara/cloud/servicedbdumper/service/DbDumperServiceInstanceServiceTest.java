@@ -18,13 +18,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.notNull;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -124,6 +126,19 @@ public class DbDumperServiceInstanceServiceTest {
     }
 
     @Test
+    public void when_creating_dump_from_non_existing_service_with_target_parameter_and_metadata_it_should_return_a_service_instance() throws ServiceBrokerException, ServiceInstanceExistsException {
+        when(repository.findOne(anyString())).thenReturn(null);
+        params.put("db", targetDatabase);
+        Map<String, Object> metadataParameters = Maps.newHashMap();
+        metadataParameters.put("tags", Arrays.asList("mytags"));
+        params.put("metadata", metadataParameters);
+
+        ServiceInstance serviceInstance = instanceService.createServiceInstance(createRequest);
+        assertServiceInstanceCreateRequest(serviceInstance);
+        verify(jobFactory, times(1)).createJobCreateDump((DbDumperServiceInstance) notNull(), (Metadata) notNull());
+    }
+
+    @Test
     public void when_creating_dump_from_existing_service_instance_with_no_action_parameter_it_should_raise_an_exception() {
         when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
         try {
@@ -163,6 +178,22 @@ public class DbDumperServiceInstanceServiceTest {
         params.put("action", "dump");
         ServiceInstance serviceInstance = instanceService.updateServiceInstance(updateRequest);
         assertServiceInstanceUpdateRequest(serviceInstance);
+    }
+
+
+    @Test
+    public void when_creating_dump_from_existing_service_instance_and_metadata_it_should_return_service_instance() throws ServiceInstanceDoesNotExistException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerException {
+        when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
+        params.put("action", "dump");
+
+        Map<String, Object> metadataParameters = Maps.newHashMap();
+        metadataParameters.put("tags", Arrays.asList("mytags"));
+        params.put("metadata", metadataParameters);
+
+        ServiceInstance serviceInstance = instanceService.updateServiceInstance(updateRequest);
+        assertServiceInstanceUpdateRequest(serviceInstance);
+
+        verify(jobFactory, times(1)).createJobCreateDump((DbDumperServiceInstance) notNull(), (Metadata) notNull());
     }
 
     @Test

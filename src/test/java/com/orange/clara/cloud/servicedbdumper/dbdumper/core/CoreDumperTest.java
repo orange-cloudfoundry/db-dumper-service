@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
@@ -71,7 +72,9 @@ public class CoreDumperTest extends AbstractCoreTester {
         databaseDriver.setDatabaseRef(databaseRef);
 
         when(dbDumpersFactory.getDatabaseDumper(databaseRef)).thenReturn(databaseDriver);
-        when(databaseDumpFileRepo.save((DatabaseDumpFile) notNull())).thenReturn(null);
+        when(databaseDumpFileRepo.save((DatabaseDumpFile) notNull())).then(
+                (Answer<DatabaseDumpFile>) invocation -> invocation.getArgumentAt(0, DatabaseDumpFile.class)
+        );
 
         filer = new EchoFiler("testit");
         this.coreDumper.dateFormat = "-";
@@ -86,10 +89,9 @@ public class CoreDumperTest extends AbstractCoreTester {
         String expectedFileName = "-.sql";
         long expectedSize = filer.getContentLength(null);
         String expectedStringInFiler = databaseRef.toString();
-        this.coreDumper.dump(dbDumperServiceInstance);
+        DatabaseDumpFile databaseDumpFile = this.coreDumper.dump(dbDumperServiceInstance);
         assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(1);
 
-        DatabaseDumpFile databaseDumpFile = dbDumperServiceInstance.getDatabaseDumpFiles().get(0);
         assertThat(databaseDumpFile.getCreatedAt()).isNotNull();
         assertThat(databaseDumpFile.getPassword()).isNotNull();
         assertThat(databaseDumpFile.getUser()).isNotNull();

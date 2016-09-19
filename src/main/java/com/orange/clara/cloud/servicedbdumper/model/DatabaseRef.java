@@ -1,7 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
-import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
+import com.orange.clara.cloud.servicedbdumper.converter.CryptoConverter;
 
 import javax.persistence.*;
 import java.net.URI;

@@ -1,6 +1,9 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
+import com.google.common.collect.Lists;
+
 import java.util.Date;
+import java.util.List;
 
 /**
  * Copyright (C) 2016 Orange
@@ -20,11 +23,14 @@ public class DbDumperCredential {
     private String filename;
     private Long size;
     private Boolean deleted;
+    private List<String> tags;
 
     public DbDumperCredential() {
+        this.tags = Lists.newArrayList();
     }
 
     public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted) {
+        this();
         this.id = id;
         this.createdAt = createdAt;
         this.downloadUrl = downloadUrl;
@@ -32,6 +38,11 @@ public class DbDumperCredential {
         this.filename = filename;
         this.size = size;
         this.deleted = deleted;
+    }
+
+    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted, List<String> tags) {
+        this(id, createdAt, downloadUrl, showUrl, filename, size, deleted);
+        this.tags = tags;
     }
 
     public Integer getId() {
@@ -88,6 +99,23 @@ public class DbDumperCredential {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public boolean hasOneOfTags(String... tags) {
+        for (String tag : tags) {
+            if (this.tags.contains(tag)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

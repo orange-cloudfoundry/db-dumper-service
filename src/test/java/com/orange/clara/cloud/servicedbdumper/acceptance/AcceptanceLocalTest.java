@@ -10,6 +10,7 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
 import org.cloudfoundry.community.servicebroker.exception.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -144,6 +145,12 @@ public class AcceptanceLocalTest extends AbstractIntegrationWithRealCfClientTest
     protected void dumpAndRestoreTest(DatabaseType databaseType) throws ServiceBrokerException, InterruptedException, ServiceBrokerAsyncRequiredException, IOException, DatabaseExtractionException, CannotFindDatabaseDumperException, ServiceKeyException, ServiceInstanceExistsException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
         super.dumpAndRestoreTest(databaseType);
         logger.info("\u001b[0;32mTest for dump and restore for type {} with data for {} (real size of the file) succeeded.\u001B[0;0m", databaseType.toString(), humanize.Humanize.binaryPrefix(getGeneratedFile().length()));
+    }
+
+    @Override
+    @Ignore
+    public void when_binding_to_a_db_dumper_i_should_have_correct_information_about_my_dumps() throws InterruptedException, CannotFindDatabaseDumperException, DatabaseExtractionException, IOException, ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceDoesNotExistException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceBindingExistsException {
+        super.when_binding_to_a_db_dumper_i_should_have_correct_information_about_my_dumps();
     }
 
     @Override

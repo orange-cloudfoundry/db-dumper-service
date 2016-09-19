@@ -31,7 +31,7 @@ public class CoreCredentials implements Credentials {
         List<DbDumperCredential> dbDumperCredentials = Lists.newArrayList();
         List<DatabaseDumpFile> databaseDumpFiles = dbDumperServiceInstance.getDatabaseDumpFiles();
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
-            dbDumperCredentials.add(new DbDumperCredential(
+            DbDumperCredential dbDumperCredential = new DbDumperCredential(
                     databaseDumpFile.getId(),
                     databaseDumpFile.getCreatedAt(),
                     urlForge.createDownloadLink(databaseDumpFile),
@@ -39,7 +39,11 @@ public class CoreCredentials implements Credentials {
                     databaseDumpFile.getFileName(),
                     databaseDumpFile.getSize(),
                     databaseDumpFile.getDeleted()
-            ));
+            );
+            if (databaseDumpFile.getMetadata() != null) {
+                dbDumperCredential.setTags(databaseDumpFile.getMetadata().getTags());
+            }
+            dbDumperCredentials.add(dbDumperCredential);
         }
         return dbDumperCredentials;
     }

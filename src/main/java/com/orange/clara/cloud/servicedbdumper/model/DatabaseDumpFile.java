@@ -1,7 +1,8 @@
 package com.orange.clara.cloud.servicedbdumper.model;
 
 
-import com.orange.clara.cloud.servicedbdumper.security.CryptoConverter;
+import com.orange.clara.cloud.servicedbdumper.converter.CryptoConverter;
+import com.orange.clara.cloud.servicedbdumper.converter.MetadataConverter;
 
 import javax.persistence.*;
 import java.io.File;
@@ -39,6 +40,9 @@ public class DatabaseDumpFile {
     @ManyToOne
     @JoinColumn(name = "service_instance_id")
     private DbDumperServiceInstance dbDumperServiceInstance;
+
+    @Convert(converter = MetadataConverter.class)
+    private Metadata metadata;
 
     private Boolean deleted;
     private Long size;
@@ -163,6 +167,14 @@ public class DatabaseDumpFile {
 
     public void setDeletedAt(Date deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
     }
 
     @PrePersist

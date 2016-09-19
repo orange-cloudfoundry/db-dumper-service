@@ -489,3 +489,23 @@ databaseChangeLog:
       - dropColumn:
           columnName: deleted
           tableName: database_ref
+  - changeSet:
+      id: 6
+      author: arthurhalet
+      changes:
+      - addColumn:
+          tableName: database_dump_file
+          columns:
+          - column:
+              name: metadata
+              type: varchar(1000)
+              constraints:
+                nullable: true
+      - addColumn:
+          tableName: job
+          columns:
+          - column:
+              name: metadata
+              type: varchar(1000)
+              constraints:
+                nullable: true

@@ -34,19 +34,21 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
 
     @Override
     @Transactional
-    public void dump(DbDumperServiceInstance dbDumperServiceInstance) throws DumpException {
+    public DatabaseDumpFile dump(DbDumperServiceInstance dbDumperServiceInstance) throws DumpException {
         DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();
+        DatabaseDumpFile databaseDumpFile;
         try {
             DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseRef);
             String fileName = this.generateFileName(databaseRef, databaseDriver);
             logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary ...");
             this.runDump(databaseDriver, databaseRef.getName() + "/" + fileName);
-            this.createDatabaseDumpFile(dbDumperServiceInstance, fileName, databaseDriver.isDumpShowable());
+            databaseDumpFile = this.createDatabaseDumpFile(dbDumperServiceInstance, fileName, databaseDriver.isDumpShowable());
         } catch (Exception e) {
             this.logOutputFromProcess();
             throw new DumpException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
         }
         logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary finished.");
+        return databaseDumpFile;
     }
 
     private void runDump(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
@@ -77,19 +79,21 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
         }
     }
 
-    private void createDatabaseDumpFile(DbDumperServiceInstance dbDumperServiceInstance, String fileName, boolean isDumpShowable) {
+    private DatabaseDumpFile createDatabaseDumpFile(DbDumperServiceInstance dbDumperServiceInstance, String fileName, boolean isDumpShowable) {
         SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
-        Date today = new Date();
+        Date now = new Date();
         try {
-            today = form.parse(form.format(new Date()));
+            now = form.parse(form.format(new Date()));
         } catch (ParseException e) { // should have no error
         }
-        if (this.databaseDumpFileRepo.findByDbDumperServiceInstanceAndCreatedAt(dbDumperServiceInstance, today) == null) {
+        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findByDbDumperServiceInstanceAndCreatedAt(dbDumperServiceInstance, now);
+        if (databaseDumpFile == null) {
             String user = this.generateUser();
             String password = this.generatePassword();
-            this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, dbDumperServiceInstance, user, password, isDumpShowable,
+            databaseDumpFile = this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, dbDumperServiceInstance, user, password, isDumpShowable,
                     this.filer.getContentLength(dbDumperServiceInstance.getDatabaseRef().getName() + "/" + fileName)));
         }
+        return databaseDumpFile;
     }
 
     private String generateUser() {

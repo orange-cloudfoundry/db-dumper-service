@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.dbdumper;
 
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 
 /**
@@ -14,5 +15,5 @@ import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
  * Date: 24/11/2015
  */
 public interface Dumper {
-    void dump(DbDumperServiceInstance dbDumperServiceInstance) throws DumpException;
+    DatabaseDumpFile dump(DbDumperServiceInstance dbDumperServiceInstance) throws DumpException;
 }

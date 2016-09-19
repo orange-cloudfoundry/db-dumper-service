@@ -4,8 +4,10 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
 import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,20 +40,31 @@ public class CreateDumpTask {
     @Autowired
     private DatabaseRefManager databaseRefManager;
 
+    @Autowired
+    private DatabaseDumpFileRepo databaseDumpFileRepo;
+
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Boolean> runTask(Integer jobId) throws AsyncTaskException {
         Job job = this.jobRepo.findOne(jobId);
+        DatabaseDumpFile databaseDumpFile = null;
         try {
-            this.dumper.dump(job.getDbDumperServiceInstance());
+            databaseDumpFile = this.dumper.dump(job.getDbDumperServiceInstance());
+            if (job.getMetadata() != null) {
+                logger.debug("Adding metadata for dump {}.", databaseDumpFile.getId());
+                databaseDumpFile.setMetadata(job.getMetadata());
+                this.databaseDumpFileRepo.save(databaseDumpFile);
+                logger.debug("Finished adding metadata.");
+            }
         } catch (DumpException e) {
-            logger.error(String.format("Cannot create dump for '%s': %s", job.getDatabaseRefSrc().getName(), e.getMessage()));
+            logger.error("Cannot create dump for '{}': {}", job.getDatabaseRefSrc().getName(), e.getMessage());
             job.setJobEvent(JobEvent.ERRORED);
             job.setErrorMessage(e.getMessage());
             this.databaseRefManager.deleteServiceKey(job);
             jobRepo.save(job);
             return new AsyncResult<Boolean>(false);
         }
+
         job.setJobEvent(JobEvent.FINISHED);
         this.databaseRefManager.deleteServiceKey(job);
         jobRepo.save(job);

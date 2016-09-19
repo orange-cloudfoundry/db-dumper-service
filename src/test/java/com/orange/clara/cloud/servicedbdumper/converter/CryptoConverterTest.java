@@ -1,4 +1,4 @@
-package com.orange.clara.cloud.servicedbdumper.security;
+package com.orange.clara.cloud.servicedbdumper.converter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * or at 'http://opensource.org/licenses/MIT'.
  * <p>
  * Author: Arthur Halet
- * Date: 17/03/2016
+ * Date: 17/09/2016
  */
 public class CryptoConverterTest {
 

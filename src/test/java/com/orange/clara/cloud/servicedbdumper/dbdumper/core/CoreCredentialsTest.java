@@ -118,6 +118,7 @@ public class CoreCredentialsTest extends AbstractCoreTester {
             assertThat(actualDbDumperCredential.getShowUrl()).isEqualTo(dbDumperCredential.getShowUrl());
             assertThat(actualDbDumperCredential.getDeleted()).isEqualTo(dbDumperCredential.getDeleted());
             assertThat(actualDbDumperCredential.getFilename()).isEqualTo(dbDumperCredential.getFilename());
+            assertThat(actualDbDumperCredential.getTags()).isEqualTo(dbDumperCredential.getTags());
 
         }
 

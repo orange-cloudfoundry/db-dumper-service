@@ -54,6 +54,8 @@ public class DbDumperServiceInstanceBindingServiceTest {
     private final static DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance(serviceId, planId, "org-1", "space-1", "http://dashboard.com", null);
     private final static DeleteServiceInstanceBindingRequest deleteRequest = new DeleteServiceInstanceBindingRequest(bindingId, null, serviceId, planId);
     private final static DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding = new DbDumperServiceInstanceBinding(bindingId, dbDumperServiceInstance, appGuid);
+    private final static DatabaseRef databaseRef = new DatabaseRef();
+
     @InjectMocks
     DbDumperServiceInstanceBindingService instanceBindingService;
     String dateFormat = "dd-MM-yyyy HH:mm";
@@ -69,11 +71,11 @@ public class DbDumperServiceInstanceBindingServiceTest {
     private DbDumperCredential dbDumperCredential2;
     private DbDumperCredential dbDumperCredential3;
     private List<DbDumperCredential> dbDumperCredentials;
-    private DatabaseRef databaseRef;
 
     @Before
     public void init() {
         initMocks(this);
+        dbDumperServiceInstance.setDatabaseRef(databaseRef);
         parameters = Maps.newHashMap();
         createRequest = new CreateServiceInstanceBindingRequest(serviceDefinitionId, planId, appGuid, parameters)
                 .withBindingId(bindingId)
@@ -130,7 +132,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
         assertThat(instanceBinding).isNotNull();
         assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
         assertThat(instanceBinding.getId()).isEqualTo(bindingId);
-        assertCredentials(instanceBinding, this.dbDumperCredentials);
+        assertThat(instanceBinding.getCredentials()).hasSize(0);
     }
 
     @Test
@@ -146,7 +148,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
     @Test
     public void when_creating_service_instance_binding_with_service_id_existing_and_with_parameter_to_see_all_dump_to_false_it_should_give_a_correct_service_instance_binding() throws ServiceInstanceBindingExistsException, ServiceBrokerException {
         when(repositoryInstanceBinding.findOne(anyString())).thenReturn(null);
-        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS, false);
+        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS_KEY, false);
         ServiceInstanceBinding instanceBinding = this.instanceBindingService.createServiceInstanceBinding(createRequest);
         assertThat(instanceBinding).isNotNull();
         assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
@@ -157,10 +159,12 @@ public class DbDumperServiceInstanceBindingServiceTest {
     @Test
     public void when_creating_service_instance_binding_with_service_id_existing_and_user_ask_to_see_all_dumps_it_should_give_a_correct_service_instance_binding() throws ServiceInstanceBindingExistsException, ServiceBrokerException {
         when(repositoryInstanceBinding.findOne(anyString())).thenReturn(null);
+
         DbDumperCredential dbDumperCredential = this.forgeDbDumperCredential(dbDumperCredentials.size() + 1, true);
         List<DbDumperCredential> dumperCredentials = Arrays.asList(dbDumperCredential1, dbDumperCredential2, dbDumperCredential3, dbDumperCredential);
         when(credentials.getDumpsCredentials((DatabaseRef) notNull())).thenReturn(dumperCredentials);
-        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS, true);
+
+        parameters.put(DbDumperServiceInstanceBindingService.SEE_ALL_DUMPS_KEY, true);
 
         ServiceInstanceBinding instanceBinding = this.instanceBindingService.createServiceInstanceBinding(createRequest);
         assertThat(instanceBinding).isNotNull();
@@ -169,9 +173,29 @@ public class DbDumperServiceInstanceBindingServiceTest {
         assertCredentials(instanceBinding, dumperCredentials);
     }
 
+    @Test
+    public void when_creating_service_instance_binding_with_service_id_existing_and_user_find_by_tags_it_should_give_a_correct_service_instance_binding() throws ServiceInstanceBindingExistsException, ServiceBrokerException {
+        when(repositoryInstanceBinding.findOne(anyString())).thenReturn(null);
+        String tag = "mytag";
+        DbDumperCredential dbDumperCredential = this.forgeDbDumperCredential(dbDumperCredentials.size() + 1, true);
+        dbDumperCredential.setTags(Arrays.asList(tag));
+
+        List<DbDumperCredential> dumperCredentials = Arrays.asList(dbDumperCredential1, dbDumperCredential2, dbDumperCredential3, dbDumperCredential);
+        when(credentials.getDumpsCredentials((DbDumperServiceInstance) notNull())).thenReturn(dumperCredentials);
+
+        parameters.put(DbDumperServiceInstanceBindingService.FIND_BY_TAGS_KEY, Arrays.asList(tag));
+
+        ServiceInstanceBinding instanceBinding = this.instanceBindingService.createServiceInstanceBinding(createRequest);
+        assertThat(instanceBinding).isNotNull();
+        assertThat(instanceBinding.getAppGuid()).isEqualTo(appGuid);
+        assertThat(instanceBinding.getId()).isEqualTo(bindingId);
+        assertCredentials(instanceBinding, Arrays.asList(dbDumperCredential));
+    }
+
     public void assertCredentials(ServiceInstanceBinding serviceInstanceBinding, List<DbDumperCredential> dbDumperCredentials) {
         Map<String, Object> credentials = serviceInstanceBinding.getCredentials();
         List<Map<String, Object>> dumpFiles = (List<Map<String, Object>>) credentials.get("dumps");
+        assertThat(dumpFiles).hasSize(dbDumperCredentials.size());
         SimpleDateFormat dateFormater = new SimpleDateFormat(this.dateFormat);
         for (int i = 0; i < dumpFiles.size(); i++) {
             Map<String, Object> dumpFile = dumpFiles.get(i);
@@ -183,6 +207,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
             assertThat(dumpFile.get("created_at")).isEqualTo(dateFormater.format(dbDumperCredential.getCreatedAt()));
             assertThat(dumpFile.get("dump_id")).isEqualTo(dbDumperCredential.getId());
             assertThat(dumpFile.get("deleted")).isEqualTo(dbDumperCredential.getDeleted());
+            assertThat(dumpFile.get("tags")).isEqualTo(dbDumperCredential.getTags());
         }
 
     }

@@ -57,6 +57,13 @@ public class DeleteAfterPeriodDumpFromUriIT extends DumpAndRestoreDatabaseFromSe
     @Override
     @Test
     @Ignore("We use the test framework for dump and restore but we don't want to run those tests")
+    public void when_binding_to_a_db_dumper_i_should_have_correct_information_about_my_dumps() throws InterruptedException, CannotFindDatabaseDumperException, DatabaseExtractionException, IOException, ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceDoesNotExistException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceBindingExistsException {
+        super.when_binding_to_a_db_dumper_i_should_have_correct_information_about_my_dumps();
+    }
+
+    @Override
+    @Test
+    @Ignore("We use the test framework for dump and restore but we don't want to run those tests")
     public void when_dump_and_restore_a_MYSQL_database_it_should_have_the_database_source_equals_to_the_database_target() throws DatabaseExtractionException, CannotFindDatabaseDumperException, InterruptedException, IOException, ServiceInstanceUpdateNotSupportedException, ServiceBrokerAsyncRequiredException, ServiceBrokerException, ServiceInstanceDoesNotExistException, ServiceKeyException, ServiceInstanceExistsException {
 
     }
