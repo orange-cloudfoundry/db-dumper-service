@@ -47,7 +47,7 @@ $ cf enable-service-access db-dumper-service
 You need to create a new uaa client if you want to use UAA to authenticate user in the dashboard, here the steps you need to do:
 
 1. use uaa-cli and run: `uaac client add db-dumper-service --name "db-dumper-service" --scope "openid,cloud_controller_service_permissions.read" --authorities "openid" -s "mysupersecretkey" --signup_redirect_url "http://your.db-dumper-service.url"` (**Note**: `--signup_redirect_url`is optional but highly recommended for security)
-2. Update your `manifest.yml` (see: `CF_TARGET`, `security_oauth2_client_clientId` and `security_oauth2_client_clientSecret` keys)
+2. Update your `manifest.yml` (see: `uaa_url`, `security_oauth2_client_clientId` and `security_oauth2_client_clientSecret` keys)
 
 
 ## Running locally
@@ -60,7 +60,7 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 
 1. Clone this project
 2. Run the script `bin/install-binaries` to download all required binaries
-3. You need to activate the spring profile `local` to do this set an env var `spring_profiles_default=local`, you can either use with uaa profile to: `spring_profiles_default=local,uaa` (in this case you will need to set the env `CF_TARGET` with the url of your uaa)
+3. You need to activate the spring profile `local` to do this set an env var `spring_profiles_default=local`, you can either use with uaa profile to: `spring_profiles_default=local,uaa` (in this case you will need to set the env `uaa_url` with the url of your uaa)
 4. Run the application
 
 ### Others
@@ -68,7 +68,7 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 1. Clone this project
 2. You will need to have binaries for driver you want to use
 3. These env vars need to be set (set only driver you want to use): `mysql_dump_bin_path`(Path to mysqldump binary), `mysql_restore_bin_path`(Path to mysql binary), `postgres_dump_bin_path`(Path to pg_dump binary), `postgres_restore_bin_path`(Path to psql binary), `mongodb_dump_bin_path`(Path to mongodump binary), `mongodb_restore_bin_path`(Path to mongorestore binary), `redis_rutil_bin_path`(Path to [rutil](https://github.com/pampa/rutil) binary)
-4. You need to activate the spring profile `local` to do this set an env var `spring_profiles_default=local`, you can either use with uaa profile to: `spring_profiles_default=local,uaa` (in this case you will need to set the env `CF_TARGET` with the url of your uaa)
+4. You need to activate the spring profile `local` to do this set an env var `spring_profiles_default=local`, you can either use with uaa profile to: `spring_profiles_default=local,uaa` (in this case you will need to set the env `uaa_url` with the url of your uaa)
 5. Run the application
 
 
@@ -96,6 +96,28 @@ This command will create a dump for you:
 cf cs db-dumper-service experimental service-name -c '{"db":"mysql://user:password@nameorip.of.your.db:port/database-name"}'
 ```
 
+### Create a dump and tag it
+
+Sometime, you would like to tag a particular dump, for this you can pass a list of tags during dumps creation.
+For this you will need to pass this particular json:
+```json
+{
+  "metadata":
+    {
+      "tags": [
+        "mytag1",
+        "mytag2"
+        //...
+      ]
+    }
+}
+```
+
+Example
+```
+cf cs db-dumper-service experimental service-name -c '{"db":"mysql://user:password@nameorip.of.your.db:port/database-name", "metadata": {"tags": ["v1"]}}'
+```
+
 ### Create a dump by passing a service name
 
 For example you have a `p-mysql` service instance named `my-mysql-db`, you can create a dump with these parameters:
@@ -118,6 +140,49 @@ For example you have a `p-mysql` service instance named `my-mysql-restore-db`, y
 cf update-service test -c '{"action": "restore", "db":"my-mysql-restore-db", "cf_user_token": "token retrieve from cf oauth-token", "org": "org of the service", "space": "space of the service"}'
 ```
 
+### Binding
+
+When you bind to your service instance you could find dumps created by your service instance as credentials, here what it's look like in credentials:
+
+```json
+{
+  "dumps": [
+    {
+      "dump_id": "1",
+      "download_url": "http://generated-user:generated-password@url.of.db.dumper/1",
+      "show_url": "http://url.of.db.dumper/1",
+      "filename": "file.sql.gzip",
+      "created_at": "01-01-1970 00:00",
+      "database_type": "mysql",
+      "database_name": "uri or service name passed",
+      "size": 20, // filesize in bytes
+      "deleted": false,
+      "tags": [
+        "tag1"
+      ]
+    }
+  ]
+}
+```
+
+#### See all dumps during binding
+
+By default, you can see only dumps corresponding to your service instance,
+but if you would like to see all dumps created by any service instance linked to this database, you can pass a `see_all_dumps` parameter to `true` during binding.
+
+Example:
+```
+cf bind-service myapp test -c '{"see_all_dumps": true}'
+```
+
+#### See dumps filtered by tags during binding
+
+You can decide to only look at dumps created with a particular tags, to do so you will also need to pass a `find_by_tags` parameter during binding which contains one or multiple tags.
+
+Example:
+```
+cf bind-service myapp test -c '{"find_by_tags": ["mytag"]}'
+```
 
 ### Add a new dump
 
@@ -127,7 +192,7 @@ If you want to create a new dump you can use this command:
 cf update-service test -c '{"action": "dump"}'
 ```
 
-### Delete a dump
+### Delete dumps
 
 This is equivalent to delete the service, your dumps will be deleted after 5 days to prevent mistake (set by `dump_delete_expiration_days` in manifest):
 
