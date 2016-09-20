@@ -3,10 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.helper.UrlForge;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -32,6 +29,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
  */
 public class CoreCredentialsTest extends AbstractCoreTester {
     private final static String fakeUrl = "http://test.com/";
+    private final static DatabaseType DATABASE_TYPE = DatabaseType.MYSQL;
+    private final static String DATABASE_NAME = "database";
     @InjectMocks
     CoreCredentials coreCredentials;
     @Mock
@@ -44,7 +43,7 @@ public class CoreCredentialsTest extends AbstractCoreTester {
 
     @Test
     public void get_credentials_give_the_right_list_of_db_dumper_credentials() throws DatabaseExtractionException {
-        DatabaseRef databaseRef = this.generateDatabaseRef("mysql://mydb.com/database");
+        DatabaseRef databaseRef = this.generateDatabaseRef("mysql://user@mydb.com/" + DATABASE_NAME);
         DbDumperServiceInstance dbDumperServiceInstance = this.generateDbDumperServiceInstance(databaseRef);
         DatabaseDumpFile databaseDumpFile1 = this.generateDatabaseDumpFile(1, dbDumperServiceInstance);
         DatabaseDumpFile databaseDumpFile2 = this.generateDatabaseDumpFile(2, dbDumperServiceInstance);
@@ -52,8 +51,8 @@ public class CoreCredentialsTest extends AbstractCoreTester {
         databaseDumpFile1.setCreatedAt(date);
         databaseDumpFile2.setCreatedAt(date);
 
-        DbDumperCredential dbDumperCredential1 = new DbDumperCredential(1, date, fakeUrl + "1", fakeUrl + "1", databaseDumpFile1.getFileName(), databaseDumpFile1.getSize(), databaseDumpFile1.getDeleted());
-        DbDumperCredential dbDumperCredential2 = new DbDumperCredential(2, date, fakeUrl + "2", fakeUrl + "2", databaseDumpFile2.getFileName(), databaseDumpFile2.getSize(), databaseDumpFile2.getDeleted());
+        DbDumperCredential dbDumperCredential1 = new DbDumperCredential(1, date, fakeUrl + "1", fakeUrl + "1", databaseDumpFile1.getFileName(), databaseDumpFile1.getSize(), databaseDumpFile1.getDeleted(), DATABASE_TYPE, DATABASE_NAME);
+        DbDumperCredential dbDumperCredential2 = new DbDumperCredential(2, date, fakeUrl + "2", fakeUrl + "2", databaseDumpFile2.getFileName(), databaseDumpFile2.getSize(), databaseDumpFile2.getDeleted(), DATABASE_TYPE, DATABASE_NAME);
         List<DbDumperCredential> expectedDumperCredentials = Arrays.asList(dbDumperCredential1, dbDumperCredential2);
 
         when(urlForge.createDownloadLink(databaseDumpFile1)).thenReturn(fakeUrl + databaseDumpFile1.getId());
@@ -69,7 +68,7 @@ public class CoreCredentialsTest extends AbstractCoreTester {
 
     @Test
     public void when_asking_to_have_all_dumps_for_a_database_get_credentials_give_the_right_list_of_db_dumper_credentials() throws DatabaseExtractionException {
-        DatabaseRef databaseRef = this.generateDatabaseRef("mysql://mydb.com/database");
+        DatabaseRef databaseRef = this.generateDatabaseRef("mysql://user@mydb.com/" + DATABASE_NAME);
         DbDumperServiceInstance dbDumperServiceInstance1 = this.generateDbDumperServiceInstance(databaseRef);
         DbDumperServiceInstance dbDumperServiceInstance2 = this.generateDbDumperServiceInstance(databaseRef);
 
@@ -84,10 +83,10 @@ public class CoreCredentialsTest extends AbstractCoreTester {
         databaseDumpFile3.setCreatedAt(date);
         databaseDumpFile4.setCreatedAt(date);
 
-        DbDumperCredential dbDumperCredential1 = new DbDumperCredential(1, date, fakeUrl + "1", fakeUrl + "1", databaseDumpFile1.getFileName(), databaseDumpFile1.getSize(), databaseDumpFile1.getDeleted());
-        DbDumperCredential dbDumperCredential2 = new DbDumperCredential(2, date, fakeUrl + "2", fakeUrl + "2", databaseDumpFile2.getFileName(), databaseDumpFile2.getSize(), databaseDumpFile2.getDeleted());
-        DbDumperCredential dbDumperCredential3 = new DbDumperCredential(3, date, fakeUrl + "3", fakeUrl + "3", databaseDumpFile3.getFileName(), databaseDumpFile3.getSize(), databaseDumpFile3.getDeleted());
-        DbDumperCredential dbDumperCredential4 = new DbDumperCredential(4, date, fakeUrl + "4", fakeUrl + "4", databaseDumpFile4.getFileName(), databaseDumpFile4.getSize(), databaseDumpFile4.getDeleted());
+        DbDumperCredential dbDumperCredential1 = new DbDumperCredential(1, date, fakeUrl + "1", fakeUrl + "1", databaseDumpFile1.getFileName(), databaseDumpFile1.getSize(), databaseDumpFile1.getDeleted(), DATABASE_TYPE, DATABASE_NAME);
+        DbDumperCredential dbDumperCredential2 = new DbDumperCredential(2, date, fakeUrl + "2", fakeUrl + "2", databaseDumpFile2.getFileName(), databaseDumpFile2.getSize(), databaseDumpFile2.getDeleted(), DATABASE_TYPE, DATABASE_NAME);
+        DbDumperCredential dbDumperCredential3 = new DbDumperCredential(3, date, fakeUrl + "3", fakeUrl + "3", databaseDumpFile3.getFileName(), databaseDumpFile3.getSize(), databaseDumpFile3.getDeleted(), DATABASE_TYPE, DATABASE_NAME);
+        DbDumperCredential dbDumperCredential4 = new DbDumperCredential(4, date, fakeUrl + "4", fakeUrl + "4", databaseDumpFile4.getFileName(), databaseDumpFile4.getSize(), databaseDumpFile4.getDeleted(), DATABASE_TYPE, DATABASE_NAME);
 
         List<DbDumperCredential> expectedDumperCredentials = Arrays.asList(dbDumperCredential1, dbDumperCredential2, dbDumperCredential3, dbDumperCredential4);
 
@@ -119,6 +118,7 @@ public class CoreCredentialsTest extends AbstractCoreTester {
             assertThat(actualDbDumperCredential.getDeleted()).isEqualTo(dbDumperCredential.getDeleted());
             assertThat(actualDbDumperCredential.getFilename()).isEqualTo(dbDumperCredential.getFilename());
             assertThat(actualDbDumperCredential.getTags()).isEqualTo(dbDumperCredential.getTags());
+            assertThat(actualDbDumperCredential.getDatabaseType()).isEqualTo(dbDumperCredential.getDatabaseType());
 
         }
 

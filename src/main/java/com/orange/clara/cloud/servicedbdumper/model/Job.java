@@ -61,13 +61,6 @@ public class Job {
         this.databaseRefSrc = databaseRefSrc;
     }
 
-    public Job(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance, Metadata metadata) {
-        this();
-        this.dbDumperServiceInstance = dbDumperServiceInstance;
-        this.jobType = jobType;
-        this.databaseRefSrc = databaseRefSrc;
-    }
-
     public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, DbDumperServiceInstance dbDumperServiceInstance) {
         this(jobType, databaseRefSrc, dbDumperServiceInstance);
         this.databaseRefTarget = databaseRefTarget;

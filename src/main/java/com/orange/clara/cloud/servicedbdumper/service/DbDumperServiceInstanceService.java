@@ -6,7 +6,6 @@ import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionExcept
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFileException;
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
-import com.orange.clara.cloud.servicedbdumper.helper.ParameterParser;
 import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.*;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
@@ -227,7 +226,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private void createDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException {
         String srcUrl = getParameterAsString(parameters, SRC_URL_PARAMETER, null);
         if (srcUrl == null) {
-            srcUrl = ParameterParser.getParameterAsString(parameters, NEW_SRC_URL_PARAMETER);
+            srcUrl = getParameterAsString(parameters, NEW_SRC_URL_PARAMETER);
         }
         DatabaseRef databaseRef = this.getDatabaseRefFromParams(parameters, srcUrl);
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
@@ -261,7 +260,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     private void restoreDump(Map<String, Object> parameters, DbDumperServiceInstance dbDumperServiceInstance) throws ServiceBrokerException, RestoreException {
         String targetUrl = getParameterAsString(parameters, TARGET_URL_PARAMETER, null);
         if (targetUrl == null) {
-            targetUrl = ParameterParser.getParameterAsString(parameters, NEW_TARGET_URL_PARAMETER);
+            targetUrl = getParameterAsString(parameters, NEW_TARGET_URL_PARAMETER);
         }
         String createdAtString = getParameterAsString(parameters, CREATED_AT_PARAMETER, null);
         DatabaseRef databaseRefTarget = this.getDatabaseRefFromParams(parameters, targetUrl);

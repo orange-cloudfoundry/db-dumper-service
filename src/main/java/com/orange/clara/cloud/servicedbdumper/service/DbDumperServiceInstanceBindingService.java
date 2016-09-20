@@ -141,6 +141,8 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
             dumpFile.put("filename", dbDumperCredential.getFilename());
             dumpFile.put("created_at", dateFormater.format(dbDumperCredential.getCreatedAt()));
             dumpFile.put("dump_id", dbDumperCredential.getId());
+            dumpFile.put("database_type", dbDumperCredential.getDatabaseType().name());
+            dumpFile.put("database_name", dbDumperCredential.getDatabaseName());
             dumpFile.put("size", dbDumperCredential.getSize());
             dumpFile.put("deleted", dbDumperCredential.getDeleted());
             dumpFile.put("tags", dbDumperCredential.getTags());

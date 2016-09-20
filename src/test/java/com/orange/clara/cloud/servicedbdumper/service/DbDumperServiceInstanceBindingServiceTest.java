@@ -2,10 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.service;
 
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
-import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
-import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
+import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
@@ -208,6 +205,8 @@ public class DbDumperServiceInstanceBindingServiceTest {
             assertThat(dumpFile.get("dump_id")).isEqualTo(dbDumperCredential.getId());
             assertThat(dumpFile.get("deleted")).isEqualTo(dbDumperCredential.getDeleted());
             assertThat(dumpFile.get("tags")).isEqualTo(dbDumperCredential.getTags());
+            assertThat(dumpFile.get("database_type")).isEqualTo(dbDumperCredential.getDatabaseType().name());
+            assertThat(dumpFile.get("database_name")).isEqualTo(dbDumperCredential.getDatabaseName());
         }
 
     }
@@ -223,7 +222,9 @@ public class DbDumperServiceInstanceBindingServiceTest {
                 "http://show.com/" + id,
                 "file-" + id + ".txt",
                 10L * id,
-                deleted
+                deleted,
+                DatabaseType.MYSQL,
+                "database"
         );
     }
 }

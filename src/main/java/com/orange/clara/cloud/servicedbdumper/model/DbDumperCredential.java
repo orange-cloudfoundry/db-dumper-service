@@ -24,13 +24,16 @@ public class DbDumperCredential {
     private Long size;
     private Boolean deleted;
     private List<String> tags;
+    private String databaseName;
+    private DatabaseType databaseType;
 
     public DbDumperCredential() {
         this.tags = Lists.newArrayList();
     }
 
-    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted) {
+    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted, DatabaseType databaseType, String databaseName) {
         this();
+        this.databaseType = databaseType;
         this.id = id;
         this.createdAt = createdAt;
         this.downloadUrl = downloadUrl;
@@ -38,10 +41,11 @@ public class DbDumperCredential {
         this.filename = filename;
         this.size = size;
         this.deleted = deleted;
+        this.databaseName = databaseName;
     }
 
-    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted, List<String> tags) {
-        this(id, createdAt, downloadUrl, showUrl, filename, size, deleted);
+    public DbDumperCredential(Integer id, Date createdAt, String downloadUrl, String showUrl, String filename, long size, Boolean deleted, DatabaseType databaseType, String databaseName, List<String> tags) {
+        this(id, createdAt, downloadUrl, showUrl, filename, size, deleted, databaseType, databaseName);
         this.tags = tags;
     }
 
@@ -107,6 +111,22 @@ public class DbDumperCredential {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    public DatabaseType getDatabaseType() {
+        return databaseType;
+    }
+
+    public void setDatabaseType(DatabaseType databaseType) {
+        this.databaseType = databaseType;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public boolean hasOneOfTags(String... tags) {

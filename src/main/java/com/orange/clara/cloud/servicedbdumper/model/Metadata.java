@@ -15,7 +15,7 @@ import java.util.List;
  * Date: 17/09/2016
  */
 public class Metadata {
-    List<String> tags;
+    private List<String> tags;
 
     public Metadata() {
         this.tags = Lists.newArrayList();
