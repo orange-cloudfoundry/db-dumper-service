@@ -61,7 +61,7 @@ public class CalculateQuota {
 
     public static Long calculateQuotaUsedInPercent(DbDumperServiceInstance dbDumperServiceInstance) {
         DbDumperPlan dbDumperPlan = dbDumperServiceInstance.getDbDumperPlan();
-        if (dbDumperPlan.getSize() == null) {
+        if (dbDumperPlan.getSize() == null || dbDumperPlan.getSize() == 0L) {
             return 0L;
         }
         Long quota = dbDumperPlan.getSize();

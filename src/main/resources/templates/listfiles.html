@@ -5,7 +5,7 @@
 <body>
 <div layout:fragment="content">
 
-    <h5>Database dump files</h5>
+    <h2>Database dump files</h2>
 
     <!--/*@thymesVar id="databaseRefs" type="java.util.List<com.orange.clara.cloud.servicedbdumper.model.DatabaseRef>"*/-->
     <!--/*@thymesVar id="isFree" type="java.lang.Boolean"*/-->
@@ -16,11 +16,15 @@
     <div th:if="${databaseRefs != null and databaseRefs.isEmpty() == false}">
         <div th:each="databaseRef : ${databaseRefs}">
             <!--/*@thymesVar id="databaseRef" type="com.orange.clara.cloud.servicedbdumper.model.DatabaseRef"*/-->
-            <h2 th:if="${databaseRef.databaseService == null}"
-                th:text="'Database name: '+ ${databaseRef.name}">No name</h2>
-            <h2 th:if="${databaseRef.databaseService != null}"
-                th:text="'Database name: '+${databaseRef.databaseService.name}">No name</h2>
+            <h4 th:if="${databaseRef.databaseService == null}"
+                th:text="'Database name: '+ ${databaseRef.name}">No name</h4>
+            <h4 th:if="${databaseRef.databaseService != null}"
+                th:text="'Database name: '+${databaseRef.databaseService.name}">No name</h4>
             <div>
+                <div class="progress">
+                    <div class="determinate"
+                         th:style="'width: '+ ${T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateQuotaUsedInPercent(databaseRef)}+'%'"></div>
+                </div>
                 <h5 class="center-align">( <span
                         class="blue-grey-text">Quota usage details:</span> <span
                         th:text="${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateDumpFullSize(databaseRef))} +' / '+ ${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateFullQuota(databaseRef))}"></span>
@@ -43,7 +47,7 @@
                             <div>
                                 <h5 class="center-align">( <span
                                         class="blue-grey-text">Quota usage details:</span> <span
-                                        th:text="${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateDumpFullSize(serviceInstance))} +' / '+ ${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateFullQuota(serviceInstance))}"></span>
+                                        th:text="${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateDumpFullSize(serviceInstance))} +' / '+ ${T(humanize.Humanize).binaryPrefix(serviceInstance.dbDumperPlan.getSize())}"></span>
                                     <span th:if="${!isFree}"> - <span
                                             class="blue-grey-text">Price by month: </span> <span
                                             th:text="${serviceInstance.getDbDumperPlan().getCost()} +' '+ ${currency}"></span> </span>)
@@ -73,6 +77,7 @@
                     </ul>
                 </div>
             </div>
+            <hr/>
         </div>
     </div>
 </div>

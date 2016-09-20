@@ -5,6 +5,9 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.security.AccessManager;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.CloudFoundryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -25,13 +28,21 @@ public class CloudFoundryUserAccessRight implements UserAccessRight {
     @Autowired()
     @Qualifier("cloudFoundryClientAsUser")
     private CloudFoundryClient cloudFoundryClient;
+    private Logger logger = LoggerFactory.getLogger(CloudFoundryUserAccessRight.class);
 
     @Override
     public Boolean haveAccessToServiceInstance(String serviceInstanceId) throws UserAccessRightException {
         if (accessManager.isUserIsAdmin()) {
             return true;
         }
-        return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
+        try {
+            return this.cloudFoundryClient.checkUserPermission(serviceInstanceId);
+        } catch (CloudFoundryException e) {
+            logger.error("Error during checking permission for {}, with error code {} and message {}",
+                    serviceInstanceId, e.getCloudFoundryErrorCode(), e.getDescription());
+            return false;
+        }
+
     }
 
     @Override

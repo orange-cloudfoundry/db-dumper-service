@@ -64,6 +64,7 @@ public class BootSequencePlan implements BootSequence {
         dbDumperPlan.setSize(size);
         if (this.isFree) {
             dbDumperPlan.setCost(0.0F);
+            dbDumperPlan.setSize(0L);
         } else {
             dbDumperPlan.setCost(this.getCost(plan));
         }

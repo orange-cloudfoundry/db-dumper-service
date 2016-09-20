@@ -39,6 +39,9 @@ public class UaaConfig {
     @Bean
     @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public OAuth2AccessToken getOAuth2AccessToken() {
+        if (!(SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2Authentication)) {
+            return null;
+        }
         OAuth2Authentication oAuth2Authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
         final OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) oAuth2Authentication.getDetails();
         return new DefaultOAuth2AccessToken(details.getTokenValue());
@@ -48,7 +51,11 @@ public class UaaConfig {
     @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public CloudFoundryClient getCloudFoundryClientAsUser() throws MalformedURLException {
         LOGGER.debug("Creating new CloudFoundry client using access token");
-        return cloudFoundryClientFactory.createCloudFoundryClient(getOAuth2AccessToken(), this.cloudControllerUrl);
+        OAuth2AccessToken oAuth2AccessToken = getOAuth2AccessToken();
+        if (oAuth2AccessToken == null) {
+            return null;
+        }
+        return cloudFoundryClientFactory.createCloudFoundryClient(oAuth2AccessToken, this.cloudControllerUrl);
     }
 
 }

@@ -141,8 +141,6 @@ public class ManagerController {
     public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request, @RequestParam(value = "original", required = false) String original)
             throws IOException, UserAccessRightException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
-        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
-        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
         String userRequest = "";
         String passwordRequest = "";
         String authorization = request.getHeader("Authorization");
