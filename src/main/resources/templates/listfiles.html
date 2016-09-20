@@ -20,7 +20,7 @@
                 th:text="'Database name: '+ ${databaseRef.name}">No name</h4>
             <h4 th:if="${databaseRef.databaseService != null}"
                 th:text="'Database name: '+${databaseRef.databaseService.name}">No name</h4>
-            <div>
+            <div th:if="${isFree == false}">
                 <div class="progress">
                     <div class="determinate"
                          th:style="'width: '+ ${T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateQuotaUsedInPercent(databaseRef)}+'%'"></div>
@@ -40,12 +40,12 @@
                         <li class="collection-header">
                             <h4 th:text="'Instance id: '+ ${serviceInstance.serviceInstanceId}">No name</h4>
 
-                            <div class="progress">
+                            <div class="progress" th:if="${isFree == false}">
                                 <div class="determinate"
                                      th:style="'width: '+ ${T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateQuotaUsedInPercent(serviceInstance)}+'%'"></div>
                             </div>
                             <div>
-                                <h5 class="center-align">( <span
+                                <h5 class="center-align" th:if="${isFree == false}">( <span
                                         class="blue-grey-text">Quota usage details:</span> <span
                                         th:text="${T(humanize.Humanize).binaryPrefix(T(com.orange.clara.cloud.servicedbdumper.helper.CalculateQuota).calculateDumpFullSize(serviceInstance))} +' / '+ ${T(humanize.Humanize).binaryPrefix(serviceInstance.dbDumperPlan.getSize())}"></span>
                                     <span th:if="${!isFree}"> - <span
