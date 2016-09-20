@@ -96,9 +96,9 @@
             <artifactId>spring-boot-starter-tomcat</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.pivotal.spring.cloud</groupId>
-            <artifactId>cloudfoundry-certificate-truster</artifactId>
-            <version>1.0.1.RELEASE</version>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-cloudfoundry-web</artifactId>
+            <version>1.0.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
