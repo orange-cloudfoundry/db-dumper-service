@@ -8,38 +8,51 @@ host: db-dumper-service
 timeout: 180
 env:
   spring_profiles_active: cloud,core,uaa
-  logging_level_com_orange_clara_cloud_servicedbdumper: INFO # you can change the verbosity to: WARN, DEBUG, ERROR
-  broker_username: myUs3r
-  broker_password: myPasssw0rd
-  admin_username: my@dmin
-  admin_password: myPasssw0rd
+  service_definition_id: db-dumper-service # your service broker name id for multi-db-dumper-service instances. Note db-dumper-cli-plugin leverages the default value "db-dumper-service" as default, avoid changing unless necessary
+
+  JBP_CONFIG_CONTAINER_CERTIFICATE_TRUST_STORE: '{enabled: true}' # All certificates passed by cloud foundry to container are valid
+  JAVA_OPTS: -Djava.security.egd=file:/dev/urandom -Dogging.level.com.orange.clara.cloud.servicedbdumper=INFO # you can change the verbosity to: WARN, DEBUG, ERROR
+
+  broker_username: myUs3r # Broker's username which will be used by cloud foundry to manipulate the broker
+  broker_password: myPasssw0rd # Broker's password which will be used by cloud foundry to manipulate the broker
+  admin_username: my@dmin # Admin username for dashboard
+  admin_password: myPasssw0rd # Admin password for dashboard
+
+  cloud_controller_url: https://your.api.cf.url.com # url of your cloudfoundry api
   cf_admin_user: dbdump3rus3r # user login of a cloudfoundry user for db-dumper-service
   cf_admin_password: dbdump3rpassw0rd # user password of a cloudfoundry user for db-dumper-service
+
   filer_type: GzipS3 # this is create a compressed dump and send to S3 -- other value is: S3 (this will send dump to S3 without compression)
-  use_ssl: false # If you will be on https set this value to true
-  CF_TARGET: https://your.uaa.url.com # url of your uaa (set it if you want to also use uaa). This url is also used to download the TLS certificate and trust it as valid for the cloudcontroller URL
-  cloud_controller_url: https://your.api.cf.url.com # url of your cloudfoundry api
+  use_ssl: true # if set to true it will force to use https
+
+  uaa_url: https://your.uaa.url.com # url of your uaa (set it if you want to also use uaa). This url is also used to download the TLS certificate and trust it as valid for the cloudcontroller URL
   security_oauth2_client_clientId: your-client-id-uaa
   security_oauth2_client_clientSecret: your-client-secret-uaa
-  service_definition_id: db-dumper-service # your service broker name id for multi-db-dumper-service instances. Note db-dumper-cli-plugin leverages the default value "db-dumper-service" as default, avoid changing unless necessary
+
   # Cost definitions
-  service_definition_is_free: true # set it to false to use calculated cost after
-  service_definition_currency: usd # change to your local currency
-  service_definition_cost_mb: 0.1 # how much cost to save 1mb by month following your currency (here 1 cents)
-  service_definition_quota: 100mb,1gb # add any quota you want (e.g: 10gb or 12ko).
+  service_definition_is_free: true # set it to false to use calculated cost after (uncomment). If true only a plan unlimited will be created and everything will be free
+  #service_definition_currency: usd # change to your local currency
+  #service_definition_cost_mb: 0.1 # how much cost to save 1mb by month following your currency (here 1 cents)
+  #service_definition_quota: 100mb,1gb # add any quota you want (e.g: 10gb or 12ko).
   ## Formulas
   # (`quota` is for quota*service_definition_cost_mb price) formulas corresponding to each quota to calculate price
   # in following for 100mb the price will be 100mb*service_definition_cost_mb and for 1gb it will be 90% of 1gb*service_definition_cost_mb
   # If you set only one formula this formula will be played for all quota
   service_definition_cost_formulas: quota,0.90*quota
+
   # uncomment if you want to plug to a spring-boot-admin app (see: https://github.com/codecentric/spring-boot-admin)
   #spring_boot_admin_url: http://spring-boot-admin.your.url.com
   #spring_boot_admin_username: spring-boot-admin-user
   #spring_boot_admin_password: spring-boot-admin-password
-  job_errored_delete_expiration_days: 2
-  job_finished_delete_expiration_minutes: 8
-  dump_delete_expiration_days: 5
+
+  #Job are asynchronous concept which do the dump, restore and deletion of dumps
+  job_errored_delete_expiration_days: 2 # Delete a job in error from database after this number of days
+  job_finished_delete_expiration_minutes: 8 # Delete a finished job from database after this number of minutes
+
+  dump_delete_expiration_days: 5 # Delete really a dump from filer after this number of days
+
   encryption_key: PleaseChangeIt_64568sdfs54gr86 # This encryption key is used to encrypt databases passwords in database
+
   #when you do not use uaa, dashboard use basic auth with a default user: user/password . Set and uncomment those env var to change name and password
   #user_username: user
   #user_password: password
