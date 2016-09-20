@@ -55,16 +55,15 @@ public class BootSequencePlan implements BootSequence {
             dbDumperPlan = new DbDumperPlan(plan.getId());
         }
         dbDumperPlan.setName(plan.getName());
-        Long size = null;
+        Long size = 0L;
         try {
             size = ByteFormat.parse(plan.getName());
         } catch (Exception e) {
-            size = null;
+            size = 0L;
         }
         dbDumperPlan.setSize(size);
         if (this.isFree) {
             dbDumperPlan.setCost(0.0F);
-            dbDumperPlan.setSize(0L);
         } else {
             dbDumperPlan.setCost(this.getCost(plan));
         }

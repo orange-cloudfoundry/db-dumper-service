@@ -83,9 +83,15 @@ public class ManagerController {
         }
     }
 
-    private void checkDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) throws UserAccessRightException {
+    private void checkDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
         if (dbDumperServiceInstance.isDeleted()) {
-            throw new IllegalArgumentException(String.format("Database with name '%s' has been deleted", dbDumperServiceInstance.getDatabaseRef().getName()));
+            throw new IllegalArgumentException(String.format("Instance with for database reference '%s' has been deleted", dbDumperServiceInstance.getDatabaseRef().getName()));
+        }
+    }
+
+    private void checkDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) throws DumpFileDeletedException {
+        if (databaseDumpFile.isDeleted()) {
+            throw new DumpFileDeletedException(databaseDumpFile);
         }
     }
 
@@ -93,9 +99,7 @@ public class ManagerController {
         if (!databaseDumpFile.isShowable()) {
             throw new DumpFileShowException(databaseDumpFile);
         }
-        if (databaseDumpFile.isDeleted()) {
-            throw new DumpFileDeletedException(databaseDumpFile);
-        }
+        this.checkDatabaseDumpFile(databaseDumpFile);
     }
 
     @RequestMapping(Routes.SHOW_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}")
@@ -139,8 +143,10 @@ public class ManagerController {
 
     @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request, @RequestParam(value = "original", required = false) String original)
-            throws IOException, UserAccessRightException {
+            throws IOException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
+        this.checkDbDumperServiceInstance(databaseDumpFile.getDbDumperServiceInstance());
+        this.checkDatabaseDumpFile(databaseDumpFile);
         String userRequest = "";
         String passwordRequest = "";
         String authorization = request.getHeader("Authorization");
@@ -154,6 +160,7 @@ public class ManagerController {
         } else {
             return this.getErrorResponseEntityBasicAuth();
         }
+
         if (!userRequest.equals(databaseDumpFile.getUser()) || !passwordRequest.equals(databaseDumpFile.getPassword())) {
             return this.getErrorResponseEntityBasicAuth();
         }
