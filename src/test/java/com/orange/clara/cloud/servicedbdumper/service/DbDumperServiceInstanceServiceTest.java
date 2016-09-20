@@ -5,7 +5,10 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.DatabaseRefManager;
 import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.*;
-import com.orange.clara.cloud.servicedbdumper.repo.*;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperPlanRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -63,8 +66,7 @@ public class DbDumperServiceInstanceServiceTest {
     JobFactory jobFactory;
     @Mock
     JobRepo jobRepo;
-    @Mock
-    DatabaseRefRepo databaseRefRepo;
+
     @Mock
     DbDumperPlanRepo dbDumperPlanRepo;
     private DbDumperServiceInstance dbDumperServiceInstance;

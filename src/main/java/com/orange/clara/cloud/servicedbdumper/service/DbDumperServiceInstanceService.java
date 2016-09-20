@@ -7,7 +7,10 @@ import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFileExc
 import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
 import com.orange.clara.cloud.servicedbdumper.exception.ServiceKeyException;
 import com.orange.clara.cloud.servicedbdumper.model.*;
-import com.orange.clara.cloud.servicedbdumper.repo.*;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperPlanRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
 import org.cloudfoundry.community.servicebroker.exception.ServiceBrokerException;
 import org.cloudfoundry.community.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -96,9 +99,6 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
 
     @Autowired
     private JobRepo jobRepo;
-
-    @Autowired
-    private DatabaseRefRepo databaseRefRepo;
 
     @Autowired
     private DbDumperPlanRepo dbDumperPlanRepo;

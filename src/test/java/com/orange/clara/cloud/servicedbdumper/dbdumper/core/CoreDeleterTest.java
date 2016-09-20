@@ -11,7 +11,6 @@ import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
-import com.orange.clara.cloud.servicedbdumper.repo.DatabaseRefRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +47,6 @@ public class CoreDeleterTest extends AbstractCoreTester {
     DatabaseDumpFileRepo databaseDumpFileRepo;
 
     @Mock
-    DatabaseRefRepo databaseRefRepo;
-
-    @Mock
     DbDumperServiceInstanceRepo serviceInstanceRepo;
 
     DatabaseRef databaseRef;
@@ -75,14 +71,14 @@ public class CoreDeleterTest extends AbstractCoreTester {
 
     @Test
     public void delete_database_dump_from_database_ref_remove_all_database_dump_from_database_ref() throws CannotFindDatabaseDumperException {
-        when(databaseRefRepo.save((DatabaseRef) notNull())).thenReturn(null);
+        when(serviceInstanceRepo.save((DbDumperServiceInstance) notNull())).thenReturn(null);
         this.coreDeleter.deleteAll(dbDumperServiceInstance);
         assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(0);
     }
 
     @Test
     public void delete_database_dump_remove_dump_from_database_ref() throws CannotFindDatabaseDumperException {
-        when(databaseRefRepo.save((DatabaseRef) notNull())).thenReturn(null);
+        when(serviceInstanceRepo.save((DbDumperServiceInstance) notNull())).thenReturn(null);
         this.coreDeleter.delete(databaseDumpFile);
         assertThat(dbDumperServiceInstance.getDatabaseDumpFiles()).hasSize(1);
     }
