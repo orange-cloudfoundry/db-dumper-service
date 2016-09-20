@@ -26,6 +26,8 @@ public interface DatabaseDumpFileRepo extends
 
     List<DatabaseDumpFile> findByDeletedTrueOrderByDeletedAtAsc();
 
+    List<DatabaseDumpFile> findByDeletedFalseOrderByCreatedAtAsc();
+
     DatabaseDumpFile findByDbDumperServiceInstanceAndCreatedAt(DbDumperServiceInstance dbDumperServiceInstance, Date date);
 
     DatabaseDumpFile findFirstByDbDumperServiceInstanceAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(DbDumperServiceInstance dbDumperServiceInstance, Date date);
