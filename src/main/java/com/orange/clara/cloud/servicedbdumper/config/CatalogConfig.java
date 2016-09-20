@@ -42,6 +42,9 @@ public class CatalogConfig {
     @Value("${service.definition.id:db-dumper-service}")
     private String serviceDefinitionId;
 
+    @Value("${app.maven.version:0.0.1}")
+    private String version;
+
     @Value("${dump.delete.expiration.days:5}")
     private Integer dumpDeleteExpirationDays;
 
@@ -155,10 +158,10 @@ public class CatalogConfig {
 
     private Map<String, Object> getServiceDefinitionMetadata() {
         sdMetadata.put("displayName", "db-dumper-service");
-        sdMetadata.put("longDescription", "db-dumper-service");
+        sdMetadata.put("longDescription", "db-dumper-service v" + version);
         sdMetadata.put("providerDisplayName", "Orange");
-        sdMetadata.put("documentationUrl", "https://github.com/Orange-OpenSource/db-dumper-service");
-        sdMetadata.put("supportUrl", "https://github.com/Orange-OpenSource/db-dumper-service");
+        sdMetadata.put("documentationUrl", "https://github.com/orange-cloudfoundry/db-dumper-service/tree/v" + version);
+        sdMetadata.put("supportUrl", "https://github.com/orange-cloudfoundry/db-dumper-service/tree/v" + version);
         return sdMetadata;
     }
 

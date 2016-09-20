@@ -16,6 +16,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+app:
+  maven:
+    version: @project.version@
 security:
   require-ssl: ${use.ssl:false}
   user:
