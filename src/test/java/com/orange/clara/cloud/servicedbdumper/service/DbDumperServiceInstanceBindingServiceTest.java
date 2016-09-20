@@ -2,6 +2,7 @@ package com.orange.clara.cloud.servicedbdumper.service;
 
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
+import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
 import com.orange.clara.cloud.servicedbdumper.model.*;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -51,8 +53,8 @@ public class DbDumperServiceInstanceBindingServiceTest {
     private final static DbDumperServiceInstance dbDumperServiceInstance = new DbDumperServiceInstance(serviceId, planId, "org-1", "space-1", "http://dashboard.com", null);
     private final static DeleteServiceInstanceBindingRequest deleteRequest = new DeleteServiceInstanceBindingRequest(bindingId, null, serviceId, planId);
     private final static DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding = new DbDumperServiceInstanceBinding(bindingId, dbDumperServiceInstance, appGuid);
-    private final static DatabaseRef databaseRef = new DatabaseRef();
-
+    private final static String DATABASE_URI = "mysql://user@local/mydb";
+    private final static DatabaseType DATABASE_TYPE = DatabaseType.MYSQL;
     @InjectMocks
     DbDumperServiceInstanceBindingService instanceBindingService;
     String dateFormat = "dd-MM-yyyy HH:mm";
@@ -62,6 +64,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
     DbDumperServiceInstanceRepo repositoryInstance;
     @Mock
     Credentials credentials;
+    private DatabaseRef databaseRef;
     private Map<String, Object> parameters;
     private CreateServiceInstanceBindingRequest createRequest;
     private DbDumperCredential dbDumperCredential1;
@@ -70,8 +73,10 @@ public class DbDumperServiceInstanceBindingServiceTest {
     private List<DbDumperCredential> dbDumperCredentials;
 
     @Before
-    public void init() {
+    public void init() throws DatabaseExtractionException {
         initMocks(this);
+        databaseRef = new DatabaseRef("mydb", URI.create(DATABASE_URI));
+        databaseRef.setType(DATABASE_TYPE);
         dbDumperServiceInstance.setDatabaseRef(databaseRef);
         parameters = Maps.newHashMap();
         createRequest = new CreateServiceInstanceBindingRequest(serviceDefinitionId, planId, appGuid, parameters)
@@ -194,6 +199,8 @@ public class DbDumperServiceInstanceBindingServiceTest {
         List<Map<String, Object>> dumpFiles = (List<Map<String, Object>>) credentials.get("dumps");
         assertThat(dumpFiles).hasSize(dbDumperCredentials.size());
         SimpleDateFormat dateFormater = new SimpleDateFormat(this.dateFormat);
+        assertThat(credentials.get("database_type")).isEqualTo(DATABASE_TYPE.name());
+        assertThat(credentials.get("database_ref")).isEqualTo(databaseRef.getInUrlFormat());
         for (int i = 0; i < dumpFiles.size(); i++) {
             Map<String, Object> dumpFile = dumpFiles.get(i);
             DbDumperCredential dbDumperCredential = dbDumperCredentials.get(i);
@@ -205,8 +212,6 @@ public class DbDumperServiceInstanceBindingServiceTest {
             assertThat(dumpFile.get("dump_id")).isEqualTo(dbDumperCredential.getId());
             assertThat(dumpFile.get("deleted")).isEqualTo(dbDumperCredential.getDeleted());
             assertThat(dumpFile.get("tags")).isEqualTo(dbDumperCredential.getTags());
-            assertThat(dumpFile.get("database_type")).isEqualTo(dbDumperCredential.getDatabaseType().name());
-            assertThat(dumpFile.get("database_name")).isEqualTo(dbDumperCredential.getDatabaseName());
         }
 
     }
@@ -222,9 +227,7 @@ public class DbDumperServiceInstanceBindingServiceTest {
                 "http://show.com/" + id,
                 "file-" + id + ".txt",
                 10L * id,
-                deleted,
-                DatabaseType.MYSQL,
-                "database"
+                deleted
         );
     }
 }

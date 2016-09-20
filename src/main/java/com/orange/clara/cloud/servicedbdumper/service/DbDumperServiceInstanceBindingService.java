@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Credentials;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperCredential;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstanceBinding;
@@ -84,8 +85,11 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         if (tags != null) {
             dumperCredentials = this.filterByTags(dumperCredentials, tags);
         }
-
+        DatabaseRef databaseRef = serviceInstanceBinding.getDbDumperServiceInstance().getDatabaseRef();
         Map<String, Object> credentials = this.extractCredentials(dumperCredentials);
+        credentials.put("database_type", databaseRef.getType().name());
+        credentials.put("database_ref", this.extractDatabaseName(databaseRef));
+
         repositoryInstanceBinding.save(serviceInstanceBinding);
         return new ServiceInstanceBinding(
                 request.getBindingId(),
@@ -141,8 +145,6 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
             dumpFile.put("filename", dbDumperCredential.getFilename());
             dumpFile.put("created_at", dateFormater.format(dbDumperCredential.getCreatedAt()));
             dumpFile.put("dump_id", dbDumperCredential.getId());
-            dumpFile.put("database_type", dbDumperCredential.getDatabaseType().name());
-            dumpFile.put("database_name", dbDumperCredential.getDatabaseName());
             dumpFile.put("size", dbDumperCredential.getSize());
             dumpFile.put("deleted", dbDumperCredential.getDeleted());
             dumpFile.put("tags", dbDumperCredential.getTags());
@@ -150,5 +152,12 @@ public class DbDumperServiceInstanceBindingService implements ServiceInstanceBin
         }
         credentials.put("dumps", dumpFiles);
         return credentials;
+    }
+
+    private String extractDatabaseName(DatabaseRef databaseRef) {
+        if (databaseRef.getDatabaseService() != null) {
+            return databaseRef.getDatabaseService().getName();
+        }
+        return databaseRef.getInUrlFormat();
     }
 }

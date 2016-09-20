@@ -31,7 +31,6 @@ public class CoreCredentials implements Credentials {
         List<DbDumperCredential> dbDumperCredentials = Lists.newArrayList();
         List<DatabaseDumpFile> databaseDumpFiles = dbDumperServiceInstance.getDatabaseDumpFiles();
         for (DatabaseDumpFile databaseDumpFile : databaseDumpFiles) {
-            String databaseName = this.extractDatabaseName(databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef());
             DbDumperCredential dbDumperCredential = new DbDumperCredential(
                     databaseDumpFile.getId(),
                     databaseDumpFile.getCreatedAt(),
@@ -39,9 +38,7 @@ public class CoreCredentials implements Credentials {
                     urlForge.createShowLink(databaseDumpFile),
                     databaseDumpFile.getFileName(),
                     databaseDumpFile.getSize(),
-                    databaseDumpFile.getDeleted(),
-                    databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getType(),
-                    databaseName
+                    databaseDumpFile.getDeleted()
             );
             if (databaseDumpFile.getMetadata() != null) {
                 dbDumperCredential.setTags(databaseDumpFile.getMetadata().getTags());
@@ -60,10 +57,4 @@ public class CoreCredentials implements Credentials {
         return dbDumperCredentials;
     }
 
-    private String extractDatabaseName(DatabaseRef databaseRef) {
-        if (databaseRef.getDatabaseService() != null) {
-            return databaseRef.getDatabaseService().getName();
-        }
-        return databaseRef.getInUrlFormat();
-    }
 }

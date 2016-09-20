@@ -146,6 +146,8 @@ When you bind to your service instance you could find dumps created by your serv
 
 ```json
 {
+  "database_type": "mysql",
+  "database_ref": "uri or service name passed",
   "dumps": [
     {
       "dump_id": "1",
@@ -153,8 +155,6 @@ When you bind to your service instance you could find dumps created by your serv
       "show_url": "http://url.of.db.dumper/1",
       "filename": "file.sql.gzip",
       "created_at": "01-01-1970 00:00",
-      "database_type": "mysql",
-      "database_name": "uri or service name passed",
       "size": 20, // filesize in bytes
       "deleted": false,
       "tags": [

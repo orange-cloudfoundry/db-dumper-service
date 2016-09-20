@@ -437,6 +437,13 @@ databaseChangeLog:
               type: varchar(255)
               constraints:
                 nullable: true
+      - dropUniqueConstraint:
+          constraintName: unique_database_dump_file_created_at
+          tableName: database_dump_file
+      - dropNotNullConstraint:
+          tableName: database_dump_file
+          columnName: database_ref_id
+          columnDataType: varchar(255)
   - changeSet:
       id: 4
       author: arthurhalet
@@ -449,6 +456,9 @@ databaseChangeLog:
       id: 5
       author: arthurhalet
       changes:
+      - dropForeignKeyConstraint:
+          baseTableName: database_dump_file
+          constraintName: fk_database_dump_file_database_ref
       - addNotNullConstraint:
           columnDataType: varchar(255)
           columnName: service_instance_id
@@ -457,9 +467,6 @@ databaseChangeLog:
           tableName: db_dumper_service_instance
           columnName: database_ref_id
           columnDataType: varchar(255)
-      - dropUniqueConstraint:
-          constraintName: unique_database_dump_file_created_at
-          tableName: database_dump_file
       - dropColumn:
           tableName: database_dump_file
           columnName: database_ref_id
