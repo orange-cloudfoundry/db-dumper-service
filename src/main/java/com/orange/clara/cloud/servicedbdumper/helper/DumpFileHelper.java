@@ -1,5 +1,8 @@
 package com.orange.clara.cloud.servicedbdumper.helper;
 
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+
 /**
  * Copyright (C) 2016 Orange
  * <p>
@@ -11,4 +14,12 @@ package com.orange.clara.cloud.servicedbdumper.helper;
  * Date: 21/09/2016
  */
 public class DumpFileHelper {
+
+    public static String getFilePath(DatabaseDumpFile databaseDumpFile) {
+        return databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+    }
+
+    public static String getFilePath(DatabaseRef databaseRef, String filename) {
+        return databaseRef.getName() + "/" + filename;
+    }
 }

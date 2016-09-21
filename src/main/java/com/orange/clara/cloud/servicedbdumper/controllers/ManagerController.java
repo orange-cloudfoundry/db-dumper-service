@@ -6,6 +6,7 @@ import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.helper.DumpFileHelper;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
@@ -39,7 +40,7 @@ import java.util.Base64;
  */
 @Controller
 @RequestMapping(value = Routes.MANAGE_ROOT)
-public class ManagerController {
+public class ManagerController extends AbstractController {
 
     @Autowired
     private Filer filer;
@@ -60,9 +61,7 @@ public class ManagerController {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());
         this.checkDumpShowable(databaseDumpFile);
-        String databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName();
-        String fileName = databaseDumpFile.getFileName();
-        fileName = databaseName + "/" + fileName;
+        String fileName = DumpFileHelper.getFilePath(databaseDumpFile);
         InputStream inputStream = this.filer.retrieveWithStream(fileName);
 
         String content = "";
@@ -109,7 +108,7 @@ public class ManagerController {
         this.checkDumpShowable(databaseDumpFile);
         String databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName();
         String fileName = databaseDumpFile.getFileName();
-        String finalFileName = databaseName + "/" + fileName;
+        String finalFileName = DumpFileHelper.getFilePath(databaseDumpFile);
         InputStream inputStream = this.filer.retrieveWithStream(finalFileName);
 
         String content = "";
@@ -166,7 +165,7 @@ public class ManagerController {
             return this.getErrorResponseEntityBasicAuth();
         }
         HttpHeaders respHeaders = new HttpHeaders();
-        String fileName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+        String fileName = DumpFileHelper.getFilePath(databaseDumpFile);
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         InputStream inputStream = null;
         if (original == null || original.isEmpty()) {

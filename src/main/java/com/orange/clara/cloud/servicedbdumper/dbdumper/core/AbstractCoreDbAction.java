@@ -3,6 +3,7 @@ package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.helper.DumpFileHelper;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
@@ -143,7 +144,7 @@ public abstract class AbstractCoreDbAction {
     }
 
     protected String getFileName(DatabaseDumpFile databaseDumpFile) {
-        return databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName() + "/" + databaseDumpFile.getFileName();
+        return DumpFileHelper.getFilePath(databaseDumpFile);
     }
 
     protected String generateFileName(DatabaseRef databaseRef, DatabaseDriver databaseDriver) {
@@ -151,7 +152,7 @@ public abstract class AbstractCoreDbAction {
         SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);
         String filename = form.format(d) + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();
         int i = 1;
-        while (this.filer.exists(databaseRef.getName() + "/" + filename)) {
+        while (this.filer.exists(DumpFileHelper.getFilePath(databaseRef, filename))) {
             filename = form.format(d) + "(" + i + ")" + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();
             i++;
         }

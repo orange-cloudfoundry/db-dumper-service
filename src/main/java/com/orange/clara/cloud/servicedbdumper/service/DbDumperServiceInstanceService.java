@@ -169,7 +169,6 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
             logger.warn("The service instance '" + request.getServiceInstanceId() + "' doesn't exist. Defaulting to say to cloud controller that instance is deleted.");
             return new ServiceInstance(request);
         }
-        String dbRefName = dbDumperServiceInstance.getDatabaseRef().getName();
         this.jobRepo.deleteByDbDumperServiceInstance(dbDumperServiceInstance);
 
 
