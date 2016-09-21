@@ -4,6 +4,8 @@ import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Copyright (C) 2015 Orange
  * <p/>
@@ -16,4 +18,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DbDumperServiceInstanceRepo extends PagingAndSortingRepository<DbDumperServiceInstance, String> {
+    List<DbDumperServiceInstance> findByDeletedTrue();
 }

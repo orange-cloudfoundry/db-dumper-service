@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.model.JobType;
 import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceBindingRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.PublicMetrics;
@@ -31,6 +33,12 @@ public class DbDumperMetrics implements PublicMetrics {
 
     @Autowired
     private DatabaseDumpFileRepo dumpFileRepo;
+
+    @Autowired
+    private DbDumperServiceInstanceRepo serviceInstanceRepo;
+
+    @Autowired
+    private DbDumperServiceInstanceBindingRepo serviceInstanceBindingRepo;
 
     @Override
     public Collection<Metric<?>> metrics() {
@@ -61,6 +69,17 @@ public class DbDumperMetrics implements PublicMetrics {
         metrics.add(new Metric<Integer>(
                 namespace + ".number.dumps.deleted",
                 dumpFileRepo.findByDeletedTrueOrderByDeletedAtAsc().size()));
+
+        metrics.add(new Metric<Integer>(
+                namespace + ".number.service.instances",
+                Lists.newArrayList(serviceInstanceRepo.findAll()).size()));
+        metrics.add(new Metric<Integer>(
+                namespace + ".number.service.instances.deleted",
+                serviceInstanceRepo.findByDeletedTrue().size()));
+
+        metrics.add(new Metric<Integer>(
+                namespace + ".number.service.bindings",
+                Lists.newArrayList(serviceInstanceBindingRepo.findAll()).size()));
 
         metrics.add(new Metric<Integer>(
                 namespace + ".number.jobs",
