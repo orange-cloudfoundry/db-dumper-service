@@ -5,7 +5,9 @@ import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
+import com.orange.clara.cloud.servicedbdumper.filer.ChunkFiler;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.filer.chunk.ChunkStream;
 import com.orange.clara.cloud.servicedbdumper.helper.DumpFileHelper;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
@@ -44,6 +46,9 @@ public class ManagerController extends AbstractController {
 
     @Autowired
     private Filer filer;
+
+    @Autowired
+    private ChunkStream chunkStream;
 
     @Autowired
     @Qualifier("userAccessRight")
@@ -168,11 +173,12 @@ public class ManagerController extends AbstractController {
         String fileName = DumpFileHelper.getFilePath(databaseDumpFile);
         respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         InputStream inputStream = null;
+        ChunkFiler chunkFiler = new ChunkFiler(this.filer, this.chunkStream);
         if (original == null || original.isEmpty()) {
             respHeaders.setContentLength(this.filer.getContentLength(fileName));
-            inputStream = this.filer.retrieveWithOriginalStream(fileName);
+            inputStream = chunkFiler.retrieveWithOriginalStream(fileName);
         } else {
-            inputStream = this.filer.retrieveWithStream(fileName);
+            inputStream = chunkFiler.retrieveWithStream(fileName);
             File file = new File(fileName);
             String[] filenames = file.getName().split("\\.");
             if (filenames.length >= 2) {
