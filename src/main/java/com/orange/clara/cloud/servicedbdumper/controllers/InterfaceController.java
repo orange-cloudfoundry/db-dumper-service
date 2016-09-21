@@ -84,7 +84,8 @@ public class InterfaceController {
         List<DbDumperServiceInstance> serviceInstancesFinal = Lists.newArrayList();
         for (DbDumperServiceInstance serviceInstance : serviceInstances) {
             if (!this.userAccessRight.haveAccessToServiceInstance(serviceInstance)
-                    || serviceInstancesFinal.contains(serviceInstance)) {
+                    || serviceInstancesFinal.contains(serviceInstance)
+                    || serviceInstance.isDeleted()) {
                 continue;
             }
             serviceInstancesFinal.add(serviceInstance);
