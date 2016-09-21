@@ -99,6 +99,9 @@ public class DbDumperMetrics implements PublicMetrics {
         metrics.add(new Metric<Integer>(
                 namespace + ".number.jobs.paused",
                 jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.PAUSED).size()));
+        metrics.add(new Metric<Integer>(
+                namespace + ".number.jobs.finished",
+                jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.FINISHED).size()));
         return metrics;
     }
 }
