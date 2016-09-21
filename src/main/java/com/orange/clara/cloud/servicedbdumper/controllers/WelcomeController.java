@@ -17,7 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
  * Date: 10/12/2015
  */
 @Controller
-public class WelcomeController {
+public class WelcomeController extends AbstractController {
 
     @RequestMapping("/")
     public ModelAndView defaultRoute() {
@@ -26,11 +26,13 @@ public class WelcomeController {
 
     @RequestMapping(Routes.MANAGE_ROOT)
     public String welcome(Model model) {
+        this.addDefaultAttribute(model);
         return "welcome";
     }
 
     @RequestMapping({Routes.MANAGE_ADMIN_ROOT, Routes.MANAGE_ADMIN_ROOT_ALTERNATIVE})
     public String welcomeAdmin(Model model) {
+        this.addDefaultAttribute(model);
         return "welcome";
     }
 }

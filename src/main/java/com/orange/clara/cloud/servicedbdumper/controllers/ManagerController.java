@@ -126,6 +126,7 @@ public class ManagerController {
         model.addAttribute("fileName", fileName);
         model.addAttribute("id", dumpFileId);
         model.addAttribute("sql", content);
+        this.addDefaultAttribute(model);
         return "show";
     }
 

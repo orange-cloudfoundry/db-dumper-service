@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-BASEDIR=$(dirname $0)
-"${BASEDIR}/mysql" --host=$1 --port=$2 --user=$3 --password=$4 $5 < "${BASEDIR}/$6" &> "${BASEDIR}/log.txt"
-OUT=$?
-if [ $OUT -eq 0 ];then
-    echo "1" > "${BASEDIR}/push_state.txt"
-else
-    cat "${BASEDIR}/log.txt" > "${BASEDIR}/push_state.txt"
-fi

@@ -63,12 +63,12 @@
     <div class="container">
         <div layout:fragment="content"></div>
     </div>
-
+    <!--/*@thymesVar id="appVersion" type="java.lang.String"*/-->
     <footer class="page-footer blue-grey">
         <div class="footer-copyright">
             <div class="container">
                 Made by <a class="orange-text text-lighten-3" href="https://github.com/Orange-OpenSource/elpaaso">ElPaaSo
-                Team</a>
+                Team</a> - Db-dumper-service version <a th:text="${appVersion}" class="orange-text text-lighten-3" th:href="@{'https://github.com/orange-cloudfoundry/db-dumper-service/tree/v'+${appVersion}}">0.0.1</a>
             </div>
         </div>
     </footer>

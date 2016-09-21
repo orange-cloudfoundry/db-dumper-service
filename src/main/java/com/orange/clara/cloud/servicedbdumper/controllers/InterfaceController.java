@@ -31,7 +31,7 @@ import java.util.List;
  */
 @Controller
 @RequestMapping(value = Routes.MANAGE_ROOT)
-public class InterfaceController {
+public class InterfaceController extends AbstractController {
 
     @Autowired
     private DatabaseRefRepo databaseRefRepo;
@@ -43,6 +43,7 @@ public class InterfaceController {
     @Autowired
     @Qualifier("currency")
     private String currency;
+
 
     @Autowired
     @Qualifier("isFree")
@@ -59,6 +60,7 @@ public class InterfaceController {
         model.addAttribute("urlForge", urlForge);
         model.addAttribute("currency", currency);
         model.addAttribute("isFree", isFree);
+        this.addDefaultAttribute(model);
         return "listfiles";
     }
 
@@ -101,12 +103,15 @@ public class InterfaceController {
         }
         List<DatabaseRef> databaseRefs = Lists.newArrayList();
         if (serviceInstance != null) {
-            databaseRefs.add(serviceInstance.getDatabaseRef());
+            DatabaseRef databaseRef = serviceInstance.getDatabaseRef();
+            databaseRef.setDbDumperServiceInstances(Lists.newArrayList(serviceInstance));
+            databaseRefs.add(databaseRef);
         }
         model.addAttribute("databaseRefs", databaseRefs);
         model.addAttribute("urlForge", urlForge);
         model.addAttribute("currency", currency);
         model.addAttribute("isFree", isFree);
+        this.addDefaultAttribute(model);
         return "listfiles";
     }
 
@@ -129,6 +134,7 @@ public class InterfaceController {
         model.addAttribute("urlForge", urlForge);
         model.addAttribute("currency", currency);
         model.addAttribute("isFree", isFree);
+        this.addDefaultAttribute(model);
         return "listfiles";
     }
 }

@@ -60,7 +60,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
     public final static String TAGS_SUB_PARAMETER = "tags";
 
 
-    private final static String DASHBOARD_ROUTE = Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + "/";
+    private final static String DASHBOARD_ROUTE = Routes.MANAGE_ROOT + Routes.MANAGE_LIST + "/";
     private final static String[] VALID_DATES_FORMAT = {
             "dd-MM-yyyy HH:mm:ss",
             "dd/MM/yyyy HH:mm:ss",
@@ -127,7 +127,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         }
 
         this.createDump(request.getParameters(), dbDumperServiceInstance);
-        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbDumperServiceInstance.getDatabaseRef().getName()).withAsync(true);
+        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbDumperServiceInstance.getServiceInstanceId()).withAsync(true);
     }
 
     @Override
@@ -179,7 +179,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         repository.save(dbDumperServiceInstance);
 
         this.jobFactory.createJobDeleteDbDumperServiceInstance(dbDumperServiceInstance);
-        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbRefName).withAsync(false);
+        return new ServiceInstance(request).withDashboardUrl(appUri + DASHBOARD_ROUTE + dbDumperServiceInstance.getServiceInstanceId()).withAsync(false);
     }
 
     @Override
@@ -207,7 +207,7 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
                 throw new ServiceBrokerException("An error occurred during restore: " + e.getMessage(), e);
             }
         }
-        serviceInstance.withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName()).withAsync(true);
+        serviceInstance.withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getServiceInstanceId()).withAsync(true);
         return serviceInstance;
     }
 

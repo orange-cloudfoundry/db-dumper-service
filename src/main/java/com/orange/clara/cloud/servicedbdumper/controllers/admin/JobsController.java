@@ -1,6 +1,7 @@
 package com.orange.clara.cloud.servicedbdumper.controllers.admin;
 
 import com.orange.clara.cloud.servicedbdumper.config.Routes;
+import com.orange.clara.cloud.servicedbdumper.controllers.AbstractController;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
 import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
 import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
@@ -24,7 +25,7 @@ import java.io.IOException;
  */
 @Controller
 @RequestMapping(value = Routes.JOB_CONTROL_ROOT)
-public class JobsController {
+public class JobsController extends AbstractController {
 
     @Autowired
     private JobRepo jobRepo;
@@ -32,12 +33,14 @@ public class JobsController {
     @RequestMapping("")
     public String showJobs(Model model) throws IOException {
         model.addAttribute("jobs", this.jobRepo.findAll());
+        this.addDefaultAttribute(model);
         return "admin/jobs";
     }
 
     @RequestMapping(Routes.JOB_CONTROL_DETAILS_ROOT + "/{jobId:[0-9]+}")
     public String showJob(@PathVariable Integer jobId, Model model) throws IOException {
         model.addAttribute("job", this.jobRepo.findOne(jobId));
+        this.addDefaultAttribute(model);
         return "admin/jobdetails";
     }
 
