@@ -93,7 +93,7 @@ public class CatalogConfig {
                 new ServiceDefinition(
                         this.serviceDefinitionId,
                         this.serviceDefinitionId,
-                        "Dump and restore data from your database",
+                        "Dump and restore data from your database (db-dumper-service v" + version + ")",
                         true,
                         true,
                         this.getPlans(), //TODO: change it cause set to free

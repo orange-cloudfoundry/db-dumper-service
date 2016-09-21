@@ -1,13 +1,13 @@
 package com.orange.clara.cloud.servicedbdumper.controllers;
 
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException;
 import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
 import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
-import com.orange.clara.cloud.servicedbdumper.filer.ChunkFiler;
 import com.orange.clara.cloud.servicedbdumper.filer.Filer;
-import com.orange.clara.cloud.servicedbdumper.filer.chunk.ChunkStream;
 import com.orange.clara.cloud.servicedbdumper.helper.DumpFileHelper;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
 import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
@@ -16,16 +16,15 @@ import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -43,12 +42,9 @@ import java.util.Base64;
 @Controller
 @RequestMapping(value = Routes.MANAGE_ROOT)
 public class ManagerController extends AbstractController {
-
     @Autowired
     private Filer filer;
 
-    @Autowired
-    private ChunkStream chunkStream;
 
     @Autowired
     @Qualifier("userAccessRight")
@@ -147,7 +143,7 @@ public class ManagerController extends AbstractController {
 
 
     @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> download(@PathVariable Integer dumpFileId, HttpServletRequest request, @RequestParam(value = "original", required = false) String original)
+    public void download(@PathVariable Integer dumpFileId, HttpServletRequest request, HttpServletResponse resp, @RequestParam(value = "original", required = false) String original)
             throws IOException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDbDumperServiceInstance(databaseDumpFile.getDbDumperServiceInstance());
@@ -163,22 +159,23 @@ public class ManagerController extends AbstractController {
             userRequest = values[0];
             passwordRequest = values[1];
         } else {
-            return this.getErrorResponseEntityBasicAuth();
+            this.getErrorResponseEntityBasicAuth(resp);
+            return;
         }
 
         if (!userRequest.equals(databaseDumpFile.getUser()) || !passwordRequest.equals(databaseDumpFile.getPassword())) {
-            return this.getErrorResponseEntityBasicAuth();
+            this.getErrorResponseEntityBasicAuth(resp);
+            return;
         }
-        HttpHeaders respHeaders = new HttpHeaders();
+
         String fileName = DumpFileHelper.getFilePath(databaseDumpFile);
-        respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        resp.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        resp.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(this.filer.getContentLength(fileName)));
         InputStream inputStream = null;
-        ChunkFiler chunkFiler = new ChunkFiler(this.filer, this.chunkStream);
         if (original == null || original.isEmpty()) {
-            respHeaders.setContentLength(this.filer.getContentLength(fileName));
-            inputStream = chunkFiler.retrieveWithOriginalStream(fileName);
+            inputStream = filer.retrieveWithOriginalStream(fileName);
         } else {
-            inputStream = chunkFiler.retrieveWithStream(fileName);
+            inputStream = filer.retrieveWithStream(fileName);
             File file = new File(fileName);
             String[] filenames = file.getName().split("\\.");
             if (filenames.length >= 2) {
@@ -187,9 +184,16 @@ public class ManagerController extends AbstractController {
 
         }
         File file = new File(fileName);
-        respHeaders.setContentDispositionFormData("attachment", file.getName());
-        InputStreamResource isr = new InputStreamResource(inputStream);
-        return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+        resp.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+
+        OutputStream outputStream = null;
+        outputStream = resp.getOutputStream();
+        try {
+            ByteStreams.copy(inputStream, outputStream);
+        } finally {
+            Closeables.closeQuietly(inputStream);
+            Closeables.close(outputStream, true);
+        }
     }
 
     private DatabaseDumpFile getDatabaseDumpFile(Integer dumpFileId) {
@@ -200,11 +204,17 @@ public class ManagerController extends AbstractController {
         return databaseDumpFile;
     }
 
-    private ResponseEntity<InputStreamResource> getErrorResponseEntityBasicAuth() {
+    private void getErrorResponseEntityBasicAuth(HttpServletResponse resp) throws IOException {
         String errorMessage = "401 Unauthorized";
-        HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.set("WWW-Authenticate", "Basic realm=\"Download Realm\"");
-        InputStream inputStream = new ByteArrayInputStream(errorMessage.getBytes());
-        return new ResponseEntity<>(new InputStreamResource(inputStream), respHeaders, HttpStatus.UNAUTHORIZED);
+
+        resp.setHeader("WWW-Authenticate", "Basic realm=\"Download Realm\"");
+        resp.setStatus(HttpStatus.UNAUTHORIZED.value());
+        OutputStream outputStream = resp.getOutputStream();
+        try {
+            outputStream.write(errorMessage.getBytes());
+        } finally {
+            Closeables.close(outputStream, true);
+        }
+
     }
 }
