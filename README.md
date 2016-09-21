@@ -83,7 +83,7 @@ You need to create a new uaa client if you want to use UAA to authenticate user 
 
 You may use the cli plugin associated to this broker:
 
-1. Download the latest release of the [db-dumper-cli-plugin](https://github.com/Orange-OpenSource/db-dumper-cli-plugin) here: https://github.com/Orange-OpenSource/db-dumper-cli-plugin/releases (e.g.: `curl -O --output --output db-dumper-plugin -L https://github.com/orange-cloudfoundry/db-dumper-cli-plugin/releases/download/v1.1.2/db-dumper_linux_amd64`
+1. Download the latest release of the [db-dumper-cli-plugin](https://github.com/Orange-OpenSource/db-dumper-cli-plugin) here: https://github.com/Orange-OpenSource/db-dumper-cli-plugin/releases (e.g.: `curl -O --output --output db-dumper-plugin -L https://github.com/orange-cloudfoundry/db-dumper-cli-plugin/releases/download/v1.3.0/db-dumper_linux_amd64`
 2. `chmod +x db-dumper-plugin`
 3. Install it to your cli with this command: `cf install-plugin "path/of/db-dumper-plugin" -f`
 
