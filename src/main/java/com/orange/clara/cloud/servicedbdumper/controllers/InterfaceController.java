@@ -83,9 +83,9 @@ public class InterfaceController {
     private List<DbDumperServiceInstance> filteringDbDumperServiceInstance(List<DbDumperServiceInstance> serviceInstances) throws UserAccessRightException {
         List<DbDumperServiceInstance> serviceInstancesFinal = Lists.newArrayList();
         for (DbDumperServiceInstance serviceInstance : serviceInstances) {
-            if (!this.userAccessRight.haveAccessToServiceInstance(serviceInstance)
-                    || serviceInstancesFinal.contains(serviceInstance)
-                    || serviceInstance.isDeleted()) {
+            if (serviceInstance.isDeleted()
+                    || !this.userAccessRight.haveAccessToServiceInstance(serviceInstance)
+                    || serviceInstancesFinal.contains(serviceInstance)) {
                 continue;
             }
             serviceInstancesFinal.add(serviceInstance);
