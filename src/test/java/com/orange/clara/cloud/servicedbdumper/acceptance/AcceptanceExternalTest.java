@@ -108,12 +108,12 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
     }
 
     protected String dbDumperCli() {
-        return "cf db-dumper -n " + this.serviceNameAcceptDbDumper;
+        return "cf target-dump " + this.serviceNameAcceptDbDumper;
     }
 
     @Override
     protected void deleteServiceInstance(String instanceId) throws ServiceBrokerAsyncRequiredException, ServiceBrokerException {
-        String command = String.format("%s delete %s -f", this.dbDumperCli(), instanceId);
+        String command = String.format("cf delete-dump %s -f", instanceId);
         try {
             this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
@@ -123,7 +123,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected void createSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
-        String command = String.format("%s create %s --plan %s", this.dbDumperCli(), this.getDbParamsForDump(databaseType), this.servicePlanAcceptDbDumper);
+        String command = String.format("cf create-dump %s --plan %s", this.getDbParamsForDump(databaseType), this.servicePlanAcceptDbDumper);
         try {
             this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
@@ -133,7 +133,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected void createTargetDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException {
-        String command = String.format("%s create %s --plan %s", this.dbDumperCli(), this.getDbParamsForRestore(databaseType), this.servicePlanAcceptDbDumper);
+        String command = String.format("cf create-dump %s --plan %s", this.getDbParamsForRestore(databaseType), this.servicePlanAcceptDbDumper);
         try {
             this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
@@ -143,7 +143,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected void restoreSourceDatabaseDump(DatabaseType databaseType) throws ServiceBrokerException, ServiceInstanceExistsException, ServiceBrokerAsyncRequiredException, ServiceInstanceUpdateNotSupportedException, ServiceInstanceDoesNotExistException {
-        String command = String.format("%s restore %s --source-instance %s --recent", this.dbDumperCli(), this.getDbParamsForRestore(databaseType), this.getDbParamsForDump(databaseType));
+        String command = String.format("cf restore-dump %s --source-instance %s --recent --force", this.getDbParamsForRestore(databaseType), this.getDbParamsForDump(databaseType));
         try {
             this.runCommand(command.split(" "));
         } catch (IOException | InterruptedException e) {
@@ -159,7 +159,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected InputStream getSourceStream(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
-        String command = String.format("%s download %s --recent --original --stdout -k", this.dbDumperCli(), this.getDbParamsForDump(databaseType));
+        String command = String.format("cf download-dump %s --recent --original --stdout", this.getDbParamsForDump(databaseType));
         try {
             Process process = this.runCommandLine(command.split(" "));
             return process.getInputStream();
@@ -170,7 +170,7 @@ public class AcceptanceExternalTest extends AcceptanceLocalTest {
 
     @Override
     protected InputStream getTargetStream(DatabaseType databaseType) throws DatabaseExtractionException, ServiceKeyException, IOException {
-        String command = String.format("%s download %s --recent --original --stdout -k", this.dbDumperCli(), this.getDbParamsForRestore(databaseType));
+        String command = String.format("cf download-dump %s --recent --original --stdout", this.getDbParamsForRestore(databaseType));
         try {
             Process process = this.runCommandLine(command.split(" "));
             return process.getInputStream();
