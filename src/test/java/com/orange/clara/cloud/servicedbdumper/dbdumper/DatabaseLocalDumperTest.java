@@ -168,6 +168,7 @@ public class DatabaseLocalDumperTest {
         String[] expected = {
                 dumpBinaries.getAbsolutePath(),
                 "--routines",
+                "--skip-add-locks",
                 "--single-transaction",
                 "--add-drop-table",
                 "--skip-comments",
