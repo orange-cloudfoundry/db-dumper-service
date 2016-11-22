@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>JobsController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.controllers.admin</a> &gt; <span class="el_source">JobsController.java</span></div><h1>JobsController.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.controllers.admin;
+
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
+import com.orange.clara.cloud.servicedbdumper.controllers.AbstractController;
+import com.orange.clara.cloud.servicedbdumper.model.Job;
+import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
+import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.io.IOException;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 09/12/2015
+ */
+@Controller
+@RequestMapping(value = Routes.JOB_CONTROL_ROOT)
+<span class="fc" id="L28">public class JobsController extends AbstractController {</span>
+
+    @Autowired
+    private JobRepo jobRepo;
+
+    @RequestMapping(&quot;&quot;)
+    public String showJobs(Model model) throws IOException {
+<span class="fc" id="L35">        model.addAttribute(&quot;jobs&quot;, this.jobRepo.findAll());</span>
+<span class="fc" id="L36">        this.addDefaultAttribute(model);</span>
+<span class="fc" id="L37">        return &quot;admin/jobs&quot;;</span>
+    }
+
+    @RequestMapping(Routes.JOB_CONTROL_DETAILS_ROOT + &quot;/{jobId:[0-9]+}&quot;)
+    public String showJob(@PathVariable Integer jobId, Model model) throws IOException {
+<span class="fc" id="L42">        model.addAttribute(&quot;job&quot;, this.jobRepo.findOne(jobId));</span>
+<span class="fc" id="L43">        this.addDefaultAttribute(model);</span>
+<span class="fc" id="L44">        return &quot;admin/jobdetails&quot;;</span>
+    }
+
+    private void checkJob(int jobId, boolean checkIsRunning) {
+<span class="fc" id="L48">        Job job = this.jobRepo.findOne(jobId);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (job == null) {</span>
+<span class="fc" id="L50">            throw new IllegalArgumentException(String.format(&quot;Cannot find job with id '%s'&quot;, jobId));</span>
+        }
+<span class="fc bfc" id="L52" title="All 6 branches covered.">        if (checkIsRunning &amp;&amp; (job.getJobEvent().equals(JobEvent.RUNNING) || job.getJobEvent().equals(JobEvent.START))) {</span>
+<span class="fc" id="L53">            throw new IllegalArgumentException(String.format(&quot;The job '%s' is running.&quot;, job.getId()));</span>
+        }
+<span class="fc" id="L55">    }</span>
+
+    @RequestMapping(Routes.JOB_CONTROL_DELETE_ROOT + &quot;/{jobId:[0-9]+}&quot;)
+    public String deleteJob(@PathVariable Integer jobId, Model model) throws IOException {
+<span class="fc" id="L59">        checkJob(jobId, true);</span>
+<span class="fc" id="L60">        this.jobRepo.delete(jobId);</span>
+<span class="fc" id="L61">        return &quot;redirect:&quot; + Routes.JOB_CONTROL_ROOT;</span>
+    }
+
+    @RequestMapping(Routes.JOB_CONTROL_UPDATE_ROOT + &quot;/{jobId:[0-9]+}/jobevent/{event:[A-Z]+}&quot;)
+    public String updateJobEventFromJob(@PathVariable Integer jobId, @PathVariable String event, Model model) throws IOException {
+<span class="fc" id="L66">        checkJob(jobId, false);</span>
+<span class="fc" id="L67">        JobEvent jobEvent = JobEvent.valueOf(event);</span>
+<span class="fc" id="L68">        Job job = this.jobRepo.findOne(jobId);</span>
+<span class="fc" id="L69">        job.setJobEvent(jobEvent);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (jobEvent.equals(JobEvent.ERRORED)) {</span>
+<span class="fc" id="L71">            job.setErrorMessage(&quot;Put in error manually by admin.&quot;);</span>
+        }
+<span class="fc" id="L73">        this.jobRepo.save(job);</span>
+<span class="fc" id="L74">        return &quot;redirect:&quot; + Routes.JOB_CONTROL_ROOT;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

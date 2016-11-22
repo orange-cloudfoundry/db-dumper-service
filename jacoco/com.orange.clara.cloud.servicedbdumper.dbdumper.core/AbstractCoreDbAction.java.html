@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AbstractCoreDbAction.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.dbdumper.core</a> &gt; <span class="el_source">AbstractCoreDbAction.java</span></div><h1>AbstractCoreDbAction.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
+
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DbDumpersFactory;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.helper.DumpFileHelper;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperServiceInstanceRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 03/06/2015
+ */
+<span class="fc" id="L34">public abstract class AbstractCoreDbAction {</span>
+<span class="fc" id="L35">    protected Logger logger = LoggerFactory.getLogger(AbstractCoreDbAction.class);</span>
+
+    @Autowired
+    @Qualifier(value = &quot;dateFormatFile&quot;)
+    protected String dateFormat;
+
+<span class="fc" id="L41">    @Value(&quot;${db.command.retry:5}&quot;)</span>
+    protected int dbCommandRetry = 5;
+
+    @Autowired
+    @Qualifier(value = &quot;dbDumpersFactory&quot;)
+    protected DbDumpersFactory dbDumpersFactory;
+
+    @Autowired
+    protected Filer filer;
+
+    @Autowired
+    protected DatabaseDumpFileRepo databaseDumpFileRepo;
+
+    @Autowired
+    protected DbDumperServiceInstanceRepo serviceInstanceRepo;
+
+    protected InputStream errorProcess;
+    protected InputStream outputProcess;
+
+    @Value(&quot;${show.command.line:true}&quot;)
+    private boolean showCommandLine;
+
+<span class="fc" id="L63">    private String outputFromProcess = &quot;&quot;;</span>
+<span class="fc" id="L64">    private String errorFromProcess = &quot;&quot;;</span>
+
+    public static BufferedReader getOutput(Process p) {
+<span class="nc" id="L67">        return new BufferedReader(new InputStreamReader(p.getInputStream()));</span>
+    }
+
+    public static BufferedReader getError(Process p) {
+<span class="nc" id="L71">        return new BufferedReader(new InputStreamReader(p.getErrorStream()));</span>
+    }
+
+    protected Process runCommandLine(String[] commandLine) throws IOException, InterruptedException {
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">        if (this.showCommandLine) {</span>
+<span class="nc" id="L76">            logger.info(&quot;Running command line: &quot; + String.join(&quot; &quot;, commandLine));</span>
+        }
+<span class="fc" id="L78">        ProcessBuilder pb = new ProcessBuilder(commandLine);</span>
+<span class="fc" id="L79">        pb.redirectOutput(ProcessBuilder.Redirect.PIPE);</span>
+<span class="fc" id="L80">        Process process = pb.start();</span>
+<span class="fc" id="L81">        this.errorProcess = process.getErrorStream();</span>
+<span class="fc" id="L82">        this.outputProcess = process.getInputStream();</span>
+<span class="fc" id="L83">        return process;</span>
+    }
+
+    protected void logOutputFromProcess() {
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (!outputFromProcess.isEmpty()) {</span>
+<span class="nc" id="L88">            this.logger.error(&quot;Output from process: &quot; + outputFromProcess);</span>
+        }
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (!errorFromProcess.isEmpty()) {</span>
+<span class="nc" id="L91">            this.logger.error(&quot;Error from process: &quot; + errorFromProcess);</span>
+        }
+<span class="fc" id="L93">    }</span>
+
+    private void loadOutputsFromProcess() {
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (outputFromProcess.isEmpty()) {</span>
+            try {
+<span class="fc" id="L98">                outputFromProcess = this.getOutputFromProcess();</span>
+<span class="fc" id="L99">            } catch (IOException e) {</span>
+<span class="fc" id="L100">            }</span>
+        }
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        if (errorFromProcess.isEmpty()) {</span>
+            try {
+<span class="fc" id="L104">                errorFromProcess = this.getErrorFromProcess();</span>
+<span class="nc" id="L105">            } catch (IOException e) {</span>
+<span class="fc" id="L106">            }</span>
+        }
+<span class="fc" id="L108">    }</span>
+
+    protected String getErrorMessageFromProcess() {
+<span class="fc" id="L111">        this.loadOutputsFromProcess();</span>
+<span class="fc" id="L112">        String message = &quot;&quot;;</span>
+<span class="pc bpc" id="L113" title="1 of 4 branches missed.">        if (!outputFromProcess.isEmpty() || !errorFromProcess.isEmpty()) {</span>
+<span class="fc" id="L114">            message += &quot;\nDetails: &quot;;</span>
+        }
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (!outputFromProcess.isEmpty()) {</span>
+<span class="nc" id="L117">            message += outputFromProcess + &quot;\n\n&quot;;</span>
+        }
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (!errorFromProcess.isEmpty()) {</span>
+<span class="fc" id="L120">            message += errorFromProcess;</span>
+        }
+<span class="fc" id="L122">        return message;</span>
+    }
+
+    protected String getErrorFromProcess() throws IOException {
+<span class="fc" id="L126">        return this.getInputStreamToStringFromProcess(this.errorProcess);</span>
+    }
+
+    protected String getOutputFromProcess() throws IOException {
+<span class="fc" id="L130">        return this.getInputStreamToStringFromProcess(this.outputProcess);</span>
+    }
+
+    private String getInputStreamToStringFromProcess(InputStream inputStream) throws IOException {
+<span class="fc" id="L134">        String outputFromProcess = &quot;&quot;;</span>
+<span class="fc" id="L135">        String line = &quot;&quot;;</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (inputStream == null) {</span>
+<span class="fc" id="L137">            return outputFromProcess;</span>
+        }
+<span class="fc" id="L139">        BufferedReader brOutput = new BufferedReader(new InputStreamReader(inputStream));</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        while ((line = brOutput.readLine()) != null) {</span>
+<span class="fc" id="L141">            outputFromProcess += line + &quot;\n&quot;;</span>
+        }
+<span class="fc" id="L143">        return outputFromProcess;</span>
+    }
+
+    protected String getFileName(DatabaseDumpFile databaseDumpFile) {
+<span class="fc" id="L147">        return DumpFileHelper.getFilePath(databaseDumpFile);</span>
+    }
+
+    protected String generateFileName(DatabaseRef databaseRef, DatabaseDriver databaseDriver) {
+<span class="fc" id="L151">        Date d = new Date();</span>
+<span class="fc" id="L152">        SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);</span>
+<span class="fc" id="L153">        String filename = form.format(d) + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();</span>
+<span class="fc" id="L154">        int i = 1;</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        while (this.filer.exists(DumpFileHelper.getFilePath(databaseRef, filename))) {</span>
+<span class="fc" id="L156">            filename = form.format(d) + &quot;(&quot; + i + &quot;)&quot; + databaseDriver.getFileExtension() + this.filer.getAppendedFileExtension();</span>
+<span class="fc" id="L157">            i++;</span>
+        }
+<span class="fc" id="L159">        return filename;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

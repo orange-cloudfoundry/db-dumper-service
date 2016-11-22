@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MysqlDatabaseDriver.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers</a> &gt; <span class="el_source">MysqlDatabaseDriver.java</span></div><h1>MysqlDatabaseDriver.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
+
+import java.io.File;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 21/05/2015
+ */
+public class MysqlDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
+    public MysqlDatabaseDriver(File binaryDump, File binaryRestore) {
+<span class="fc" id="L17">        super(binaryDump, binaryRestore);</span>
+<span class="fc" id="L18">    }</span>
+
+
+    @Override
+    public String[] getDumpCommandLine() {
+<span class="fc" id="L23">        return String.format(&quot;%s --routines --skip-add-locks --skip-extended-insert --single-transaction --add-drop-table --skip-comments --host=%s --port=%s --user=%s --password=%s %s&quot;,</span>
+<span class="fc" id="L24">                this.binaryDump.getAbsolutePath(),</span>
+<span class="fc" id="L25">                this.databaseRef.getHost(),</span>
+<span class="fc" id="L26">                this.databaseRef.getPort(),</span>
+<span class="fc" id="L27">                this.databaseRef.getUser(),</span>
+<span class="fc" id="L28">                this.databaseRef.getPassword(),</span>
+<span class="fc" id="L29">                this.databaseRef.getDatabaseName()</span>
+<span class="fc" id="L30">        ).split(&quot; &quot;);</span>
+    }
+
+    @Override
+    public String[] getRestoreCommandLine() {
+<span class="fc" id="L35">        return new String[]{</span>
+<span class="fc" id="L36">                this.binaryRestore.getAbsolutePath(),</span>
+<span class="fc" id="L37">                &quot;--host=&quot; + this.databaseRef.getHost(),</span>
+<span class="fc" id="L38">                &quot;--port=&quot; + this.databaseRef.getPort(),</span>
+<span class="fc" id="L39">                &quot;--user=&quot; + this.databaseRef.getUser(),</span>
+<span class="fc" id="L40">                &quot;--password=&quot; + this.databaseRef.getPassword(),</span>
+<span class="fc" id="L41">                this.databaseRef.getDatabaseName()</span>
+        };
+    }
+
+    @Override
+    public Boolean isDumpShowable() {
+<span class="fc" id="L47">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

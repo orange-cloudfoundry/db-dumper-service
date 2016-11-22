@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UaaConfig.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.config</a> &gt; <span class="el_source">UaaConfig.java</span></div><h1>UaaConfig.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.config;
+
+import com.orange.clara.cloud.servicedbdumper.cloudfoundry.CloudFoundryClientFactory;
+import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+
+import java.net.MalformedURLException;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 11/02/2016
+ */
+@Configuration
+@Profile(value = &quot;uaa&quot;)
+<span class="nc" id="L30">public class UaaConfig {</span>
+<span class="nc" id="L31">    private static Logger LOGGER = LoggerFactory.getLogger(UaaConfig.class);</span>
+    @Autowired
+    private CloudFoundryClientFactory cloudFoundryClientFactory;
+
+    @Value(&quot;${cloud.controller.url}&quot;)
+    private String cloudControllerUrl;
+
+
+    @Bean
+    @Scope(value = &quot;session&quot;, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public OAuth2AccessToken getOAuth2AccessToken() {
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (!(SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2Authentication)) {</span>
+<span class="nc" id="L43">            return null;</span>
+        }
+<span class="nc" id="L45">        OAuth2Authentication oAuth2Authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="nc" id="L46">        final OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) oAuth2Authentication.getDetails();</span>
+<span class="nc" id="L47">        return new DefaultOAuth2AccessToken(details.getTokenValue());</span>
+    }
+
+    @Bean(name = &quot;cloudFoundryClientAsUser&quot;)
+    @Scope(value = &quot;session&quot;, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public CloudFoundryClient getCloudFoundryClientAsUser() throws MalformedURLException {
+<span class="nc" id="L53">        LOGGER.debug(&quot;Creating new CloudFoundry client using access token&quot;);</span>
+<span class="nc" id="L54">        OAuth2AccessToken oAuth2AccessToken = getOAuth2AccessToken();</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (oAuth2AccessToken == null) {</span>
+<span class="nc" id="L56">            return null;</span>
+        }
+<span class="nc" id="L58">        return cloudFoundryClientFactory.createCloudFoundryClient(oAuth2AccessToken, this.cloudControllerUrl);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CloudFoundryClientFactory.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.cloudfoundry</a> &gt; <span class="el_source">CloudFoundryClientFactory.java</span></div><h1>CloudFoundryClientFactory.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.cloudfoundry;
+
+import org.cloudfoundry.client.lib.CloudCredentials;
+import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.HttpProxyConfiguration;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 17/03/2016
+ */
+@Service
+<span class="fc" id="L25">public class CloudFoundryClientFactory {</span>
+
+<span class="fc" id="L27">    private static final boolean SKIP_SSL_VERIFICATION = Boolean.getBoolean(&quot;skip.ssl.verification&quot;);</span>
+
+<span class="fc" id="L29">    private static final String CCNG_API_PROXY_HOST = System.getProperty(&quot;http.proxyHost&quot;, null);</span>
+
+<span class="fc" id="L31">    private static final String CCNG_API_PROXY_PASSWD = System.getProperty(&quot;http.proxyPassword&quot;, null);</span>
+
+<span class="fc" id="L33">    private static final int CCNG_API_PROXY_PORT = Integer.getInteger(&quot;http.proxyPort&quot;, 80);</span>
+
+<span class="fc" id="L35">    private static final String CCNG_API_PROXY_USER = System.getProperty(&quot;http.proxyUsername&quot;, null);</span>
+
+    private static HttpProxyConfiguration httpProxyConfiguration;
+
+    @PostConstruct
+    public static void createProxyIfExists() throws Exception {
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (CCNG_API_PROXY_HOST == null) {</span>
+<span class="fc" id="L42">            return;</span>
+        }
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        if (CCNG_API_PROXY_USER != null) {</span>
+<span class="nc" id="L45">            httpProxyConfiguration = new HttpProxyConfiguration(CCNG_API_PROXY_HOST, CCNG_API_PROXY_PORT, true,</span>
+                    CCNG_API_PROXY_USER, CCNG_API_PROXY_PASSWD);
+        }
+<span class="nc" id="L48">        httpProxyConfiguration = new HttpProxyConfiguration(CCNG_API_PROXY_HOST, CCNG_API_PROXY_PORT);</span>
+<span class="nc" id="L49">    }</span>
+
+    public CloudFoundryClient createCloudFoundryClient(OAuth2AccessToken token, String cloudControllerUrl) throws MalformedURLException {
+<span class="nc" id="L52">        return this.createCloudFoundryClient(token, new URL(cloudControllerUrl));</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(OAuth2AccessToken token, URL cloudControllerUrl) {
+<span class="nc" id="L56">        CloudCredentials credentials = new CloudCredentials(token, false);</span>
+<span class="nc" id="L57">        return new CloudFoundryClient(credentials, cloudControllerUrl, httpProxyConfiguration, SKIP_SSL_VERIFICATION);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(OAuth2AccessToken token, URL cloudControllerUrl, String org, String space) {
+<span class="nc" id="L61">        CloudCredentials credentials = new CloudCredentials(token, false);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (httpProxyConfiguration == null) {</span>
+<span class="nc" id="L63">            return new CloudFoundryClient(credentials, cloudControllerUrl, org, space);</span>
+        }
+<span class="nc" id="L65">        return new CloudFoundryClient(credentials, cloudControllerUrl, org, space, httpProxyConfiguration);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(OAuth2AccessToken token, String cloudControllerUrl, String org, String space) throws MalformedURLException {
+<span class="nc" id="L69">        return this.createCloudFoundryClient(token, new URL(cloudControllerUrl), org, space);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String token, String cloudControllerUrl) throws MalformedURLException {
+<span class="nc" id="L73">        return this.createCloudFoundryClient(token, new URL(cloudControllerUrl));</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String token, URL cloudControllerUrl) {
+<span class="nc" id="L77">        CloudCredentials credentials = new CloudCredentials(new DefaultOAuth2AccessToken(token), false);</span>
+<span class="nc" id="L78">        return new CloudFoundryClient(credentials, cloudControllerUrl);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String token, URL cloudControllerUrl, String org, String space) {
+<span class="fc" id="L82">        CloudCredentials credentials = new CloudCredentials(new DefaultOAuth2AccessToken(token), false);</span>
+<span class="fc" id="L83">        return new CloudFoundryClient(credentials, cloudControllerUrl, org, space, httpProxyConfiguration, SKIP_SSL_VERIFICATION);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String token, String cloudControllerUrl, String org, String space) throws MalformedURLException {
+<span class="nc" id="L87">        return this.createCloudFoundryClient(token, new URL(cloudControllerUrl), org, space);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String user, String password, String cloudControllerUrl) throws MalformedURLException {
+<span class="fc" id="L91">        CloudCredentials credentials = new CloudCredentials(user, password);</span>
+
+<span class="fc" id="L93">        return new CloudFoundryClient(credentials, new URL(cloudControllerUrl), httpProxyConfiguration, SKIP_SSL_VERIFICATION);</span>
+
+
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String user, String password, URL cloudControllerUrl) {
+<span class="nc" id="L99">        CloudCredentials credentials = new CloudCredentials(user, password);</span>
+<span class="nc" id="L100">        return new CloudFoundryClient(credentials, cloudControllerUrl, httpProxyConfiguration, SKIP_SSL_VERIFICATION);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String user, String password, String cloudControllerUrl, String org, String space) throws MalformedURLException {
+<span class="fc" id="L104">        CloudCredentials credentials = new CloudCredentials(user, password);</span>
+<span class="fc" id="L105">        return new CloudFoundryClient(credentials, new URL(cloudControllerUrl), org, space, httpProxyConfiguration, SKIP_SSL_VERIFICATION);</span>
+    }
+
+    public CloudFoundryClient createCloudFoundryClient(String user, String password, URL cloudControllerUrl, String org, String space) {
+<span class="nc" id="L109">        CloudCredentials credentials = new CloudCredentials(user, password);</span>
+<span class="nc" id="L110">        return new CloudFoundryClient(credentials, cloudControllerUrl, org, space, httpProxyConfiguration, SKIP_SSL_VERIFICATION);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

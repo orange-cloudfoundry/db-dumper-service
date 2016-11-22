@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CoreDumper.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.dbdumper.core</a> &gt; <span class="el_source">CoreDumper.java</span></div><h1>CoreDumper.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
+
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Dumper;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpException;
+import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.UUID;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 09/09/2015
+ */
+<span class="fc" id="L30">public class CoreDumper extends AbstractCoreDbAction implements Dumper {</span>
+
+<span class="fc" id="L32">    private Logger logger = LoggerFactory.getLogger(CoreDumper.class);</span>
+
+
+    @Override
+    @Transactional
+    public DatabaseDumpFile dump(DbDumperServiceInstance dbDumperServiceInstance) throws DumpException {
+<span class="fc" id="L38">        DatabaseRef databaseRef = dbDumperServiceInstance.getDatabaseRef();</span>
+        DatabaseDumpFile databaseDumpFile;
+        try {
+<span class="fc" id="L41">            DatabaseDriver databaseDriver = dbDumpersFactory.getDatabaseDumper(databaseRef);</span>
+<span class="fc" id="L42">            String fileName = this.generateFileName(databaseRef, databaseDriver);</span>
+<span class="fc" id="L43">            logger.info(&quot;Dumping database '&quot; + databaseRef.getName() + &quot;' with &quot; + databaseRef.getType() + &quot; binary ...&quot;);</span>
+<span class="fc" id="L44">            this.runDump(databaseDriver, databaseRef.getName() + &quot;/&quot; + fileName);</span>
+<span class="fc" id="L45">            databaseDumpFile = this.createDatabaseDumpFile(dbDumperServiceInstance, fileName, databaseDriver.isDumpShowable());</span>
+<span class="fc" id="L46">        } catch (Exception e) {</span>
+<span class="fc" id="L47">            this.logOutputFromProcess();</span>
+<span class="fc" id="L48">            throw new DumpException(&quot;\nAn error occurred: &quot; + e.getMessage() + this.getErrorMessageFromProcess(), e);</span>
+<span class="fc" id="L49">        }</span>
+<span class="fc" id="L50">        logger.info(&quot;Dumping database '&quot; + databaseRef.getName() + &quot;' with &quot; + databaseRef.getType() + &quot; binary finished.&quot;);</span>
+<span class="fc" id="L51">        return databaseDumpFile;</span>
+    }
+
+    private void runDump(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
+<span class="fc" id="L55">        String[] commandLine = databaseDriver.getDumpCommandLine();</span>
+<span class="fc" id="L56">        int i = 1;</span>
+        while (true) {
+<span class="fc" id="L58">            Process p = this.runCommandLine(commandLine);</span>
+            try {
+<span class="fc" id="L60">                this.filer.store(p.getInputStream(), fileName);</span>
+<span class="nc" id="L61">            } catch (IOException e) {</span>
+<span class="nc" id="L62">            } catch (Exception e) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                if (p.isAlive()) {</span>
+<span class="nc" id="L64">                    p.destroy();</span>
+                }
+<span class="nc" id="L66">                throw e;</span>
+<span class="pc" id="L67">            }</span>
+<span class="fc" id="L68">            p.waitFor();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (p.exitValue() == 0) {</span>
+<span class="fc" id="L70">                break;</span>
+            }
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (i &gt;= this.dbCommandRetry) {</span>
+<span class="fc" id="L73">                this.filer.delete(fileName);</span>
+<span class="fc" id="L74">                throw new RunProcessException(&quot;\nError during process (exit code is &quot; + p.exitValue() + &quot;): &quot;);</span>
+            }
+<span class="fc" id="L76">            logger.warn(&quot;Retry {}/{}: fail to dump data for file {}.&quot;, i, dbCommandRetry, fileName);</span>
+<span class="fc" id="L77">            Thread.sleep(10000);</span>
+<span class="fc" id="L78">            i++;</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">    }</span>
+
+    private DatabaseDumpFile createDatabaseDumpFile(DbDumperServiceInstance dbDumperServiceInstance, String fileName, boolean isDumpShowable) {
+<span class="fc" id="L83">        SimpleDateFormat form = new SimpleDateFormat(this.dateFormat);</span>
+<span class="fc" id="L84">        Date now = new Date();</span>
+        try {
+<span class="fc" id="L86">            now = form.parse(form.format(new Date()));</span>
+<span class="nc" id="L87">        } catch (ParseException e) { // should have no error</span>
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findByDbDumperServiceInstanceAndCreatedAt(dbDumperServiceInstance, now);</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (databaseDumpFile == null) {</span>
+<span class="fc" id="L91">            String user = this.generateUser();</span>
+<span class="fc" id="L92">            String password = this.generatePassword();</span>
+<span class="fc" id="L93">            databaseDumpFile = this.databaseDumpFileRepo.save(new DatabaseDumpFile(fileName, dbDumperServiceInstance, user, password, isDumpShowable,</span>
+<span class="fc" id="L94">                    this.filer.getContentLength(dbDumperServiceInstance.getDatabaseRef().getName() + &quot;/&quot; + fileName)));</span>
+        }
+<span class="fc" id="L96">        return databaseDumpFile;</span>
+    }
+
+    private String generateUser() {
+<span class="fc" id="L100">        return UUID.randomUUID().toString();</span>
+    }
+
+    private String generatePassword() {
+<span class="fc" id="L104">        return UUID.randomUUID().toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

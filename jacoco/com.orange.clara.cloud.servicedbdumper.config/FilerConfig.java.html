@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FilerConfig.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.config</a> &gt; <span class="el_source">FilerConfig.java</span></div><h1>FilerConfig.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.config;
+
+import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.filer.factory.FactoryFiler;
+import com.orange.clara.cloud.servicedbdumper.filer.factory.FilerType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+
+import java.util.List;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 26/02/2016
+ */
+@Configuration
+@Profile({&quot;local&quot;, &quot;core&quot;})
+<span class="fc" id="L28">public class FilerConfig {</span>
+
+    @Value(&quot;${filer.type:#{null}}&quot;)
+    private String filerType;
+
+    @Autowired
+    private Environment env;
+
+    @Bean
+    public Filer filer() throws InstantiationException, IllegalAccessException {
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (filerType != null) {</span>
+<span class="nc" id="L39">            return FactoryFiler.createFiler(this.filerType);</span>
+        }
+<span class="fc" id="L41">        List&lt;String&gt; profiles = Lists.newArrayList(env.getActiveProfiles());</span>
+<span class="pc bpc" id="L42" title="1 of 4 branches missed.">        if (profiles.contains(&quot;local&quot;) &amp;&amp; !profiles.contains(&quot;s3&quot;)) {</span>
+<span class="fc" id="L43">            return FactoryFiler.createFiler(FilerType.GZIPDISK);</span>
+        }
+<span class="fc" id="L45">        return FactoryFiler.createFiler(FilerType.GZIPS3);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

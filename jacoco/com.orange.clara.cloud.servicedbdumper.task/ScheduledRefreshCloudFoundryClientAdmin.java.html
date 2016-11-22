@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ScheduledRefreshCloudFoundryClientAdmin.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.task</a> &gt; <span class="el_source">ScheduledRefreshCloudFoundryClientAdmin.java</span></div><h1>ScheduledRefreshCloudFoundryClientAdmin.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.task;
+
+import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 13/05/2016
+ */
+@Component
+<span class="fc" id="L20">public class ScheduledRefreshCloudFoundryClientAdmin {</span>
+
+    @Autowired
+    @Qualifier(&quot;cloudFoundryClientAsAdmin&quot;)
+    private CloudFoundryClient cloudFoundryClient;
+
+    @Scheduled(fixedDelay = 12)
+    public void refreshCloudFoundryClientAdmin() {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (cloudFoundryClient == null) {</span>
+<span class="fc" id="L29">            return;</span>
+        }
+        // cloudFoundryClient.login() create each time a new token
+        // getCloudInfo call getToken() which refresh token if it expire in less than 50 seconds
+        // this is a little fix until cf-java-client v2 accept passing token
+<span class="fc" id="L34">        cloudFoundryClient.getCloudInfo();</span>
+<span class="fc" id="L35">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

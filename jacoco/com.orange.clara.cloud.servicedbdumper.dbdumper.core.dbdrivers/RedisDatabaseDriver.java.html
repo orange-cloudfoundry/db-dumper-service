@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>RedisDatabaseDriver.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers</a> &gt; <span class="el_source">RedisDatabaseDriver.java</span></div><h1>RedisDatabaseDriver.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
+
+import java.io.File;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 14/02/2016
+ */
+public class RedisDatabaseDriver extends AbstractDatabaseDriver implements DatabaseDriver {
+
+    public RedisDatabaseDriver(File rutilBinary) {
+<span class="fc" id="L18">        super(rutilBinary, rutilBinary);</span>
+<span class="fc" id="L19">    }</span>
+
+    @Override
+    public String[] getDumpCommandLine() {
+<span class="fc" id="L23">        return String.format(&quot;%s -s %s -p %s -a %s dump -o&quot;,</span>
+<span class="fc" id="L24">                this.binaryRestore.getAbsolutePath(),</span>
+<span class="fc" id="L25">                this.databaseRef.getHost(),</span>
+<span class="fc" id="L26">                this.databaseRef.getPort(),</span>
+<span class="fc" id="L27">                this.getPassword()</span>
+<span class="fc" id="L28">        ).split(&quot; &quot;);</span>
+    }
+
+    @Override
+    public String[] getRestoreCommandLine() {
+<span class="fc" id="L33">        return String.format(&quot;%s -s %s -p %s -a %s restore --flushdb -i&quot;,</span>
+<span class="fc" id="L34">                this.binaryRestore.getAbsolutePath(),</span>
+<span class="fc" id="L35">                this.databaseRef.getHost(),</span>
+<span class="fc" id="L36">                this.databaseRef.getPort(),</span>
+<span class="fc" id="L37">                this.getPassword()</span>
+<span class="fc" id="L38">        ).split(&quot; &quot;);</span>
+    }
+
+    @Override
+    public Boolean isDumpShowable() {
+<span class="fc" id="L43">        return false;</span>
+    }
+
+    private String getPassword() {
+<span class="fc" id="L47">        String password = &quot;&quot;;</span>
+<span class="pc bpc" id="L48" title="1 of 4 branches missed.">        if (!this.databaseRef.getUser().isEmpty() &amp;&amp; this.databaseRef.getPassword().isEmpty()) {</span>
+<span class="nc" id="L49">            password = this.databaseRef.getUser();</span>
+        } else {
+<span class="fc" id="L51">            password = this.databaseRef.getPassword();</span>
+        }
+<span class="fc" id="L53">        return password;</span>
+    }
+
+    @Override
+    public String getFileExtension() {
+<span class="fc" id="L58">        return &quot;.rdmp&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

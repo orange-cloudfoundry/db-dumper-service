@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Job.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.model</a> &gt; <span class="el_source">Job.java</span></div><h1>Job.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.model;
+
+import com.orange.clara.cloud.servicedbdumper.converter.MetadataConverter;
+
+import javax.persistence.*;
+import java.util.Calendar;
+import java.util.Date;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 25/11/2015
+ */
+@Entity
+public class Job {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;database_ref_src_id&quot;)
+    private DatabaseRef databaseRefSrc;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;database_ref_target_id&quot;)
+    private DatabaseRef databaseRefTarget;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;service_instance_id&quot;)
+    private DbDumperServiceInstance dbDumperServiceInstance;
+
+    @Enumerated(EnumType.STRING)
+    private JobEvent jobEvent;
+
+    @Enumerated(EnumType.STRING)
+    private JobType jobType;
+
+    @Convert(converter = MetadataConverter.class)
+    private Metadata metadata;
+
+    private Date updatedAt;
+
+    private Date dumpDate;
+
+    private String errorMessage;
+
+<span class="fc" id="L52">    public Job() {</span>
+<span class="fc" id="L53">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L54">        this.jobEvent = JobEvent.START;</span>
+<span class="fc" id="L55">    }</span>
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L58">        this();</span>
+<span class="fc" id="L59">        this.dbDumperServiceInstance = dbDumperServiceInstance;</span>
+<span class="fc" id="L60">        this.jobType = jobType;</span>
+<span class="fc" id="L61">        this.databaseRefSrc = databaseRefSrc;</span>
+<span class="fc" id="L62">    }</span>
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L65">        this(jobType, databaseRefSrc, dbDumperServiceInstance);</span>
+<span class="fc" id="L66">        this.databaseRefTarget = databaseRefTarget;</span>
+<span class="fc" id="L67">    }</span>
+
+    public Job(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L70">        this(jobType, databaseRefSrc, databaseRefTarget, dbDumperServiceInstance);</span>
+<span class="fc" id="L71">        this.dumpDate = dumpDate;</span>
+<span class="fc" id="L72">    }</span>
+
+    public Integer getId() {
+<span class="fc" id="L75">        return id;</span>
+    }
+
+    public void setId(Integer id) {
+<span class="nc" id="L79">        this.id = id;</span>
+<span class="nc" id="L80">    }</span>
+
+    public DatabaseRef getDatabaseRefSrc() {
+<span class="fc" id="L83">        return databaseRefSrc;</span>
+    }
+
+    public void setDatabaseRefSrc(DatabaseRef databaseRefSrc) {
+<span class="fc" id="L87">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L88">        this.databaseRefSrc = databaseRefSrc;</span>
+<span class="fc" id="L89">    }</span>
+
+    public DatabaseRef getDatabaseRefTarget() {
+<span class="fc" id="L92">        return databaseRefTarget;</span>
+    }
+
+    public void setDatabaseRefTarget(DatabaseRef databaseRefTarget) {
+<span class="fc" id="L96">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L97">        this.databaseRefTarget = databaseRefTarget;</span>
+<span class="fc" id="L98">    }</span>
+
+    public JobType getJobType() {
+<span class="fc" id="L101">        return jobType;</span>
+    }
+
+    public void setJobType(JobType jobType) {
+<span class="fc" id="L105">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L106">        this.jobType = jobType;</span>
+<span class="fc" id="L107">    }</span>
+
+    public Date getUpdatedAt() {
+<span class="fc" id="L110">        return updatedAt;</span>
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+<span class="fc" id="L114">        this.updatedAt = updatedAt;</span>
+<span class="fc" id="L115">    }</span>
+
+    public JobEvent getJobEvent() {
+<span class="fc" id="L118">        return jobEvent;</span>
+    }
+
+    public void setJobEvent(JobEvent jobEvent) {
+<span class="fc" id="L122">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L123">        this.jobEvent = jobEvent;</span>
+<span class="fc" id="L124">    }</span>
+
+    public Date getDumpDate() {
+<span class="fc" id="L127">        return dumpDate;</span>
+    }
+
+    public void setDumpDate(Date dumpDate) {
+<span class="fc" id="L131">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L132">        this.dumpDate = dumpDate;</span>
+<span class="fc" id="L133">    }</span>
+
+    public DbDumperServiceInstance getDbDumperServiceInstance() {
+<span class="fc" id="L136">        return dbDumperServiceInstance;</span>
+    }
+
+    public void setDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L140">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L141">        this.dbDumperServiceInstance = dbDumperServiceInstance;</span>
+<span class="fc" id="L142">    }</span>
+
+    public Metadata getMetadata() {
+<span class="fc" id="L145">        return metadata;</span>
+    }
+
+    public void setMetadata(Metadata metadata) {
+<span class="fc" id="L149">        this.metadata = metadata;</span>
+<span class="fc" id="L150">    }</span>
+
+    public String getErrorMessage() {
+<span class="fc" id="L153">        return errorMessage;</span>
+    }
+
+    public void setErrorMessage(String errorMessage) {
+<span class="fc" id="L157">        this.updatedAt = Calendar.getInstance().getTime();</span>
+<span class="fc" id="L158">        this.errorMessage = errorMessage;</span>
+<span class="fc" id="L159">    }</span>
+
+    @Override
+    public int hashCode() {
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">        return id != null ? id.hashCode() : 0;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L169" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+
+<span class="nc" id="L171">        Job job = (Job) o;</span>
+
+<span class="nc bnc" id="L173" title="All 6 branches missed.">        return !(id != null ? !id.equals(job.id) : job.id != null);</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

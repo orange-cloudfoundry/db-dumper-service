@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DatabaseRef.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.model</a> &gt; <span class="el_source">DatabaseRef.java</span></div><h1>DatabaseRef.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.model;
+
+import com.orange.clara.cloud.servicedbdumper.exception.DatabaseExtractionException;
+import com.orange.clara.cloud.servicedbdumper.converter.CryptoConverter;
+
+import javax.persistence.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 03/06/2015
+ */
+@Entity
+public class DatabaseRef {
+    @Id
+    protected String name;
+    protected String user;
+    @Convert(converter = CryptoConverter.class)
+    protected String password;
+    protected String host;
+    protected String databaseName;
+    @Enumerated(EnumType.STRING)
+    protected DatabaseType type;
+    protected Integer port;
+
+    @OneToOne
+    @JoinColumn(name = &quot;database_service_id&quot;)
+    private DatabaseService databaseService;
+
+    @OneToMany(mappedBy = &quot;databaseRef&quot;, fetch = FetchType.EAGER)
+    private List&lt;DbDumperServiceInstance&gt; dbDumperServiceInstances;
+
+<span class="fc" id="L41">    public DatabaseRef() {</span>
+<span class="fc" id="L42">        this.dbDumperServiceInstances = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L43">    }</span>
+
+    public DatabaseRef(String serviceName, URI databaseUri) throws DatabaseExtractionException {
+<span class="fc" id="L46">        this();</span>
+<span class="fc" id="L47">        this.extractDatabaseType(databaseUri.getScheme());</span>
+<span class="fc" id="L48">        this.name = serviceName;</span>
+<span class="fc" id="L49">        this.host = databaseUri.getHost();</span>
+<span class="fc" id="L50">        this.user = &quot;&quot;;</span>
+<span class="fc" id="L51">        this.password = &quot;&quot;;</span>
+<span class="fc" id="L52">        this.databaseName = &quot;&quot;;</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (databaseUri.getPort() &lt;= 0) {</span>
+<span class="fc" id="L54">            this.port = this.type.getDefaultPort();</span>
+        } else {
+<span class="fc" id="L56">            this.port = databaseUri.getPort();</span>
+        }
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        if (databaseUri.getPath() != null &amp;&amp; !databaseUri.getPath().isEmpty()) {</span>
+<span class="fc" id="L59">            this.databaseName = databaseUri.getPath().substring(1);</span>
+        }
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">        if (databaseUri.getUserInfo() == null || databaseUri.getUserInfo().isEmpty()) {</span>
+<span class="fc" id="L62">            return;</span>
+        }
+<span class="fc" id="L64">        String[] userInfo = databaseUri.getUserInfo().split(&quot;:&quot;);</span>
+<span class="fc" id="L65">        this.user = userInfo[0];</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (userInfo.length &gt; 1) {</span>
+<span class="fc" id="L67">            this.password = userInfo[1];</span>
+        }
+<span class="fc" id="L69">    }</span>
+
+    public DatabaseRef(String name) {
+<span class="nc" id="L72">        this();</span>
+<span class="nc" id="L73">        this.name = name;</span>
+<span class="nc" id="L74">    }</span>
+
+    private void extractDatabaseType(String databaseTypeName) throws DatabaseExtractionException {
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (databaseTypeName == null) {</span>
+<span class="fc" id="L78">            throw new DatabaseExtractionException(&quot;Uri is malformed.&quot;);</span>
+        }
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (DatabaseType databaseType : DatabaseType.values()) {</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">            if (databaseTypeName.matches(databaseType.getMatcher())) {</span>
+<span class="fc" id="L82">                this.type = databaseType;</span>
+<span class="fc" id="L83">                break;</span>
+            }
+        }
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (this.type == null) {</span>
+<span class="fc" id="L87">            throw new DatabaseExtractionException(&quot;The database driver '&quot; + databaseTypeName + &quot;' is not supported.&quot;);</span>
+        }
+<span class="fc" id="L89">    }</span>
+
+    public String getName() {
+<span class="fc" id="L92">        return name;</span>
+    }
+
+    public void setName(String name) {
+<span class="fc" id="L96">        this.name = name;</span>
+<span class="fc" id="L97">    }</span>
+
+    public String getUser() {
+<span class="fc" id="L100">        return user;</span>
+    }
+
+    public void setUser(String user) {
+<span class="fc" id="L104">        this.user = user;</span>
+<span class="fc" id="L105">    }</span>
+
+    public String getPassword() {
+<span class="fc" id="L108">        return password;</span>
+    }
+
+    public void setPassword(String password) {
+<span class="fc" id="L112">        this.password = password;</span>
+<span class="fc" id="L113">    }</span>
+
+    public String getHost() {
+<span class="fc" id="L116">        return host;</span>
+    }
+
+    public void setHost(String host) {
+<span class="fc" id="L120">        this.host = host;</span>
+<span class="fc" id="L121">    }</span>
+
+    public String getDatabaseName() {
+<span class="fc" id="L124">        return databaseName;</span>
+    }
+
+    public void setDatabaseName(String database) {
+<span class="fc" id="L128">        this.databaseName = database;</span>
+<span class="fc" id="L129">    }</span>
+
+    public Integer getPort() {
+<span class="fc" id="L132">        return port;</span>
+    }
+
+    public void setPort(Integer port) {
+<span class="fc" id="L136">        this.port = port;</span>
+<span class="fc" id="L137">    }</span>
+
+    public DatabaseType getType() {
+<span class="fc" id="L140">        return type;</span>
+    }
+
+    public void setType(DatabaseType type) {
+<span class="fc" id="L144">        this.type = type;</span>
+<span class="fc" id="L145">    }</span>
+
+
+    public void addDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        if (this.dbDumperServiceInstances.contains(dbDumperServiceInstance)) {</span>
+<span class="fc" id="L150">            return;</span>
+        }
+<span class="fc" id="L152">        this.dbDumperServiceInstances.add(dbDumperServiceInstance);</span>
+<span class="fc" id="L153">    }</span>
+
+    public void removeDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        if (!this.dbDumperServiceInstances.contains(dbDumperServiceInstance)) {</span>
+<span class="nc" id="L157">            return;</span>
+        }
+<span class="fc" id="L159">        this.dbDumperServiceInstances.remove(dbDumperServiceInstance);</span>
+<span class="fc" id="L160">    }</span>
+
+    public List&lt;DbDumperServiceInstance&gt; getDbDumperServiceInstances() {
+<span class="fc" id="L163">        return dbDumperServiceInstances;</span>
+    }
+
+    public void setDbDumperServiceInstances(List&lt;DbDumperServiceInstance&gt; dbDumperServiceInstanceBindings) {
+<span class="fc" id="L167">        this.dbDumperServiceInstances = dbDumperServiceInstanceBindings;</span>
+<span class="fc" id="L168">    }</span>
+
+    public String getInUrlFormat() {
+<span class="fc" id="L171">        return this.type.toString().toLowerCase() + &quot;://&quot; + this.user + &quot;@&quot; + this.host + &quot;:&quot; + this.port;</span>
+    }
+
+    public DatabaseService getDatabaseService() {
+<span class="fc" id="L175">        return databaseService;</span>
+    }
+
+    public void setDatabaseService(DatabaseService databaseService) {
+<span class="fc" id="L179">        this.databaseService = databaseService;</span>
+<span class="fc" id="L180">    }</span>
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L184">        return name.hashCode();</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">        if (!(o instanceof DatabaseRef)) return false;</span>
+
+<span class="fc" id="L192">        DatabaseRef that = (DatabaseRef) o;</span>
+
+<span class="fc" id="L194">        return name.equals(that.name);</span>
+
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L200">        return &quot;DatabaseRef{&quot; +</span>
+                &quot;name='&quot; + name + '\'' +
+                &quot;, user='&quot; + user + '\'' +
+                &quot;, password='&quot; + password + '\'' +
+                &quot;, host='&quot; + host + '\'' +
+                &quot;, databaseName='&quot; + databaseName + '\'' +
+                &quot;, type=&quot; + type +
+                &quot;, port=&quot; + port +
+                &quot;, databaseService=&quot; + databaseService +
+                &quot;, dbDumperServiceInstances=&quot; + dbDumperServiceInstances +
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

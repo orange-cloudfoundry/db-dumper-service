@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AppConfig.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.config</a> &gt; <span class="el_source">AppConfig.java</span></div><h1>AppConfig.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.config;
+
+import com.orange.clara.cloud.servicedbdumper.cloudfoundry.CloudFoundryClientFactory;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.CloudFoundryUserAccessRight;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.DefaultUserAccessRight;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
+import com.orange.clara.cloud.servicedbdumper.service.servicekey.CloudFoundryServiceKeyManager;
+import com.orange.clara.cloud.servicedbdumper.service.servicekey.NoServiceKeyManager;
+import com.orange.clara.cloud.servicedbdumper.service.servicekey.ServiceKeyManager;
+import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.domain.CloudOrganization;
+import org.cloudfoundry.client.lib.domain.CloudSpace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+import java.net.MalformedURLException;
+import java.util.regex.Pattern;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 12/02/2016
+ */
+@Configuration
+<span class="fc" id="L35">public class AppConfig {</span>
+
+<span class="fc" id="L37">    private Logger logger = LoggerFactory.getLogger(AppConfig.class);</span>
+    @Value(&quot;${file.date.format:dd-MM-yyyy HH:mm}&quot;)
+    private String dateFormat;
+    @Autowired
+    private CloudFoundryClientFactory cloudFoundryClientFactory;
+
+    @Value(&quot;${cf.admin.user:#{null}}&quot;)
+    private String cfAdminUser;
+    @Value(&quot;${cf.admin.password:#{null}}&quot;)
+    private String cfAdminPassword;
+    @Value(&quot;${cloud.controller.url:#{null}}&quot;)
+    private String cloudControllerUrl;
+    @Value(&quot;${no.cloudfoundry.access:false}&quot;)
+    private boolean noCloudFoundryAccess;
+
+    @Bean
+    public String dateFormatFile() {
+<span class="fc" id="L54">        String finalDateFormat = dateFormat.replaceAll(Pattern.quote(&quot; &quot;), &quot;-&quot;);</span>
+<span class="fc" id="L55">        finalDateFormat = finalDateFormat.replaceAll(Pattern.quote(&quot;:&quot;), &quot;&quot;);</span>
+<span class="fc" id="L56">        return finalDateFormat;</span>
+    }
+
+    @Bean
+    public ServiceKeyManager serviceKeyManager() {
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (this.cfAdminUser == null</span>
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">                || this.cfAdminUser.isEmpty()</span>
+                || this.cfAdminPassword == null
+<span class="pc bpc" id="L64" title="2 of 4 branches missed.">                || this.cfAdminPassword.isEmpty()</span>
+                || this.cloudControllerUrl == null
+<span class="pc bpc" id="L66" title="1 of 4 branches missed.">                || this.cloudControllerUrl.isEmpty()</span>
+                || this.noCloudFoundryAccess) {
+<span class="fc" id="L68">            return new NoServiceKeyManager();</span>
+        }
+<span class="fc" id="L70">        return new CloudFoundryServiceKeyManager();</span>
+    }
+
+    @Bean
+    public String dateFormat() {
+<span class="fc" id="L75">        return this.dateFormat;</span>
+    }
+
+    @Bean(name = &quot;userAccessRight&quot;)
+    @Profile(&quot;uaa&quot;)
+    public UserAccessRight getCloudFoundryUserAccessRight() {
+<span class="nc" id="L81">        return new CloudFoundryUserAccessRight();</span>
+    }
+
+    @Bean(name = &quot;userAccessRight&quot;)
+    @Profile(&quot;!uaa&quot;)
+    public UserAccessRight getDefaultUserAccessRight() {
+<span class="fc" id="L87">        return new DefaultUserAccessRight();</span>
+    }
+
+    @Bean(name = &quot;cloudFoundryClientAsAdmin&quot;)
+    public CloudFoundryClient getCloudFoundryClientAsAdmin() throws MalformedURLException {
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (this.cfAdminUser == null</span>
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">                || this.cfAdminUser.isEmpty()</span>
+                || this.cfAdminPassword == null
+<span class="pc bpc" id="L95" title="2 of 4 branches missed.">                || this.cfAdminPassword.isEmpty()</span>
+                || this.cloudControllerUrl == null
+<span class="pc bpc" id="L97" title="1 of 4 branches missed.">                || this.cloudControllerUrl.isEmpty()</span>
+                || this.noCloudFoundryAccess) {
+<span class="fc" id="L99">            return null;</span>
+        }
+<span class="fc" id="L101">        CloudOrganization cloudOrganization = this.getOrg();</span>
+<span class="fc" id="L102">        CloudSpace cloudSpace = this.getSpace();</span>
+<span class="pc bpc" id="L103" title="2 of 4 branches missed.">        if (cloudOrganization == null || cloudSpace == null) {</span>
+<span class="nc" id="L104">            return null;</span>
+        }
+<span class="fc" id="L106">        logger.debug(String.format(&quot;Creating new CloudFoundry client using admin access with org '%s' and space '%s'&quot;, cloudOrganization.getName(), cloudSpace.getName()));</span>
+<span class="fc" id="L107">        return cloudFoundryClientFactory.createCloudFoundryClient(this.cfAdminUser, this.cfAdminPassword, this.cloudControllerUrl, cloudOrganization.getName(), cloudSpace.getName());</span>
+    }
+
+    @Bean
+    public CloudFoundryClient getCloudFoundryClientTemp() throws MalformedURLException {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (this.cfAdminUser == null</span>
+<span class="pc bpc" id="L113" title="2 of 4 branches missed.">                || this.cfAdminUser.isEmpty()</span>
+                || this.cfAdminPassword == null
+<span class="pc bpc" id="L115" title="2 of 4 branches missed.">                || this.cfAdminPassword.isEmpty()</span>
+                || this.cloudControllerUrl == null
+<span class="pc bpc" id="L117" title="1 of 4 branches missed.">                || this.cloudControllerUrl.isEmpty()</span>
+                || this.noCloudFoundryAccess) {
+<span class="fc" id="L119">            return null;</span>
+        }
+<span class="fc" id="L121">        logger.debug(&quot;Creating new CloudFoundry client using admin access&quot;);</span>
+<span class="fc" id="L122">        return cloudFoundryClientFactory.createCloudFoundryClient(this.cfAdminUser, this.cfAdminPassword, this.cloudControllerUrl);</span>
+    }
+
+    @Bean
+    public CloudOrganization getOrg() throws MalformedURLException {
+<span class="fc" id="L127">        CloudFoundryClient cloudFoundryClient = this.getCloudFoundryClientTemp();</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (cloudFoundryClient == null) {</span>
+<span class="fc" id="L129">            return null;</span>
+        }
+<span class="fc" id="L131">        return cloudFoundryClient.getOrganizations().get(0);</span>
+    }
+
+    @Bean
+    public CloudSpace getSpace() throws MalformedURLException {
+<span class="fc" id="L136">        CloudFoundryClient cloudFoundryClient = this.getCloudFoundryClientTemp();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (cloudFoundryClient == null) {</span>
+<span class="fc" id="L138">            return null;</span>
+        }
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        for (CloudSpace cloudSpace : getCloudFoundryClientTemp().getSpaces()) {</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">            if (cloudSpace.getOrganization().getMeta().getGuid().equals(this.getOrg().getMeta().getGuid())) {</span>
+<span class="fc" id="L142">                return cloudSpace;</span>
+            }
+<span class="nc" id="L144">        }</span>
+<span class="nc" id="L145">        return null;</span>
+    }
+
+    @Bean
+    public String cfAdminUser() {
+<span class="fc" id="L150">        return cfAdminUser;</span>
+    }
+
+    @Bean
+    public String cfAdminPassword() {
+<span class="fc" id="L155">        return cfAdminPassword;</span>
+    }
+
+    @Bean
+    public String cloudControllerUrl() {
+<span class="fc" id="L160">        return cloudControllerUrl;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

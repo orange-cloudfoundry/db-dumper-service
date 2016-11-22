@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DbDumperServiceInstance.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.model</a> &gt; <span class="el_source">DbDumperServiceInstance.java</span></div><h1>DbDumperServiceInstance.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.model;
+
+import com.google.common.collect.Lists;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 12/10/2015
+ */
+@Entity
+public class DbDumperServiceInstance {
+    @OneToMany(mappedBy = &quot;dbDumperServiceInstance&quot;, fetch = FetchType.EAGER)
+    protected List&lt;DatabaseDumpFile&gt; databaseDumpFiles;
+    @Id
+    private String serviceInstanceId;
+    private String planId;
+    private String organizationGuid;
+    private String spaceGuid;
+    private String dashboardUrl;
+    private Boolean deleted;
+    @ManyToOne
+    @JoinColumn(name = &quot;db_dumper_plan_id&quot;)
+    private DbDumperPlan dbDumperPlan;
+    @ManyToOne
+    @JoinColumn(name = &quot;database_ref_id&quot;)
+    private DatabaseRef databaseRef;
+
+    @OneToMany(mappedBy = &quot;dbDumperServiceInstance&quot;)
+    private List&lt;DbDumperServiceInstanceBinding&gt; dbDumperServiceInstanceBindings;
+
+<span class="fc" id="L40">    public DbDumperServiceInstance() {</span>
+<span class="fc" id="L41">        this.deleted = false;</span>
+<span class="fc" id="L42">        this.dbDumperServiceInstanceBindings = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L43">        this.databaseDumpFiles = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L44">    }</span>
+
+    public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DbDumperPlan dbDumperPlan) {
+<span class="fc" id="L47">        this();</span>
+<span class="fc" id="L48">        this.serviceInstanceId = serviceInstanceId;</span>
+<span class="fc" id="L49">        this.planId = planId;</span>
+<span class="fc" id="L50">        this.organizationGuid = organizationGuid;</span>
+<span class="fc" id="L51">        this.spaceGuid = spaceGuid;</span>
+<span class="fc" id="L52">        this.dashboardUrl = dashboardUrl;</span>
+<span class="fc" id="L53">        this.dbDumperPlan = dbDumperPlan;</span>
+<span class="fc" id="L54">    }</span>
+
+    public DbDumperServiceInstance(String serviceInstanceId, String planId, String organizationGuid, String spaceGuid, String dashboardUrl, DbDumperPlan dbDumperPlan, DatabaseRef databaseRef) {
+<span class="nc" id="L57">        this(serviceInstanceId, planId, organizationGuid, spaceGuid, dashboardUrl, dbDumperPlan);</span>
+<span class="nc" id="L58">        this.setDatabaseRef(databaseRef);</span>
+<span class="nc" id="L59">    }</span>
+
+    public void addDbDumperServiceInstanceBinding(DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding) {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (this.dbDumperServiceInstanceBindings.contains(dbDumperServiceInstanceBinding)) {</span>
+<span class="nc" id="L63">            return;</span>
+        }
+<span class="nc" id="L65">        this.dbDumperServiceInstanceBindings.add(dbDumperServiceInstanceBinding);</span>
+<span class="nc" id="L66">    }</span>
+
+    public void removeDbDumperServiceInstanceBinding(DbDumperServiceInstanceBinding dbDumperServiceInstanceBinding) {
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (!this.dbDumperServiceInstanceBindings.contains(dbDumperServiceInstanceBinding)) {</span>
+<span class="nc" id="L70">            return;</span>
+        }
+<span class="nc" id="L72">        this.dbDumperServiceInstanceBindings.remove(dbDumperServiceInstanceBinding);</span>
+<span class="nc" id="L73">    }</span>
+
+    public String getServiceInstanceId() {
+<span class="fc" id="L76">        return this.serviceInstanceId;</span>
+    }
+
+    public void setServiceInstanceId(String serviceInstanceId) {
+<span class="fc" id="L80">        this.serviceInstanceId = serviceInstanceId;</span>
+<span class="fc" id="L81">    }</span>
+
+    public String getPlanId() {
+<span class="nc" id="L84">        return this.planId;</span>
+    }
+
+    public void setPlanId(String planId) {
+<span class="nc" id="L88">        this.planId = planId;</span>
+<span class="nc" id="L89">    }</span>
+
+    public String getOrganizationGuid() {
+<span class="nc" id="L92">        return this.organizationGuid;</span>
+    }
+
+    public void setOrganizationGuid(String organizationGuid) {
+<span class="nc" id="L96">        this.organizationGuid = organizationGuid;</span>
+<span class="nc" id="L97">    }</span>
+
+    public String getSpaceGuid() {
+<span class="nc" id="L100">        return this.spaceGuid;</span>
+    }
+
+    public void setSpaceGuid(String spaceGuid) {
+<span class="nc" id="L104">        this.spaceGuid = spaceGuid;</span>
+<span class="nc" id="L105">    }</span>
+
+    public String getDashboardUrl() {
+<span class="nc" id="L108">        return this.dashboardUrl;</span>
+    }
+
+    public void setDashboardUrl(String dashboardUrl) {
+<span class="nc" id="L112">        this.dashboardUrl = dashboardUrl;</span>
+<span class="nc" id="L113">    }</span>
+
+    public Boolean getDeleted() {
+<span class="fc" id="L116">        return deleted;</span>
+    }
+
+    public void setDeleted(Boolean deleted) {
+<span class="fc" id="L120">        this.deleted = deleted;</span>
+<span class="fc" id="L121">    }</span>
+
+    public Boolean isDeleted() {
+<span class="fc" id="L124">        return deleted;</span>
+    }
+
+    public DatabaseRef getDatabaseRef() {
+<span class="fc" id="L128">        return databaseRef;</span>
+    }
+
+    public void setDatabaseRef(DatabaseRef databaseRef) {
+<span class="fc" id="L132">        this.databaseRef = databaseRef;</span>
+<span class="fc" id="L133">        this.databaseRef.addDbDumperServiceInstance(this);</span>
+<span class="fc" id="L134">    }</span>
+
+    public List&lt;DatabaseDumpFile&gt; getDatabaseDumpFiles() {
+<span class="fc" id="L137">        return databaseDumpFiles;</span>
+    }
+
+    public void setDatabaseDumpFiles(List&lt;DatabaseDumpFile&gt; databaseDumpFiles) {
+<span class="fc" id="L141">        this.databaseDumpFiles = databaseDumpFiles;</span>
+<span class="fc" id="L142">    }</span>
+
+    public List&lt;DatabaseDumpFile&gt; getDatabaseDumpFilesDeleted() {
+<span class="nc" id="L145">        List&lt;DatabaseDumpFile&gt; databaseDumpFilesDeleted = Lists.newArrayList();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (databaseDumpFile.isDeleted()) {</span>
+<span class="nc" id="L148">                databaseDumpFilesDeleted.add(databaseDumpFile);</span>
+            }
+<span class="nc" id="L150">        }</span>
+<span class="nc" id="L151">        return databaseDumpFilesDeleted;</span>
+    }
+
+    public List&lt;DatabaseDumpFile&gt; getDatabaseDumpFilesNotDeleted() {
+<span class="fc" id="L155">        List&lt;DatabaseDumpFile&gt; databaseDumpFilesNotDeleted = Lists.newArrayList();</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        for (DatabaseDumpFile databaseDumpFile : this.databaseDumpFiles) {</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">            if (!databaseDumpFile.isDeleted()) {</span>
+<span class="fc" id="L158">                databaseDumpFilesNotDeleted.add(databaseDumpFile);</span>
+            }
+<span class="fc" id="L160">        }</span>
+<span class="fc" id="L161">        return databaseDumpFilesNotDeleted;</span>
+    }
+
+    public void addDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (this.databaseDumpFiles.contains(databaseDumpFile)) {</span>
+<span class="fc" id="L166">            return;</span>
+        }
+<span class="fc" id="L168">        this.databaseDumpFiles.add(databaseDumpFile);</span>
+<span class="fc" id="L169">    }</span>
+
+    public void removeDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) {
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        if (!this.databaseDumpFiles.contains(databaseDumpFile)) {</span>
+<span class="nc" id="L173">            return;</span>
+        }
+<span class="fc" id="L175">        this.databaseDumpFiles.remove(databaseDumpFile);</span>
+<span class="fc" id="L176">    }</span>
+
+    public DbDumperPlan getDbDumperPlan() {
+<span class="fc" id="L179">        return dbDumperPlan;</span>
+    }
+
+    public void setDbDumperPlan(DbDumperPlan dbDumperPlan) {
+<span class="fc" id="L183">        this.dbDumperPlan = dbDumperPlan;</span>
+<span class="fc" id="L184">    }</span>
+
+    public List&lt;DbDumperServiceInstanceBinding&gt; getDbDumperServiceInstanceBindings() {
+<span class="nc" id="L187">        return dbDumperServiceInstanceBindings;</span>
+    }
+
+    public void setDbDumperServiceInstanceBindings(List&lt;DbDumperServiceInstanceBinding&gt; dbDumperServiceInstanceBindings) {
+<span class="nc" id="L191">        this.dbDumperServiceInstanceBindings = dbDumperServiceInstanceBindings;</span>
+<span class="nc" id="L192">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

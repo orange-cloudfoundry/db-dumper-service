@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ManagerController.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.controllers</a> &gt; <span class="el_source">ManagerController.java</span></div><h1>ManagerController.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.controllers;
+
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpFileDeletedException;
+import com.orange.clara.cloud.servicedbdumper.exception.DumpFileShowException;
+import com.orange.clara.cloud.servicedbdumper.exception.UserAccessRightException;
+import com.orange.clara.cloud.servicedbdumper.filer.Filer;
+import com.orange.clara.cloud.servicedbdumper.helper.DumpFileHelper;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
+import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Base64;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 14/10/2015
+ */
+@Controller
+@RequestMapping(value = Routes.MANAGE_ROOT)
+<span class="fc" id="L44">public class ManagerController extends AbstractController {</span>
+    @Autowired
+    private Filer filer;
+
+
+    @Autowired
+    @Qualifier(&quot;userAccessRight&quot;)
+    private UserAccessRight userAccessRight;
+
+    @Autowired
+    private DatabaseDumpFileRepo databaseDumpFileRepo;
+
+    @Autowired
+    private Deleter deleter;
+
+    @RequestMapping(Routes.RAW_DUMP_FILE_ROOT + &quot;/{dumpFileId:[0-9]+}&quot;)
+    @ResponseBody
+    public String raw(@PathVariable Integer dumpFileId) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
+<span class="fc" id="L62">        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);</span>
+<span class="fc" id="L63">        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());</span>
+<span class="fc" id="L64">        this.checkDumpShowable(databaseDumpFile);</span>
+<span class="fc" id="L65">        String fileName = DumpFileHelper.getFilePath(databaseDumpFile);</span>
+<span class="fc" id="L66">        InputStream inputStream = this.filer.retrieveWithStream(fileName);</span>
+
+<span class="fc" id="L68">        String content = &quot;&quot;;</span>
+<span class="fc" id="L69">        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (String line = br.readLine(); line != null; line = br.readLine()) {</span>
+<span class="fc" id="L71">            content += line;</span>
+<span class="fc" id="L72">            content += &quot;\n&quot;;</span>
+        }
+<span class="fc" id="L74">        br.close();</span>
+
+<span class="fc" id="L76">        return content;</span>
+    }
+
+    private void checkDbDumperServiceInstanceWithAccessRight(DbDumperServiceInstance dbDumperServiceInstance) throws UserAccessRightException {
+<span class="fc" id="L80">        this.checkDbDumperServiceInstance(dbDumperServiceInstance);</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (!this.userAccessRight.haveAccessToServiceInstance(dbDumperServiceInstance)) {</span>
+<span class="nc" id="L82">            throw new UserAccessRightException(&quot;You don't have access to this instance&quot;);</span>
+        }
+<span class="fc" id="L84">    }</span>
+
+    private void checkDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (dbDumperServiceInstance.isDeleted()) {</span>
+<span class="fc" id="L88">            throw new IllegalArgumentException(String.format(&quot;Instance with for database reference '%s' has been deleted&quot;, dbDumperServiceInstance.getDatabaseRef().getName()));</span>
+        }
+<span class="fc" id="L90">    }</span>
+
+    private void checkDatabaseDumpFile(DatabaseDumpFile databaseDumpFile) throws DumpFileDeletedException {
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (databaseDumpFile.isDeleted()) {</span>
+<span class="fc" id="L94">            throw new DumpFileDeletedException(databaseDumpFile);</span>
+        }
+<span class="fc" id="L96">    }</span>
+
+    private void checkDumpShowable(DatabaseDumpFile databaseDumpFile) throws DumpFileShowException, DumpFileDeletedException {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!databaseDumpFile.isShowable()) {</span>
+<span class="fc" id="L100">            throw new DumpFileShowException(databaseDumpFile);</span>
+        }
+<span class="fc" id="L102">        this.checkDatabaseDumpFile(databaseDumpFile);</span>
+<span class="fc" id="L103">    }</span>
+
+    @RequestMapping(Routes.SHOW_DUMP_FILE_ROOT + &quot;/{dumpFileId:[0-9]+}&quot;)
+    public String show(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException, DumpFileShowException, DumpFileDeletedException {
+<span class="fc" id="L107">        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);</span>
+<span class="fc" id="L108">        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());</span>
+<span class="fc" id="L109">        this.checkDumpShowable(databaseDumpFile);</span>
+<span class="fc" id="L110">        String databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getName();</span>
+<span class="fc" id="L111">        String fileName = databaseDumpFile.getFileName();</span>
+<span class="fc" id="L112">        String finalFileName = DumpFileHelper.getFilePath(databaseDumpFile);</span>
+<span class="fc" id="L113">        InputStream inputStream = this.filer.retrieveWithStream(finalFileName);</span>
+
+<span class="fc" id="L115">        String content = &quot;&quot;;</span>
+<span class="fc" id="L116">        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (String line = br.readLine(); line != null; line = br.readLine()) {</span>
+<span class="fc" id="L118">            content += line;</span>
+<span class="fc" id="L119">            content += &quot;\n&quot;;</span>
+        }
+<span class="fc" id="L121">        br.close();</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        if (databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getDatabaseService() != null) {</span>
+<span class="nc" id="L123">            databaseName = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef().getDatabaseService().getName();</span>
+        }
+<span class="fc" id="L125">        model.addAttribute(&quot;databaseName&quot;, databaseName);</span>
+<span class="fc" id="L126">        model.addAttribute(&quot;fileName&quot;, fileName);</span>
+<span class="fc" id="L127">        model.addAttribute(&quot;id&quot;, dumpFileId);</span>
+<span class="fc" id="L128">        model.addAttribute(&quot;sql&quot;, content);</span>
+<span class="fc" id="L129">        this.addDefaultAttribute(model);</span>
+<span class="fc" id="L130">        return &quot;show&quot;;</span>
+    }
+
+    @RequestMapping(Routes.DELETE_DUMP_FILE_ROOT + &quot;/{dumpFileId:[0-9]+}&quot;)
+    public String delete(@PathVariable Integer dumpFileId, Model model) throws IOException, UserAccessRightException {
+<span class="fc" id="L135">        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);</span>
+<span class="fc" id="L136">        this.checkDbDumperServiceInstanceWithAccessRight(databaseDumpFile.getDbDumperServiceInstance());</span>
+<span class="fc" id="L137">        DatabaseRef databaseRef = databaseDumpFile.getDbDumperServiceInstance().getDatabaseRef();</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (!databaseDumpFile.isDeleted()) {</span>
+<span class="fc" id="L139">            this.deleter.delete(databaseDumpFile);</span>
+        }
+<span class="fc" id="L141">        return String.format(&quot;redirect:&quot; + Routes.MANAGE_ROOT + Routes.MANAGE_LIST_DATABASE_ROOT + &quot;/%s&quot;, databaseRef.getName());</span>
+    }
+
+
+    @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + &quot;/{dumpFileId:[0-9]+}&quot;, method = RequestMethod.GET)
+    public void download(@PathVariable Integer dumpFileId, HttpServletRequest request, HttpServletResponse resp, @RequestParam(value = &quot;original&quot;, required = false) String original)
+            throws IOException, DumpFileDeletedException {
+<span class="fc" id="L148">        DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);</span>
+<span class="fc" id="L149">        this.checkDbDumperServiceInstance(databaseDumpFile.getDbDumperServiceInstance());</span>
+<span class="fc" id="L150">        this.checkDatabaseDumpFile(databaseDumpFile);</span>
+<span class="fc" id="L151">        String userRequest = &quot;&quot;;</span>
+<span class="fc" id="L152">        String passwordRequest = &quot;&quot;;</span>
+<span class="fc" id="L153">        String authorization = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="pc bpc" id="L154" title="1 of 4 branches missed.">        if (authorization != null &amp;&amp; authorization.startsWith(&quot;Basic&quot;)) {</span>
+<span class="fc" id="L155">            String base64Credentials = authorization.substring(&quot;Basic&quot;.length()).trim();</span>
+<span class="fc" id="L156">            String credentials = new String(Base64.getDecoder().decode(base64Credentials),</span>
+<span class="fc" id="L157">                    Charset.forName(&quot;UTF-8&quot;));</span>
+<span class="fc" id="L158">            String[] values = credentials.split(&quot;:&quot;, 2);</span>
+<span class="fc" id="L159">            userRequest = values[0];</span>
+<span class="fc" id="L160">            passwordRequest = values[1];</span>
+<span class="fc" id="L161">        } else {</span>
+<span class="fc" id="L162">            this.getErrorResponseEntityBasicAuth(resp);</span>
+<span class="fc" id="L163">            return;</span>
+        }
+
+<span class="pc bpc" id="L166" title="2 of 4 branches missed.">        if (!userRequest.equals(databaseDumpFile.getUser()) || !passwordRequest.equals(databaseDumpFile.getPassword())) {</span>
+<span class="nc" id="L167">            this.getErrorResponseEntityBasicAuth(resp);</span>
+<span class="nc" id="L168">            return;</span>
+        }
+
+<span class="fc" id="L171">        String fileName = DumpFileHelper.getFilePath(databaseDumpFile);</span>
+<span class="fc" id="L172">        resp.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);</span>
+<span class="fc" id="L173">        resp.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(this.filer.getContentLength(fileName)));</span>
+<span class="fc" id="L174">        InputStream inputStream = null;</span>
+<span class="pc bpc" id="L175" title="1 of 4 branches missed.">        if (original == null || original.isEmpty()) {</span>
+<span class="fc" id="L176">            inputStream = filer.retrieveWithOriginalStream(fileName);</span>
+        } else {
+<span class="fc" id="L178">            inputStream = filer.retrieveWithStream(fileName);</span>
+<span class="fc" id="L179">            File file = new File(fileName);</span>
+<span class="fc" id="L180">            String[] filenames = file.getName().split(&quot;\\.&quot;);</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">            if (filenames.length &gt;= 2) {</span>
+<span class="nc" id="L182">                fileName = filenames[0] + &quot;.&quot; + filenames[1];</span>
+            }
+
+        }
+<span class="fc" id="L186">        File file = new File(fileName);</span>
+<span class="fc" id="L187">        resp.setHeader(&quot;Content-Disposition&quot;, &quot;attachment; filename=\&quot;&quot; + file.getName() + &quot;\&quot;&quot;);</span>
+
+<span class="fc" id="L189">        OutputStream outputStream = null;</span>
+<span class="fc" id="L190">        outputStream = resp.getOutputStream();</span>
+        try {
+<span class="fc" id="L192">            ByteStreams.copy(inputStream, outputStream);</span>
+        } finally {
+<span class="pc" id="L194">            Closeables.closeQuietly(inputStream);</span>
+<span class="pc" id="L195">            Closeables.close(outputStream, true);</span>
+<span class="fc" id="L196">        }</span>
+<span class="fc" id="L197">    }</span>
+
+    private DatabaseDumpFile getDatabaseDumpFile(Integer dumpFileId) {
+<span class="fc" id="L200">        DatabaseDumpFile databaseDumpFile = this.databaseDumpFileRepo.findOne(dumpFileId);</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        if (databaseDumpFile == null) {</span>
+<span class="fc" id="L202">            throw new IllegalArgumentException(String.format(&quot;Cannot find dump file with id '%s'&quot;, dumpFileId));</span>
+        }
+<span class="fc" id="L204">        return databaseDumpFile;</span>
+    }
+
+    private void getErrorResponseEntityBasicAuth(HttpServletResponse resp) throws IOException {
+<span class="fc" id="L208">        String errorMessage = &quot;401 Unauthorized&quot;;</span>
+
+<span class="fc" id="L210">        resp.setHeader(&quot;WWW-Authenticate&quot;, &quot;Basic realm=\&quot;Download Realm\&quot;&quot;);</span>
+<span class="fc" id="L211">        resp.setStatus(HttpStatus.UNAUTHORIZED.value());</span>
+<span class="fc" id="L212">        OutputStream outputStream = resp.getOutputStream();</span>
+        try {
+<span class="fc" id="L214">            outputStream.write(errorMessage.getBytes());</span>
+        } finally {
+<span class="pc" id="L216">            Closeables.close(outputStream, true);</span>
+<span class="fc" id="L217">        }</span>
+
+<span class="fc" id="L219">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

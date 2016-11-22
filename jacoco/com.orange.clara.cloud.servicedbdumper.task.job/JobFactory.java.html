@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>JobFactory.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.task.job</a> &gt; <span class="el_source">JobFactory.java</span></div><h1>JobFactory.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.task.job;
+
+import com.orange.clara.cloud.servicedbdumper.model.*;
+import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 27/11/2015
+ */
+<span class="fc" id="L28">public class JobFactory {</span>
+
+    @Value(&quot;${job.errored.delete.expiration.days:2}&quot;)
+    protected Integer jobErroredDeleteExpirationDays;
+
+    @Value(&quot;${job.finished.delete.expiration.minutes:8}&quot;)
+    protected Integer jobFinishedDeleteExpirationMinutes;
+
+<span class="fc" id="L36">    private Logger logger = LoggerFactory.getLogger(JobFactory.class);</span>
+
+    @Autowired
+    private JobRepo jobRepo;
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Job createJob(JobType jobType, DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date dumpDate, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L44">        Job job = new Job(jobType, databaseRefSrc, databaseRefTarget, dumpDate, dbDumperServiceInstance);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.START, databaseRefSrc, databaseRefTarget).size() &gt; 0</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                || this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrcAndDatabaseRefTarget(jobType, JobEvent.RUNNING, databaseRefSrc, databaseRefTarget).size() &gt; 0) {</span>
+<span class="fc" id="L47">            job.setJobEvent(JobEvent.SCHEDULED);</span>
+<span class="fc" id="L48">            this.logger.info(</span>
+<span class="fc" id="L49">                    String.format(&quot;Job type: %s for database source '%s' and database target '%s' has been scheduled.&quot;,</span>
+<span class="fc" id="L50">                            jobType.toString(),</span>
+<span class="fc" id="L51">                            databaseRefSrc.getDatabaseName(),</span>
+<span class="fc" id="L52">                            databaseRefTarget.getDatabaseName()</span>
+                    )
+            );
+        }
+<span class="fc" id="L56">        return this.jobRepo.save(job);</span>
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Job createJobWithDatabaseRefSrc(JobType jobType, DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L61">        Job job = new Job(jobType, databaseRefSrc, dbDumperServiceInstance);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.START, databaseRefSrc).size() &gt; 0</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                || this.jobRepo.findByJobTypeAndJobEventAndDatabaseRefSrc(jobType, JobEvent.RUNNING, databaseRefSrc).size() &gt; 0) {</span>
+<span class="fc" id="L64">            job.setJobEvent(JobEvent.SCHEDULED);</span>
+<span class="fc" id="L65">            this.logger.info(</span>
+<span class="fc" id="L66">                    String.format(&quot;Job type: %s for database source '%s' has been scheduled.&quot;,</span>
+<span class="fc" id="L67">                            jobType.toString(),</span>
+<span class="fc" id="L68">                            databaseRefSrc.getDatabaseName()</span>
+                    )
+            );
+        }
+<span class="fc" id="L72">        return this.jobRepo.save(job);</span>
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createJobWithDbDumperServiceInstance(JobType jobType, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L77">        Job job = new Job(jobType, null, dbDumperServiceInstance);</span>
+<span class="fc" id="L78">        this.jobRepo.save(job);</span>
+<span class="fc" id="L79">    }</span>
+
+    public void createJobCreateDump(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L82">        this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);</span>
+<span class="fc" id="L83">    }</span>
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createJobCreateDump(DbDumperServiceInstance dbDumperServiceInstance, Metadata metadata) {
+<span class="fc" id="L87">        Job job = this.createJobWithDatabaseRefSrc(JobType.CREATE_DUMP, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);</span>
+<span class="fc" id="L88">        job.setMetadata(metadata);</span>
+<span class="fc" id="L89">        this.jobRepo.save(job);</span>
+<span class="fc" id="L90">    }</span>
+
+    public void createJobDeleteDumps(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="nc" id="L93">        this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, dbDumperServiceInstance.getDatabaseRef(), dbDumperServiceInstance);</span>
+<span class="nc" id="L94">    }</span>
+
+    public void createJobRestoreDump(DatabaseRef databaseRefTarget, Date createdAt, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L97">        this.createJob(JobType.RESTORE_DUMP, dbDumperServiceInstance.getDatabaseRef(), databaseRefTarget, createdAt, dbDumperServiceInstance);</span>
+<span class="fc" id="L98">    }</span>
+
+
+    public void createJobDeleteDumps(DatabaseRef databaseRefSrc, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="nc" id="L102">        this.createJobWithDatabaseRefSrc(JobType.DELETE_DUMPS, databaseRefSrc, dbDumperServiceInstance);</span>
+<span class="nc" id="L103">    }</span>
+
+    public void createJobDeleteDbDumperServiceInstance(DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="fc" id="L106">        this.createJobWithDbDumperServiceInstance(JobType.DELETE_DB_DUMPER_SERVICE_INSTANCE, dbDumperServiceInstance);</span>
+<span class="fc" id="L107">    }</span>
+
+    public void createJobRestoreDump(DatabaseRef databaseRefSrc, DatabaseRef databaseRefTarget, Date createdAt, DbDumperServiceInstance dbDumperServiceInstance) {
+<span class="nc" id="L110">        this.createJob(JobType.RESTORE_DUMP, databaseRefSrc, databaseRefTarget, createdAt, dbDumperServiceInstance);</span>
+<span class="nc" id="L111">    }</span>
+
+    @Transactional
+    public void purgeJob() {
+<span class="fc" id="L115">        this.purgeErroredJobs();</span>
+<span class="fc" id="L116">        this.purgeFinishedJob();</span>
+<span class="fc" id="L117">    }</span>
+
+    @Transactional
+    public void purgeErroredJobs() {
+        LocalDateTime whenRemoveDateTime;
+<span class="fc" id="L122">        List&lt;Job&gt; jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.ERRORED);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (Job job : jobs) {</span>
+<span class="fc" id="L124">            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.systemDefault())).plusDays(this.jobErroredDeleteExpirationDays);</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.systemDefault())).isBefore(whenRemoveDateTime)) {</span>
+<span class="fc" id="L126">                continue;</span>
+            }
+<span class="fc" id="L128">            this.jobRepo.delete(job);</span>
+<span class="fc" id="L129">        }</span>
+<span class="fc" id="L130">    }</span>
+
+    @Transactional
+    public void purgeFinishedJob() {
+        LocalDateTime whenRemoveDateTime;
+<span class="fc" id="L135">        List&lt;Job&gt; jobs = jobRepo.findByJobEventOrderByUpdatedAtDesc(JobEvent.FINISHED);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        for (Job job : jobs) {</span>
+<span class="fc" id="L137">            whenRemoveDateTime = LocalDateTime.from(job.getUpdatedAt().toInstant().atZone(ZoneId.systemDefault())).plusMinutes(this.jobFinishedDeleteExpirationMinutes);</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">            if (LocalDateTime.from(Calendar.getInstance().toInstant().atZone(ZoneId.systemDefault())).isBefore(whenRemoveDateTime)</span>
+<span class="pc bpc" id="L139" title="2 of 6 branches missed.">                    &amp;&amp; (job.getDatabaseRefSrc() != null || job.getDbDumperServiceInstance() != null || job.getDatabaseRefTarget() != null)) {</span>
+<span class="nc" id="L140">                continue;</span>
+            }
+<span class="fc" id="L142">            this.jobRepo.delete(job);</span>
+<span class="fc" id="L143">        }</span>
+<span class="fc" id="L144">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

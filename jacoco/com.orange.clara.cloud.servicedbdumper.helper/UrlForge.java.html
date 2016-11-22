@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UrlForge.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.helper</a> &gt; <span class="el_source">UrlForge.java</span></div><h1>UrlForge.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.helper;
+
+import com.orange.clara.cloud.servicedbdumper.config.Routes;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 14/02/2016
+ */
+@Service
+<span class="fc" id="L22">public class UrlForge {</span>
+    public final static String DOWNLOAD_ROUTE = Routes.MANAGE_ROOT + Routes.DOWNLOAD_DUMP_FILE_ROOT;
+    public final static String SHOW_ROUTE = Routes.MANAGE_ROOT + Routes.SHOW_DUMP_FILE_ROOT;
+
+    @Autowired
+    @Qualifier(&quot;appUri&quot;)
+    protected String appUri;
+
+    public String createDownloadLink(DatabaseDumpFile databaseDumpFile) {
+<span class="fc" id="L31">        URI appInUri = URI.create(appUri);</span>
+<span class="fc" id="L32">        String port = this.getPortInString();</span>
+<span class="fc" id="L33">        return appInUri.getScheme() + &quot;://&quot; +</span>
+<span class="fc" id="L34">                databaseDumpFile.getUser() + &quot;:&quot; +</span>
+<span class="fc" id="L35">                databaseDumpFile.getPassword() + &quot;@&quot; +</span>
+<span class="fc" id="L36">                appInUri.getHost() + port + DOWNLOAD_ROUTE + &quot;/&quot; +</span>
+<span class="fc" id="L37">                databaseDumpFile.getId();</span>
+    }
+
+    private String getPortInString() {
+<span class="fc" id="L41">        URI appInUri = URI.create(appUri);</span>
+<span class="fc" id="L42">        String port = &quot;&quot;;</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (appInUri.getPort() != -1) {</span>
+<span class="fc" id="L44">            port = &quot;:&quot; + appInUri.getPort();</span>
+        }
+<span class="fc" id="L46">        return port;</span>
+    }
+
+    public String createShowLink(DatabaseDumpFile databaseDumpFile) {
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (!databaseDumpFile.isShowable()) {</span>
+<span class="nc" id="L51">            return &quot;&quot;;</span>
+        }
+<span class="fc" id="L53">        URI appInUri = URI.create(appUri);</span>
+<span class="fc" id="L54">        String port = this.getPortInString();</span>
+<span class="fc" id="L55">        return appInUri.getScheme() + &quot;://&quot; +</span>
+<span class="fc" id="L56">                appInUri.getHost() + port + SHOW_ROUTE + &quot;/&quot; +</span>
+<span class="fc" id="L57">                databaseDumpFile.getId();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

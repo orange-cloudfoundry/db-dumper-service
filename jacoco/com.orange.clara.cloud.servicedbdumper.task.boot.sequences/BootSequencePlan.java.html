@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>BootSequencePlan.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.task.boot.sequences</a> &gt; <span class="el_source">BootSequencePlan.java</span></div><h1>BootSequencePlan.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.task.boot.sequences;
+
+import com.orange.clara.cloud.servicedbdumper.helper.ByteFormat;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperPlan;
+import com.orange.clara.cloud.servicedbdumper.repo.DbDumperPlanRepo;
+import org.cloudfoundry.community.servicebroker.model.Catalog;
+import org.cloudfoundry.community.servicebroker.model.Plan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Copyright (C) 2016 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 21/02/2016
+ */
+@Component
+@Order(4)
+<span class="fc" id="L30">public class BootSequencePlan implements BootSequence {</span>
+    @Autowired
+    @Qualifier(&quot;currency&quot;)
+    protected String currency;
+    @Autowired
+    @Qualifier(&quot;isFree&quot;)
+    protected Boolean isFree;
+<span class="fc" id="L37">    private Logger logger = LoggerFactory.getLogger(BootSequencePlan.class);</span>
+    @Autowired
+    private Catalog catalog;
+
+    @Autowired
+    private DbDumperPlanRepo dbDumperPlanRepo;
+
+    @Override
+    public void runSequence() {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (Plan plan : this.catalog.getServiceDefinitions().get(0).getPlans()) {</span>
+<span class="fc" id="L47">            this.createOrUpdateDbDumperPlan(plan);</span>
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">    }</span>
+
+    private void createOrUpdateDbDumperPlan(Plan plan) {
+        DbDumperPlan dbDumperPlan;
+<span class="fc" id="L53">        dbDumperPlan = this.dbDumperPlanRepo.findOne(plan.getId());</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (dbDumperPlan == null) {</span>
+<span class="fc" id="L55">            dbDumperPlan = new DbDumperPlan(plan.getId());</span>
+        }
+<span class="fc" id="L57">        dbDumperPlan.setName(plan.getName());</span>
+<span class="fc" id="L58">        Long size = 0L;</span>
+        try {
+<span class="fc" id="L60">            size = ByteFormat.parse(plan.getName());</span>
+<span class="fc" id="L61">        } catch (Exception e) {</span>
+<span class="fc" id="L62">            size = 0L;</span>
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">        dbDumperPlan.setSize(size);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (this.isFree) {</span>
+<span class="fc" id="L66">            dbDumperPlan.setCost(0.0F);</span>
+        } else {
+<span class="fc" id="L68">            dbDumperPlan.setCost(this.getCost(plan));</span>
+        }
+<span class="fc" id="L70">        this.dbDumperPlanRepo.save(dbDumperPlan);</span>
+<span class="fc" id="L71">    }</span>
+
+    private Float getCost(Plan plan) {
+<span class="fc" id="L74">        Map&lt;String, Object&gt; metadata = plan.getMetadata();</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">        if (!metadata.containsKey(&quot;costs&quot;)) {</span>
+<span class="nc" id="L76">            return 0.0F;</span>
+        }
+<span class="fc" id="L78">        Map&lt;String, Object&gt; costs = ((List&lt;Map&lt;String, Object&gt;&gt;) metadata.get(&quot;costs&quot;)).get(0);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (!costs.containsKey(&quot;amount&quot;)) {</span>
+<span class="nc" id="L80">            return 0.0F;</span>
+        }
+<span class="fc" id="L82">        Map&lt;String, Object&gt; amount = (Map&lt;String, Object&gt;) costs.get(&quot;amount&quot;);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (!amount.containsKey(this.currency)) {</span>
+<span class="fc" id="L84">            logger.warn(&quot;Currency '&quot; + currency + &quot;' not found.&quot;);</span>
+<span class="fc" id="L85">            return 0.0F;</span>
+        }
+<span class="fc" id="L87">        return (Float) amount.get(this.currency);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

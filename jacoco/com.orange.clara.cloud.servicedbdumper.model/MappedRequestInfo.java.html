@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MappedRequestInfo.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.model</a> &gt; <span class="el_source">MappedRequestInfo.java</span></div><h1>MappedRequestInfo.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.model;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p/&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p/&gt;
+ * Author: Arthur Halet
+ * Date: 10/12/2015
+ */
+public class MappedRequestInfo {
+
+    private String name;
+    private String url;
+
+    private String description;
+
+<span class="nc" id="L20">    public MappedRequestInfo(String name, String url) {</span>
+<span class="nc" id="L21">        this.name = name;</span>
+<span class="nc" id="L22">        this.url = url;</span>
+<span class="nc" id="L23">    }</span>
+
+    public MappedRequestInfo(String name, String url, String description) {
+<span class="nc" id="L26">        this(name, url);</span>
+<span class="nc" id="L27">        this.description = description;</span>
+<span class="nc" id="L28">    }</span>
+
+    public String getDescription() {
+<span class="nc" id="L31">        return description;</span>
+    }
+
+    public void setDescription(String description) {
+<span class="nc" id="L35">        this.description = description;</span>
+<span class="nc" id="L36">    }</span>
+
+    public String getName() {
+<span class="nc" id="L39">        return name;</span>
+    }
+
+    public void setName(String name) {
+<span class="nc" id="L43">        this.name = name;</span>
+<span class="nc" id="L44">    }</span>
+
+    public String getUrl() {
+<span class="nc" id="L47">        return url;</span>
+    }
+
+    public void setUrl(String url) {
+<span class="nc" id="L51">        this.url = url;</span>
+<span class="nc" id="L52">    }</span>
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L56">        return url.hashCode();</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+
+<span class="nc" id="L64">        MappedRequestInfo that = (MappedRequestInfo) o;</span>
+
+<span class="nc" id="L66">        return url.equals(that.url);</span>
+
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L72">        return &quot;MappedRequestInfo{&quot; +</span>
+                &quot;name='&quot; + name + '\'' +
+                &quot;, url='&quot; + url + '\'' +
+                &quot;, description='&quot; + description + '\'' +
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

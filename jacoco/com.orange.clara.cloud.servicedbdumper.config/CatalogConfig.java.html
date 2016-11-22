@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CatalogConfig.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.config</a> &gt; <span class="el_source">CatalogConfig.java</span></div><h1>CatalogConfig.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.config;
+
+import com.google.common.collect.Lists;
+import com.orange.clara.cloud.servicedbdumper.helper.ByteFormat;
+import org.cloudfoundry.community.servicebroker.model.Catalog;
+import org.cloudfoundry.community.servicebroker.model.DashboardClient;
+import org.cloudfoundry.community.servicebroker.model.Plan;
+import org.cloudfoundry.community.servicebroker.model.ServiceDefinition;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 13/10/2015
+ */
+@Configuration
+<span class="fc" id="L34">public class CatalogConfig {</span>
+
+    @Value(&quot;#{${use.ssl:false} ? 'https://' : 'http://'}${vcap.application.uris[0]:localhost:8080}&quot;)
+    private String appUri;
+    @Value(&quot;${security.oauth2.client.clientSecret:fakeClientSecret}&quot;)
+    private String clientSecret;
+    @Value(&quot;${security.oauth2.client.clientId:fakeClientId}&quot;)
+    private String clientId;
+    @Value(&quot;${service.definition.id:db-dumper-service}&quot;)
+    private String serviceDefinitionId;
+
+    @Value(&quot;${app.maven.version:0.0.1}&quot;)
+    private String version;
+
+    @Value(&quot;${dump.delete.expiration.days:5}&quot;)
+    private Integer dumpDeleteExpirationDays;
+
+<span class="fc" id="L51">    private Map&lt;String, Object&gt; sdMetadata = new HashMap&lt;String, Object&gt;();</span>
+
+    @Value(&quot;#{'${service.definition.quota:experimental}'.split(',')}&quot;)
+    private List&lt;String&gt; quotas;
+
+    @Value(&quot;${service.definition.currency:usd}&quot;)
+    private String currency;
+
+    @Value(&quot;#{'${service.definition.cost.formulas:quota}'.split(',')}&quot;)
+    private List&lt;String&gt; formulas;
+
+
+    @Value(&quot;${service.definition.cost.mb:0.1}&quot;)
+    private Float costOneMega;
+
+    @Value(&quot;${service.definition.is.free:true}&quot;)
+    private Boolean isFree;
+
+    @Bean
+    public String appUri() {
+<span class="fc" id="L71">        return this.appUri;</span>
+    }
+
+    @Bean
+    public Integer dumpDeleteExpirationDays() {
+<span class="fc" id="L76">        return this.dumpDeleteExpirationDays;</span>
+    }
+
+    @Bean
+    public Boolean isFree() {
+<span class="fc" id="L81">        return this.isFree;</span>
+    }
+
+    @Bean
+    public String currency() {
+<span class="fc" id="L86">        return this.currency;</span>
+    }
+
+    @Bean
+    public Catalog catalog() throws ScriptException, ParseException {
+
+<span class="fc" id="L92">        return new Catalog(Arrays.asList(</span>
+                new ServiceDefinition(
+                        this.serviceDefinitionId,
+                        this.serviceDefinitionId,
+                        &quot;Dump and restore data from your database (db-dumper-service v&quot; + version + &quot;)&quot;,
+                        true,
+                        true,
+<span class="fc" id="L99">                        this.getPlans(), //TODO: change it cause set to free</span>
+<span class="fc" id="L100">                        Arrays.asList(&quot;db-dumper-service&quot;, &quot;dump&quot;, &quot;restore&quot;),</span>
+<span class="fc" id="L101">                        getServiceDefinitionMetadata(),</span>
+                        null,
+<span class="fc" id="L103">                        this.getDashboardClient())));</span>
+    }
+
+    private DashboardClient getDashboardClient() {
+<span class="fc" id="L107">        return new DashboardClient(this.clientId, this.clientSecret, this.appUri + &quot;/login&quot;);</span>
+    }
+
+    private float getDefaultCost() {
+<span class="nc" id="L111">        return this.costOneMega / 1024 / 1024;</span>
+    }
+
+    private float getCostFromQuota(String quota, String formula) throws ParseException, ScriptException {
+<span class="nc" id="L115">        long size = ByteFormat.parse(quota);</span>
+<span class="nc" id="L116">        String formulaInjected = formula.replaceAll(&quot;quota&quot;, String.valueOf(size * this.getDefaultCost()));</span>
+<span class="nc" id="L117">        ScriptEngineManager factory = new ScriptEngineManager();</span>
+<span class="nc" id="L118">        ScriptEngine engine = factory.getEngineByName(&quot;JavaScript&quot;);</span>
+<span class="nc" id="L119">        Object eval = engine.eval(formulaInjected);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (eval instanceof Integer) {</span>
+<span class="nc" id="L121">            return new Float((Integer) eval);</span>
+        }
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (eval instanceof Float) {</span>
+<span class="nc" id="L124">            return (Float) eval;</span>
+        }
+<span class="nc" id="L126">        return Math.round((Double) eval);</span>
+    }
+
+    public List&lt;Plan&gt; getPlans() throws ScriptException, ParseException {
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        if (this.quotas.size() == 1</span>
+<span class="pc bpc" id="L131" title="3 of 4 branches missed.">                &amp;&amp; (this.quotas.get(0).equals(&quot;experimental&quot;) || this.quotas.get(0).equals(&quot;unlimited&quot;))) {</span>
+<span class="fc" id="L132">            return Arrays.asList(this.createDefaultPlan(this.quotas.get(0)));</span>
+        }
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (this.isFree) {</span>
+<span class="nc" id="L135">            return Arrays.asList(this.createDefaultPlan(&quot;unlimited&quot;));</span>
+        }
+<span class="nc" id="L137">        List&lt;Plan&gt; plans = Lists.newArrayList();</span>
+<span class="nc" id="L138">        int formulasSize = this.formulas.size();</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (int i = 0; i &lt; this.quotas.size(); i++) {</span>
+<span class="nc" id="L140">            String quota = this.quotas.get(i);</span>
+<span class="nc" id="L141">            String formula = this.formulas.get(i % formulasSize);</span>
+<span class="nc" id="L142">            plans.add(new Plan(this.serviceDefinitionId + &quot;-plan-&quot; + quota,</span>
+                    quota,
+                    &quot;This is a db-dumper-service plan.  All services are created equally.&quot;,
+<span class="nc" id="L145">                    getPlanMetadata(this.getCostFromQuota(quota, formula)),</span>
+                    false));
+        }
+<span class="nc" id="L148">        return plans;</span>
+    }
+
+    private Plan createDefaultPlan(String name) {
+<span class="fc" id="L152">        return new Plan(this.serviceDefinitionId + &quot;-plan-&quot; + name,</span>
+                name,
+                &quot;This is a default db-dumper-service plan.  All services are created equally.&quot;,
+<span class="fc" id="L155">                getPlanMetadata(0),</span>
+                true);
+    }
+
+    private Map&lt;String, Object&gt; getServiceDefinitionMetadata() {
+<span class="fc" id="L160">        sdMetadata.put(&quot;displayName&quot;, &quot;db-dumper-service&quot;);</span>
+<span class="fc" id="L161">        sdMetadata.put(&quot;longDescription&quot;, &quot;db-dumper-service v&quot; + version);</span>
+<span class="fc" id="L162">        sdMetadata.put(&quot;providerDisplayName&quot;, &quot;Orange&quot;);</span>
+<span class="fc" id="L163">        sdMetadata.put(&quot;documentationUrl&quot;, &quot;https://github.com/orange-cloudfoundry/db-dumper-service/tree/v&quot; + version);</span>
+<span class="fc" id="L164">        sdMetadata.put(&quot;supportUrl&quot;, &quot;https://github.com/orange-cloudfoundry/db-dumper-service/tree/v&quot; + version);</span>
+<span class="fc" id="L165">        return sdMetadata;</span>
+    }
+
+    private Map&lt;String, Object&gt; getPlanMetadata(float cost) {
+<span class="fc" id="L169">        Map&lt;String, Object&gt; planMetadata = new HashMap&lt;String, Object&gt;();</span>
+<span class="fc" id="L170">        planMetadata.put(&quot;costs&quot;, getCosts(cost));</span>
+<span class="fc" id="L171">        planMetadata.put(&quot;bullets&quot;, getBullets());</span>
+<span class="fc" id="L172">        return planMetadata;</span>
+    }
+
+    private List&lt;Map&lt;String, Object&gt;&gt; getCosts(float cost) {
+<span class="fc" id="L176">        Map&lt;String, Object&gt; costsMap = new HashMap&lt;String, Object&gt;();</span>
+
+<span class="fc" id="L178">        Map&lt;String, Object&gt; amount = new HashMap&lt;String, Object&gt;();</span>
+<span class="fc" id="L179">        amount.put(this.currency, cost);</span>
+
+<span class="fc" id="L181">        costsMap.put(&quot;amount&quot;, amount);</span>
+<span class="fc" id="L182">        costsMap.put(&quot;unit&quot;, &quot;MONTHLY&quot;);</span>
+
+<span class="fc" id="L184">        return Arrays.asList(costsMap);</span>
+    }
+
+    private List&lt;String&gt; getBullets() {
+<span class="fc" id="L188">        return Arrays.asList(&quot;db-dumper-service&quot;,</span>
+                &quot;Stored in S3 filer&quot;,
+                &quot;Deleted dumps are stored during &quot; + this.dumpDeleteExpirationDays + &quot;days before really deleted&quot;);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+<span class="fc" id="L195">        sdMetadata.put(&quot;imageUrl&quot;, appUri + &quot;/images/logo.png&quot;);</span>
+<span class="fc" id="L196">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

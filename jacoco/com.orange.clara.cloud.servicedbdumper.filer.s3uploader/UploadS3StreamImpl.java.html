@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UploadS3StreamImpl.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.filer.s3uploader</a> &gt; <span class="el_source">UploadS3StreamImpl.java</span></div><h1>UploadS3StreamImpl.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.filer.s3uploader;
+
+import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
+import com.google.common.net.MediaType;
+import com.orange.spring.cloud.connector.s3.core.jcloudswrappers.SpringCloudBlobStoreContext;
+import org.jclouds.blobstore.domain.Blob;
+import org.jclouds.io.ContentMetadata;
+import org.jclouds.io.Payload;
+import org.jclouds.io.payloads.ByteArrayPayload;
+import org.jclouds.s3.S3Client;
+import org.jclouds.s3.domain.ObjectMetadataBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.SortedMap;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 28/09/2015
+ */
+<span class="fc" id="L36">public class UploadS3StreamImpl implements UploadS3Stream {</span>
+<span class="fc" id="L37">    public final static Integer DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024;//set a chunk to 5MB</span>
+<span class="fc" id="L38">    protected Logger logger = LoggerFactory.getLogger(UploadS3StreamImpl.class);</span>
+    @Autowired
+    @Qualifier(value = &quot;blobStoreContext&quot;)
+    protected SpringCloudBlobStoreContext blobStoreContext;
+    protected S3Client s3Client;
+    @Value(&quot;${s3.upload.retry:5}&quot;)
+    protected int retry;
+<span class="fc" id="L45">    private Integer chunkSize = DEFAULT_CHUNK_SIZE; //set a chunk to 5MB</span>
+
+    @PostConstruct
+    protected void injectS3Client() {
+<span class="fc" id="L49">        this.s3Client = this.blobStoreContext.unwrapApi(S3Client.class);</span>
+<span class="fc" id="L50">    }</span>
+
+    @Override
+    public String upload(InputStream content, Blob blob) throws IOException {
+<span class="fc" id="L54">        String key = blob.getMetadata().getName();</span>
+<span class="fc" id="L55">        String bucketName = this.blobStoreContext.getBucketName();</span>
+<span class="fc" id="L56">        ContentMetadata metadata = blob.getMetadata().getContentMetadata();</span>
+<span class="fc" id="L57">        ObjectMetadataBuilder builder = ObjectMetadataBuilder.create().key(key)</span>
+<span class="fc" id="L58">                .contentType(MediaType.OCTET_STREAM.toString())</span>
+<span class="fc" id="L59">                .contentDisposition(key)</span>
+<span class="fc" id="L60">                .contentEncoding(metadata.getContentEncoding())</span>
+<span class="fc" id="L61">                .contentLanguage(metadata.getContentLanguage())</span>
+<span class="fc" id="L62">                .userMetadata(blob.getMetadata().getUserMetadata());</span>
+<span class="fc" id="L63">        String uploadId = this.s3Client.initiateMultipartUpload(bucketName, builder.build());</span>
+<span class="fc" id="L64">        Integer partNum = 1;</span>
+<span class="fc" id="L65">        Payload part = null;</span>
+<span class="fc" id="L66">        int bytesRead = 0;</span>
+<span class="fc" id="L67">        byte[] chunk = null;</span>
+<span class="fc" id="L68">        boolean shouldContinue = true;</span>
+<span class="fc" id="L69">        SortedMap&lt;Integer, String&gt; etags = Maps.newTreeMap();</span>
+        try {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            while (shouldContinue) {</span>
+<span class="fc" id="L72">                chunk = new byte[chunkSize];</span>
+<span class="fc" id="L73">                bytesRead = ByteStreams.read(content, chunk, 0, chunk.length);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">                if (bytesRead != chunk.length) {</span>
+<span class="fc" id="L75">                    shouldContinue = false;</span>
+<span class="fc" id="L76">                    chunk = Arrays.copyOf(chunk, bytesRead);</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">                    if (chunk.length == 0) {</span>
+                        //something from jvm causing memory leak, we try to help jvm which seems working.
+                        //but PLEASE DON'T REPLICATE AT HOME !
+<span class="fc" id="L80">                        chunk = null;</span>
+<span class="fc" id="L81">                        part = null;</span>
+<span class="fc" id="L82">                        System.gc();</span>
+                        //
+<span class="fc" id="L84">                        break;</span>
+                    }
+                }
+<span class="fc" id="L87">                part = new ByteArrayPayload(chunk);</span>
+<span class="fc" id="L88">                prepareUploadPart(bucketName, key, uploadId, partNum, part, etags);</span>
+<span class="fc" id="L89">                partNum++;</span>
+                //something from jvm causing memory leak, we try to help jvm which seems working.
+                //but PLEASE DON'T REPLICATE AT HOME !
+<span class="fc" id="L92">                chunk = null;</span>
+<span class="fc" id="L93">                part = null;</span>
+<span class="fc" id="L94">                System.gc();</span>
+                //
+            }
+<span class="fc" id="L97">            return this.completeMultipartUpload(bucketName, key, uploadId, etags);</span>
+<span class="fc" id="L98">        } catch (RuntimeException ex) {</span>
+<span class="fc" id="L99">            this.s3Client.abortMultipartUpload(bucketName, key, uploadId);</span>
+<span class="fc" id="L100">            throw ex;</span>
+        }
+    }
+
+    protected String completeMultipartUpload(String bucketName, String key, String uploadId, Map&lt;Integer, String&gt; parts) {
+<span class="fc" id="L105">        int i = 1;</span>
+        while (true) {
+            try {
+<span class="fc" id="L108">                return this.s3Client.completeMultipartUpload(bucketName, key, uploadId, parts);</span>
+<span class="fc" id="L109">            } catch (Exception e) {</span>
+<span class="fc" id="L110">                logger.warn(&quot;Retry {} to complete upload on S3.&quot;, i);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                if (i &gt;= retry) {</span>
+<span class="fc" id="L112">                    throw e;</span>
+                }
+            }
+<span class="fc" id="L115">            i++;</span>
+        }
+    }
+
+    protected void prepareUploadPart(String container, String key, String uploadId, int numPart, Payload chunkedPart, SortedMap&lt;Integer, String&gt; etags) {
+<span class="fc" id="L120">        String eTag = null;</span>
+<span class="fc" id="L121">        int i = 1;</span>
+        while (true) {
+            try {
+<span class="fc" id="L124">                eTag = s3Client.uploadPart(container, key, numPart, uploadId, chunkedPart);</span>
+<span class="fc" id="L125">                etags.put(numPart, eTag);</span>
+<span class="fc" id="L126">                break;</span>
+<span class="fc" id="L127">            } catch (Exception e) {</span>
+<span class="fc" id="L128">                logger.warn(&quot;Retry {}/{} to upload on S3 for container {}.&quot;, i, retry, container);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">                if (i &gt;= retry) {</span>
+<span class="fc" id="L130">                    throw e;</span>
+                }
+            }
+<span class="fc" id="L133">            i++;</span>
+        }
+
+<span class="fc" id="L136">    }</span>
+
+    public Integer getChunkSize() {
+<span class="nc" id="L139">        return chunkSize;</span>
+    }
+
+    public void setChunkSize(Integer chunkSize) {
+<span class="fc" id="L143">        this.chunkSize = chunkSize;</span>
+<span class="fc" id="L144">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

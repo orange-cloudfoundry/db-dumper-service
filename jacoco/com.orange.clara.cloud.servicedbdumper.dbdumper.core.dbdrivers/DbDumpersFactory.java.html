@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DbDumpersFactory.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers</a> &gt; <span class="el_source">DbDumpersFactory.java</span></div><h1>DbDumpersFactory.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers;
+
+import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 08/09/2015
+ */
+<span class="fc" id="L24">public class DbDumpersFactory {</span>
+    private Map&lt;DatabaseType, DatabaseDriver&gt; dbDumpers;
+
+    @Autowired
+    @Qualifier(&quot;mysqlBinaryDump&quot;)
+    private File mysqlBinaryDump;
+
+    @Autowired
+    @Qualifier(&quot;mysqlBinaryRestore&quot;)
+    private File mysqlBinaryRestore;
+
+    @Autowired
+    @Qualifier(&quot;postgresBinaryDump&quot;)
+    private File postgresBinaryDump;
+
+    @Autowired
+    @Qualifier(&quot;postgresBinaryRestore&quot;)
+    private File postgresBinaryRestore;
+
+    @Autowired
+    @Qualifier(&quot;mongodbBinaryDump&quot;)
+    private File mongodbBinaryDump;
+
+    @Autowired
+    @Qualifier(&quot;mongodbBinaryRestore&quot;)
+    private File mongodbBinaryRestore;
+
+    @Autowired
+    @Qualifier(&quot;redisRutilBinary&quot;)
+    private File redisRutilBinary;
+
+    @PostConstruct
+    public void dbDumpers() {
+<span class="fc" id="L57">        dbDumpers = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L58">        dbDumpers.put(DatabaseType.MYSQL, new MysqlDatabaseDriver(this.mysqlBinaryDump, this.mysqlBinaryRestore));</span>
+<span class="fc" id="L59">        dbDumpers.put(DatabaseType.POSTGRESQL, new PostgresqlDatabaseDriver(this.postgresBinaryDump, this.postgresBinaryRestore));</span>
+<span class="fc" id="L60">        dbDumpers.put(DatabaseType.MONGODB, new MongodbDatabaseDriver(this.mongodbBinaryDump, this.mongodbBinaryRestore));</span>
+<span class="fc" id="L61">        dbDumpers.put(DatabaseType.REDIS, new RedisDatabaseDriver(this.redisRutilBinary));</span>
+<span class="fc" id="L62">    }</span>
+
+    public DatabaseDriver getDatabaseDumper(DatabaseType databaseType) {
+<span class="fc" id="L65">        return this.dbDumpers.get(databaseType);</span>
+    }
+
+    public DatabaseDriver getDatabaseDumper(DatabaseRef databaseRef) throws CannotFindDatabaseDumperException {
+<span class="fc" id="L69">        DatabaseDriver databaseDriver = this.dbDumpers.get(databaseRef.getType());</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (databaseDriver == null) {</span>
+<span class="fc" id="L71">            throw new CannotFindDatabaseDumperException(databaseRef);</span>
+        }
+<span class="fc" id="L73">        databaseDriver.setDatabaseRef(databaseRef);</span>
+<span class="fc" id="L74">        return databaseDriver;</span>
+    }
+
+    public File getMysqlBinaryDump() {
+<span class="fc" id="L78">        return mysqlBinaryDump;</span>
+    }
+
+    public File getMysqlBinaryRestore() {
+<span class="fc" id="L82">        return mysqlBinaryRestore;</span>
+    }
+
+    public File getPostgresBinaryDump() {
+<span class="fc" id="L86">        return postgresBinaryDump;</span>
+    }
+
+    public File getPostgresBinaryRestore() {
+<span class="fc" id="L90">        return postgresBinaryRestore;</span>
+    }
+
+    public File getMongodbBinaryDump() {
+<span class="fc" id="L94">        return mongodbBinaryDump;</span>
+    }
+
+    public File getMongodbBinaryRestore() {
+<span class="fc" id="L98">        return mongodbBinaryRestore;</span>
+    }
+
+    public File getRedisRutilBinary() {
+<span class="fc" id="L102">        return redisRutilBinary;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

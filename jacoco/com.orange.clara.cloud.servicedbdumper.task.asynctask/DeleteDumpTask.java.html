@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DeleteDumpTask.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.task.asynctask</a> &gt; <span class="el_source">DeleteDumpTask.java</span></div><h1>DeleteDumpTask.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.task.asynctask;
+
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Deleter;
+import com.orange.clara.cloud.servicedbdumper.exception.AsyncTaskException;
+import com.orange.clara.cloud.servicedbdumper.model.Job;
+import com.orange.clara.cloud.servicedbdumper.model.JobEvent;
+import com.orange.clara.cloud.servicedbdumper.repo.JobRepo;
+import com.orange.clara.cloud.servicedbdumper.task.job.JobFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.Future;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 26/11/2015
+ */
+<span class="fc" id="L28">public class DeleteDumpTask {</span>
+
+    @Autowired
+    private JobRepo jobRepo;
+
+    @Autowired
+    private Deleter deleter;
+
+    @Autowired
+    @Qualifier(&quot;jobFactory&quot;)
+    private JobFactory jobFactory;
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Future&lt;Boolean&gt; runTask(Integer jobId) throws AsyncTaskException {
+<span class="fc" id="L43">        Job job = this.jobRepo.findOne(jobId);</span>
+<span class="fc" id="L44">        this.deleter.deleteAll(job.getDbDumperServiceInstance());</span>
+<span class="fc" id="L45">        this.jobFactory.createJobDeleteDbDumperServiceInstance(job.getDbDumperServiceInstance());</span>
+
+<span class="fc" id="L47">        job.setJobEvent(JobEvent.FINISHED);</span>
+<span class="fc" id="L48">        jobRepo.save(job);</span>
+<span class="fc" id="L49">        return new AsyncResult&lt;Boolean&gt;(true);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

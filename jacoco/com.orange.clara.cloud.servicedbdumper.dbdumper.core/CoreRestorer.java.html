@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CoreRestorer.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.dbdumper.core</a> &gt; <span class="el_source">CoreRestorer.java</span></div><h1>CoreRestorer.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.dbdumper.core;
+
+import com.orange.clara.cloud.servicedbdumper.dbdumper.Restorer;
+import com.orange.clara.cloud.servicedbdumper.dbdumper.core.dbdrivers.DatabaseDriver;
+import com.orange.clara.cloud.servicedbdumper.exception.CannotFindDatabaseDumperException;
+import com.orange.clara.cloud.servicedbdumper.exception.RestoreCannotFindFileException;
+import com.orange.clara.cloud.servicedbdumper.exception.RestoreException;
+import com.orange.clara.cloud.servicedbdumper.exception.RunProcessException;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseDumpFile;
+import com.orange.clara.cloud.servicedbdumper.model.DatabaseRef;
+import com.orange.clara.cloud.servicedbdumper.model.DbDumperServiceInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.Date;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 01/10/2015
+ */
+<span class="fc" id="L29">public class CoreRestorer extends AbstractCoreDbAction implements Restorer {</span>
+
+
+<span class="fc" id="L32">    private Logger logger = LoggerFactory.getLogger(CoreRestorer.class);</span>
+
+    @Override
+    @Transactional
+    public void restore(DbDumperServiceInstance dbDumperServiceInstance, DatabaseRef databaseRefTarget, Date date) throws RestoreException {
+<span class="fc" id="L37">        DatabaseRef databaseRefSource = dbDumperServiceInstance.getDatabaseRef();</span>
+<span class="fc" id="L38">        logger.info(&quot;Restoring dump file from &quot; + databaseRefSource.getName() + &quot; to &quot; + databaseRefTarget.getName() + &quot; ...&quot;);</span>
+<span class="fc" id="L39">        DatabaseDumpFile dumpFile = this.findDumpFile(dbDumperServiceInstance, date);</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (dumpFile == null) {</span>
+<span class="nc" id="L41">            throw new RestoreCannotFindFileException(databaseRefSource);</span>
+        }
+<span class="fc" id="L43">        String fileName = this.getFileName(dumpFile);</span>
+        try {
+<span class="fc" id="L45">            DatabaseDriver databaseDriver = findAndCheckDatabaseDumper(databaseRefSource, databaseRefTarget);</span>
+<span class="fc" id="L46">            this.runRestore(databaseDriver, fileName);</span>
+<span class="fc" id="L47">        } catch (Exception e) {</span>
+<span class="fc" id="L48">            this.logOutputFromProcess();</span>
+<span class="fc" id="L49">            throw new RestoreException(&quot;\nAn error occurred: &quot; + e.getMessage() + this.getErrorMessageFromProcess(), e);</span>
+<span class="fc" id="L50">        }</span>
+<span class="fc" id="L51">        logger.info(&quot;Restoring dump file from &quot; + databaseRefSource.getName() + &quot; to &quot; + databaseRefTarget.getName() + &quot; finished.&quot;);</span>
+<span class="fc" id="L52">    }</span>
+
+    @Override
+    public void restore(DbDumperServiceInstance dbDumperServiceInstance, DatabaseRef databaseRefTarget) throws RestoreException {
+<span class="fc" id="L56">        this.restore(dbDumperServiceInstance, databaseRefTarget, null);</span>
+<span class="fc" id="L57">    }</span>
+
+
+    protected void runRestore(DatabaseDriver databaseDriver, String fileName) throws IOException, InterruptedException, RunProcessException {
+<span class="fc" id="L61">        int i = 1;</span>
+        while (true) {
+<span class="fc" id="L63">            Process p = this.runCommandLine(databaseDriver.getRestoreCommandLine());</span>
+<span class="fc" id="L64">            this.filer.retrieve(p.getOutputStream(), fileName);</span>
+<span class="fc" id="L65">            p.waitFor();</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            if (p.exitValue() == 0) {</span>
+<span class="fc" id="L67">                break;</span>
+            }
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (i &gt;= this.dbCommandRetry) {</span>
+<span class="fc" id="L70">                throw new RunProcessException(&quot;\nError during process (exit code is &quot; + p.exitValue() + &quot;): &quot;);</span>
+            }
+<span class="fc" id="L72">            logger.warn(&quot;Retry {}/{}: fail to restore data for file {}.&quot;, i, dbCommandRetry, fileName);</span>
+<span class="fc" id="L73">            Thread.sleep(10000);</span>
+<span class="fc" id="L74">            i++;</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">    }</span>
+
+    protected DatabaseDriver findAndCheckDatabaseDumper(DatabaseRef databaseRefSource, DatabaseRef databaseRefTarget) throws CannotFindDatabaseDumperException, RestoreException {
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (!databaseRefSource.getType().equals(databaseRefTarget.getType())) {</span>
+<span class="fc" id="L80">            throw new RestoreException(&quot;Database &quot; + databaseRefTarget.getName() + &quot; should be a &quot; + databaseRefSource.getType() + &quot; database&quot;);</span>
+        }
+<span class="fc" id="L82">        return dbDumpersFactory.getDatabaseDumper(databaseRefTarget);</span>
+    }
+
+    private DatabaseDumpFile findDumpFile(DbDumperServiceInstance dbDumperServiceInstance, Date date) {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (date == null) {</span>
+<span class="fc" id="L87">            return this.databaseDumpFileRepo.findFirstByDbDumperServiceInstanceOrderByCreatedAtDesc(dbDumperServiceInstance);</span>
+        }
+<span class="fc" id="L89">        return this.databaseDumpFileRepo.findFirstByDbDumperServiceInstanceAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(dbDumperServiceInstance, date);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CryptoConverter.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.converter</a> &gt; <span class="el_source">CryptoConverter.java</span></div><h1>CryptoConverter.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.converter;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.security.Key;
+import java.util.Base64;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 08/12/2015
+ */
+@Converter
+<span class="fc" id="L25">public class CryptoConverter implements AttributeConverter&lt;String, String&gt; {</span>
+    private static final String ALGORITHM = &quot;AES/ECB/PKCS5Padding&quot;;
+    private final static String ENCRYPTION_KEY_FILEPATH = &quot;properties/encryption_key.txt&quot;;
+    protected byte[] encryptionKey;
+
+
+    @Override
+    public String convertToDatabaseColumn(String password) {
+        try {
+<span class="fc" id="L34">            this.loadKey();</span>
+<span class="fc" id="L35">            Key key = new SecretKeySpec(encryptionKey, &quot;AES&quot;);</span>
+<span class="fc" id="L36">            Cipher c = Cipher.getInstance(ALGORITHM);</span>
+<span class="fc" id="L37">            c.init(Cipher.ENCRYPT_MODE, key);</span>
+<span class="fc" id="L38">            return Base64.getEncoder().encodeToString(c.doFinal(password.getBytes()));</span>
+<span class="nc" id="L39">        } catch (Exception e) {</span>
+<span class="nc" id="L40">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    @Override
+    public String convertToEntityAttribute(String cryptedPassword) {
+        try {
+<span class="fc" id="L47">            this.loadKey();</span>
+<span class="fc" id="L48">            Key key = new SecretKeySpec(encryptionKey, &quot;AES&quot;);</span>
+<span class="fc" id="L49">            Cipher c = Cipher.getInstance(ALGORITHM);</span>
+<span class="fc" id="L50">            c.init(Cipher.DECRYPT_MODE, key);</span>
+<span class="fc" id="L51">            return new String(c.doFinal(Base64.getDecoder().decode(cryptedPassword)));</span>
+<span class="nc" id="L52">        } catch (Exception e) {</span>
+<span class="nc" id="L53">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    private void loadKey() throws URISyntaxException, IOException {
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (this.encryptionKey != null) {</span>
+<span class="fc" id="L59">            return;</span>
+        }
+<span class="fc" id="L61">        ClassLoader classLoader = getClass().getClassLoader();</span>
+<span class="fc" id="L62">        File encryptionKeyFile = new File(classLoader.getResource(ENCRYPTION_KEY_FILEPATH).toURI());</span>
+<span class="fc" id="L63">        this.encryptionKey = Files.readAllBytes(encryptionKeyFile.toPath());</span>
+<span class="fc" id="L64">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

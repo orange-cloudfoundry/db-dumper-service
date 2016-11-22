@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">db-dumper-service</a> &gt; <a href="index.source.html" class="el_package">com.orange.clara.cloud.servicedbdumper.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.orange.clara.cloud.servicedbdumper.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * Copyright (C) 2015 Orange
+ * &lt;p&gt;
+ * This software is distributed under the terms and conditions of the 'Apache-2.0'
+ * license which can be found in the file 'LICENSE' in this package distribution
+ * or at 'https://opensource.org/licenses/Apache-2.0'.
+ * &lt;p&gt;
+ * Author: Arthur Halet
+ * Date: 03/06/2015
+ */
+@EnableWebSecurity
+<span class="fc" id="L39">public class SecurityConfig {</span>
+
+    @Value(&quot;${broker.username:user}&quot;)
+    private String brokerUsername;
+    @Value(&quot;${broker.password:password}&quot;)
+    private String brokerPassword;
+    @Value(&quot;${admin.username:admin}&quot;)
+    private String adminUsername;
+    @Value(&quot;${admin.password:password}&quot;)
+    private String adminPassword;
+
+    @Value(&quot;${spring.boot.admin.username:username}&quot;)
+    private String springBootAdminUsername;
+    @Value(&quot;${spring.boot.admin.password:password}&quot;)
+    private String springBootAdminPassword;
+
+    @Value(&quot;${user.username:user}&quot;)
+    private String defaultUserUsername;
+    @Value(&quot;${user.password:password}&quot;)
+    private String defaultUserPassword;
+
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+<span class="fc" id="L63">        auth.inMemoryAuthentication().withUser(brokerUsername).password(brokerPassword).roles(&quot;API&quot;);</span>
+<span class="fc" id="L64">        auth.inMemoryAuthentication().withUser(defaultUserUsername).password(defaultUserPassword).roles(&quot;USER&quot;);</span>
+<span class="fc" id="L65">        auth.inMemoryAuthentication().withUser(adminUsername).password(adminPassword).roles(&quot;ADMIN&quot;, &quot;SPRING_BOOT_ADMIN&quot;, &quot;USER&quot;);</span>
+<span class="fc" id="L66">        auth.inMemoryAuthentication().withUser(springBootAdminUsername).password(springBootAdminPassword).roles(&quot;SPRING_BOOT_ADMIN&quot;);</span>
+<span class="fc" id="L67">    }</span>
+
+
+    @Configuration
+    @Order(1)
+<span class="fc" id="L72">    public static class ServiceBrokerSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L78">            http</span>
+<span class="fc" id="L79">                    .antMatcher(&quot;/v2/**&quot;)</span>
+<span class="fc" id="L80">                    .authorizeRequests()</span>
+<span class="fc" id="L81">                    .anyRequest()</span>
+<span class="fc" id="L82">                    .hasRole(&quot;API&quot;)</span>
+<span class="fc" id="L83">                    .and()</span>
+<span class="fc" id="L84">                    .httpBasic()</span>
+<span class="fc" id="L85">                    .and()</span>
+<span class="fc" id="L86">                    .csrf().disable();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L88">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+<span class="fc" id="L90">        }</span>
+    }
+
+    @Configuration
+    @Order(2)
+<span class="fc" id="L95">    public static class DownloadSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L101">            http</span>
+<span class="fc" id="L102">                    .antMatcher(Routes.MANAGE_ROOT + Routes.DOWNLOAD_DUMP_FILE_ROOT + &quot;/**&quot;)</span>
+<span class="fc" id="L103">                    .authorizeRequests()</span>
+<span class="fc" id="L104">                    .anyRequest()</span>
+<span class="fc" id="L105">                    .permitAll();</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L107">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+
+<span class="fc" id="L110">        }</span>
+    }
+
+    @Configuration
+    @Order(3)
+<span class="fc" id="L115">    public static class AdminSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L121">            http</span>
+<span class="fc" id="L122">                    .antMatcher(Routes.MANAGE_ADMIN_ROOT_ALTERNATIVE + &quot;/**&quot;)</span>
+<span class="fc" id="L123">                    .authorizeRequests()</span>
+<span class="fc" id="L124">                    .anyRequest()</span>
+<span class="fc" id="L125">                    .hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L126">                    .and()</span>
+<span class="fc" id="L127">                    .httpBasic()</span>
+<span class="fc" id="L128">                    .and()</span>
+<span class="fc" id="L129">                    .csrf().disable();</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L131">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+<span class="fc" id="L133">        }</span>
+    }
+
+    @Configuration
+    @Order(4)
+<span class="fc" id="L138">    public static class AdminManagerSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L144">            http</span>
+<span class="fc" id="L145">                    .antMatcher(Routes.MANAGE_ADMIN_ROOT)</span>
+<span class="fc" id="L146">                    .authorizeRequests()</span>
+<span class="fc" id="L147">                    .anyRequest()</span>
+<span class="fc" id="L148">                    .hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L149">                    .and()</span>
+<span class="fc" id="L150">                    .httpBasic()</span>
+<span class="fc" id="L151">                    .and()</span>
+<span class="fc" id="L152">                    .csrf().disable();</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L154">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+<span class="fc" id="L156">        }</span>
+    }
+
+    @Configuration
+    @Order(5)
+<span class="fc" id="L161">    public static class AdminMonitorSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L167">            http</span>
+<span class="fc" id="L168">                    .antMatcher(&quot;/admin/**&quot;)</span>
+<span class="fc" id="L169">                    .authorizeRequests()</span>
+<span class="fc" id="L170">                    .anyRequest()</span>
+<span class="fc" id="L171">                    .hasRole(&quot;SPRING_BOOT_ADMIN&quot;)</span>
+<span class="fc" id="L172">                    .and()</span>
+<span class="fc" id="L173">                    .httpBasic()</span>
+<span class="fc" id="L174">                    .and()</span>
+<span class="fc" id="L175">                    .csrf().disable();</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L177">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+
+<span class="fc" id="L180">        }</span>
+    }
+
+    @Configuration
+    @Profile(value = &quot;uaa&quot;)
+    @EnableOAuth2Sso
+<span class="nc" id="L186">    public static class InterfaceSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        private Filter csrfHeaderFilter() {
+<span class="nc" id="L191">            return new OncePerRequestFilter() {</span>
+                @Override
+                protected void doFilterInternal(HttpServletRequest request,
+                                                HttpServletResponse response, FilterChain filterChain)
+                        throws ServletException, IOException {
+<span class="nc" id="L196">                    CsrfToken csrf = (CsrfToken) request.getAttribute(CsrfToken.class</span>
+<span class="nc" id="L197">                            .getName());</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                    if (csrf != null) {</span>
+<span class="nc" id="L199">                        Cookie cookie = WebUtils.getCookie(request, &quot;XSRF-TOKEN&quot;);</span>
+<span class="nc" id="L200">                        String token = csrf.getToken();</span>
+<span class="nc bnc" id="L201" title="All 4 branches missed.">                        if (cookie == null || token != null</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">                                &amp;&amp; !token.equals(cookie.getValue())) {</span>
+<span class="nc" id="L203">                            cookie = new Cookie(&quot;XSRF-TOKEN&quot;, token);</span>
+<span class="nc" id="L204">                            cookie.setPath(&quot;/&quot;);</span>
+<span class="nc" id="L205">                            response.addCookie(cookie);</span>
+                        }
+                    }
+<span class="nc" id="L208">                    filterChain.doFilter(request, response);</span>
+<span class="nc" id="L209">                }</span>
+            };
+        }
+
+        private CsrfTokenRepository csrfTokenRepository() {
+<span class="nc" id="L214">            HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();</span>
+<span class="nc" id="L215">            repository.setHeaderName(&quot;X-XSRF-TOKEN&quot;);</span>
+<span class="nc" id="L216">            return repository;</span>
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="nc" id="L221">            http</span>
+<span class="nc" id="L222">                    .authorizeRequests()</span>
+<span class="nc" id="L223">                    .anyRequest()</span>
+<span class="nc" id="L224">                    .authenticated()</span>
+<span class="nc" id="L225">                    .and()</span>
+<span class="nc" id="L226">                    .csrf()</span>
+<span class="nc" id="L227">                    .csrfTokenRepository(csrfTokenRepository()).and()</span>
+<span class="nc" id="L228">                    .addFilterAfter(csrfHeaderFilter(), CsrfFilter.class);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L230">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+<span class="nc" id="L232">        }</span>
+    }
+
+    @Configuration
+    @Profile(&quot;!uaa&quot;)
+<span class="fc" id="L237">    public static class NoUaaSecurity extends WebSecurityConfigurerAdapter {</span>
+        @Value(&quot;${use.ssl:false}&quot;)
+        private Boolean useSsl;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L243">            http</span>
+<span class="fc" id="L244">                    .authorizeRequests()</span>
+<span class="fc" id="L245">                    .anyRequest().authenticated()</span>
+<span class="fc" id="L246">                    .and()</span>
+<span class="fc" id="L247">                    .httpBasic();</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">            if (useSsl) {</span>
+<span class="nc" id="L249">                http.requiresChannel().anyRequest().requiresSecure();</span>
+            }
+<span class="fc" id="L251">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
