@@ -169,6 +169,7 @@ public class DatabaseLocalDumperTest {
                 dumpBinaries.getAbsolutePath(),
                 "--routines",
                 "--skip-add-locks",
+                "--skip-extended-insert",
                 "--single-transaction",
                 "--add-drop-table",
                 "--skip-comments",
