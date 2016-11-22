@@ -44,7 +44,7 @@ public class ScheduledDeleteAllDumpsTask {
     @Qualifier(value = "deleteDumpTask")
     private DeleteDumpTask deleteDumpTask;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 7000)
     public void deleteAllDumps() throws JobCreationException, AsyncTaskException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DUMPS, JobEvent.START);
         logger.debug("Running: delete all dump scheduled task ...");

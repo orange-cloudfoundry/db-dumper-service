@@ -36,7 +36,7 @@ public class ScheduledCreateDumpTask {
     @Qualifier(value = "createDumpTask")
     private CreateDumpTask createDumpTask;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 3000)
     public void createDump() throws AsyncTaskException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.CREATE_DUMP, JobEvent.START);
         logger.debug("Running: create dump scheduled task ...");

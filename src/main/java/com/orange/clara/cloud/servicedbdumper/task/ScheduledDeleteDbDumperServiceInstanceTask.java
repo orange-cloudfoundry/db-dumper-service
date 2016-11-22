@@ -49,7 +49,7 @@ public class ScheduledDeleteDbDumperServiceInstanceTask {
     @Qualifier("jobFactory")
     private JobFactory jobFactory;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 11000)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteDbDumperServiceInstance() throws JobCreationException {
         List<Job> jobs = jobRepo.findByJobTypeAndJobEvent(JobType.DELETE_DB_DUMPER_SERVICE_INSTANCE, JobEvent.START);
