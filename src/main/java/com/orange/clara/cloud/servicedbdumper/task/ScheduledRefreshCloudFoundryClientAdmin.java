@@ -23,11 +23,14 @@ public class ScheduledRefreshCloudFoundryClientAdmin {
     @Qualifier("cloudFoundryClientAsAdmin")
     private CloudFoundryClient cloudFoundryClient;
 
-    @Scheduled(fixedDelay = 900)
+    @Scheduled(fixedDelay = 12)
     public void refreshCloudFoundryClientAdmin() {
         if (cloudFoundryClient == null) {
             return;
         }
-        cloudFoundryClient.login();
+        // cloudFoundryClient.login() create each time a new token
+        // getCloudInfo call getToken() which refresh token if it expire in less than 50 seconds
+        // this is a little fix until cf-java-client v2 accept passing token
+        cloudFoundryClient.getCloudInfo();
     }
 }
