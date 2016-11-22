@@ -3,11 +3,11 @@ WD=`pwd`
 echo "Restoring all binaries..."
 echo ""
 
-mysql_version="5.7.11"
+mysql_version="5.7.16"
 mysql_global_version="5.7"
-mariadb_version="10.1.14"
+mariadb_version="10.1.19"
 mongodb_version="3.3.2"
-postgresql_version="9.5.3"
+postgresql_version="9.6.1"
 #####################################################################################
 #mysql
 #####################################################################################
