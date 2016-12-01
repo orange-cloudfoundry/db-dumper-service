@@ -8,9 +8,9 @@ Currently supported databases are:
 - mongodb
 - redis
 
-More details in the specifications at https://docs.google.com/document/d/1Y5vwWjvaUIwHI76XU63cAS8xEOJvN69-cNoCQRqLPqU/edit
+More details in the specifications at https://docs.google.com/document/d/1Y5vwWjvaUIwHI76XU63cAS8xEOJvN69-cNoCQRqLPqU/edit .
 
-See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with label "service-db-dumper"
+See also the [backlog](https://www.pivotaltracker.com/n/projects/1441714) with label "service-db-dumper".
 
 ## Requirements
 
