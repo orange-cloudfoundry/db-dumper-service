@@ -20,7 +20,7 @@ import static org.fest.assertions.Assertions.assertThat;
 public class AbstractCoreDbActionTest {
 
     @Test
-    public void runs_commandline_and_returns_output() throws Exception {
+    public void runs_commandline_and_not_returns_error() throws Exception {
         //given
         //a commandline
         String[] commandLine = {"java", "-version"};
@@ -35,16 +35,47 @@ public class AbstractCoreDbActionTest {
         BufferedReader output = cmdLineRunner.getOutput(p);
         BufferedReader error = cmdLineRunner.getError(p);
         String outputLine = "";
+        String errorLine = "";
         String line = "";
 
         while ((line = output.readLine()) != null) {
             outputLine += line;
         }
         while ((line = error.readLine()) != null) {
-            outputLine += line;
+            errorLine += line;
         }
         p.waitFor();
 
+        assertThat(outputLine).isEmpty();
+        assertThat(errorLine).isEmpty();
+    }
+
+    @Test
+    public void runs_commandline_and_returns_output() throws Exception {
+        //given
+        //a commandline
+        String[] commandLine = {"awk", "-version"};
+
+        //when
+        AbstractCoreDbAction cmdLineRunner = new AbstractCoreDbAction() {
+        };
+
+        //then
+        //command output is available:
+        Process p = cmdLineRunner.runCommandLine(commandLine);
+        BufferedReader output = cmdLineRunner.getOutput(p);
+        BufferedReader error = cmdLineRunner.getError(p);
+        String outputLine = "";
+        String errorLine = "";
+        String line = "";
+
+        while ((line = output.readLine()) != null) {
+            outputLine += line;
+        }
+        while ((line = error.readLine()) != null) {
+            errorLine += line;
+        }
+        p.waitFor();
 
         assertThat(outputLine).contains("version");
     }

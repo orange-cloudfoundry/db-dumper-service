@@ -45,7 +45,7 @@ public class CoreDumper extends AbstractCoreDbAction implements Dumper {
             databaseDumpFile = this.createDatabaseDumpFile(dbDumperServiceInstance, fileName, databaseDriver.isDumpShowable());
         } catch (Exception e) {
             this.logOutputFromProcess();
-            throw new DumpException("\nAn error occurred: " + e.getMessage() + this.getErrorMessageFromProcess(), e);
+            throw new DumpException("\nAn error occurred (see before for process errors): " + e.getMessage(), e);
         }
         logger.info("Dumping database '" + databaseRef.getName() + "' with " + databaseRef.getType() + " binary finished.");
         return databaseDumpFile;
