@@ -9,10 +9,10 @@
     <artifactId>db-dumper-service</artifactId>
     <version>1.3.1</version>
     <description>A Cloud Foundry service broker to dump and restore database on demand</description>
-    <url>https://github.com/Orange-OpenSource/</url>
+    <url>https://github.com/orange-cloudfoundry/</url>
     <organization>
         <name>Orange</name>
-        <url>https://github.com/Orange-OpenSource/db-dumper-service</url>
+        <url>https://github.com/orange-cloudfoundry/db-dumper-service</url>
     </organization>
 
     <developers>
@@ -22,7 +22,7 @@
             <name>Arthur Halet</name>
             <url>https://github.com/ArthurHlt</url>
             <organization>Orange</organization>
-            <organizationUrl>https://github.com/Orange-OpenSource</organizationUrl>
+            <organizationUrl>https://github.com/orange-cloudfoundry</organizationUrl>
         </developer>
     </developers>
     <packaging>war</packaging>
@@ -38,7 +38,7 @@
         <commons-lang3.version>3.3.2</commons-lang3.version>
         <protobuf-java.version>2.6.1</protobuf-java.version>
         <humanize.version>1.2.2</humanize.version>
-        <s3.connectors.version>2.2.5</s3.connectors.version>
+        <s3.connectors.version>2.2.7</s3.connectors.version>
     </properties>
     <distributionManagement>
         <snapshotRepository>
