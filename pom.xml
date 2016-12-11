@@ -146,6 +146,11 @@
             <version>${s3.connectors.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.jclouds.api</groupId>
             <artifactId>filesystem</artifactId>
             <version>2.0.0</version>
