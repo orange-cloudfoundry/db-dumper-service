@@ -121,12 +121,22 @@ public class FakeS3Client implements S3Client {
     }
 
     @Override
+    public boolean updateBucketCannedACL(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String s, @BinderParam(BindCannedAclToRequest.class) CannedAccessPolicy cannedAccessPolicy) {
+        return false;
+    }
+
+    @Override
     public AccessControlList getObjectACL(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String bucketName, String key) {
         return null;
     }
 
     @Override
     public boolean putObjectACL(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String bucketName, String key, @BinderParam(BindACLToXMLPayload.class) AccessControlList acl) {
+        return false;
+    }
+
+    @Override
+    public boolean updateObjectCannedACL(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String s, String s1, @BinderParam(BindCannedAclToRequest.class) CannedAccessPolicy cannedAccessPolicy) {
         return false;
     }
 
@@ -205,11 +215,26 @@ public class FakeS3Client implements S3Client {
     }
 
     @Override
+    public String uploadPartCopy(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String s, String s1, int i, String s2, String s3, String s4, long l, long l1) {
+        return null;
+    }
+
+    @Override
     public String completeMultipartUpload(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String bucketName, String key, String uploadId, @BinderParam(BindPartIdsAndETagsToRequest.class) Map<Integer, String> parts) {
         if (this.makeItFailCompleteUpload) {
             throw new RuntimeException("we make it failed");
         }
         return uploadId;
+    }
+
+    @Override
+    public Map<Integer, String> listMultipartParts(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String s, String s1, String s2) {
+        return null;
+    }
+
+    @Override
+    public ListMultipartUploadsResponse listMultipartUploads(@Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators({BucketNameValidator.class}) String s, @Nullable String s1, @Nullable Integer integer, @Nullable String s2, @Nullable String s3, @Nullable String s4) {
+        return null;
     }
 
     @Override
