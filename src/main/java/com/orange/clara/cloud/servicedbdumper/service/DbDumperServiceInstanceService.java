@@ -142,7 +142,8 @@ public class DbDumperServiceInstanceService implements ServiceInstanceService {
         ServiceInstance serviceInstance = new ServiceInstance(new CreateServiceInstanceRequest().withServiceInstanceId(serviceInstanceId))
                 .withDashboardUrl(appUri + DASHBOARD_ROUTE + instance.getDatabaseRef().getName());
         if (lastJob == null) {
-            return serviceInstance;
+            serviceInstanceLastOperation = new ServiceInstanceLastOperation("Error: job doesn't exists", OperationState.FAILED);
+            return serviceInstance.withAsync(true).withLastOperation(serviceInstanceLastOperation);
         }
         switch (lastJob.getJobEvent()) {
             case ERRORED:

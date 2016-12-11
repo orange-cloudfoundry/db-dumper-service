@@ -87,7 +87,7 @@ public abstract class AbstractCoreDbAction {
         } else {
             pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
         }
-        pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        pb.redirectErrorStream(true);
         Process process = pb.start();
 
         return process;

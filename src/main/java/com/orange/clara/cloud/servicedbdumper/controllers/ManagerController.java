@@ -16,7 +16,6 @@ import com.orange.clara.cloud.servicedbdumper.repo.DatabaseDumpFileRepo;
 import com.orange.clara.cloud.servicedbdumper.security.useraccess.UserAccessRight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -142,8 +141,10 @@ public class ManagerController extends AbstractController {
     }
 
 
-    @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET)
-    public void download(@PathVariable Integer dumpFileId, HttpServletRequest request, HttpServletResponse resp, @RequestParam(value = "original", required = false) String original)
+    @RequestMapping(value = Routes.DOWNLOAD_DUMP_FILE_ROOT + "/{dumpFileId:[0-9]+}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public
+    @ResponseBody
+    void download(@PathVariable Integer dumpFileId, HttpServletRequest request, HttpServletResponse resp, @RequestParam(value = "original", required = false) String original)
             throws IOException, DumpFileDeletedException {
         DatabaseDumpFile databaseDumpFile = getDatabaseDumpFile(dumpFileId);
         this.checkDbDumperServiceInstance(databaseDumpFile.getDbDumperServiceInstance());
@@ -170,7 +171,7 @@ public class ManagerController extends AbstractController {
 
         String fileName = DumpFileHelper.getFilePath(databaseDumpFile);
         resp.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        resp.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(this.filer.getContentLength(fileName)));
+        resp.setContentLengthLong(this.filer.getContentLength(fileName));
         InputStream inputStream = null;
         if (original == null || original.isEmpty()) {
             inputStream = filer.retrieveWithOriginalStream(fileName);
@@ -183,6 +184,7 @@ public class ManagerController extends AbstractController {
             }
 
         }
+        inputStream = new BufferedInputStream(inputStream);
         File file = new File(fileName);
         resp.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
 
@@ -192,6 +194,8 @@ public class ManagerController extends AbstractController {
             ByteStreams.copy(inputStream, outputStream);
         } finally {
             Closeables.closeQuietly(inputStream);
+            outputStream.flush();
+            resp.flushBuffer();
             Closeables.close(outputStream, true);
         }
     }

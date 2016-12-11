@@ -11,7 +11,7 @@ env:
   service_definition_id: db-dumper-service # your service broker name id for multi-db-dumper-service instances. Note db-dumper-cli-plugin leverages the default value "db-dumper-service" as default, avoid changing unless necessary
 
   JBP_CONFIG_CONTAINER_CERTIFICATE_TRUST_STORE: '{enabled: true}' # All certificates passed by cloud foundry to container are valid
-  JAVA_OPTS: -Djava.security.egd=file:/dev/urandom -Dogging.level.com.orange.clara.cloud.servicedbdumper=INFO # you can change the verbosity to: WARN, DEBUG, ERROR
+  JAVA_OPTS: -Djava.security.egd=file:/dev/urandom -Dlogging.level.com.orange.clara.cloud.servicedbdumper=INFO # you can change the verbosity to: WARN, DEBUG, ERROR
 
   broker_username: myUs3r # Broker's username which will be used by cloud foundry to manipulate the broker
   broker_password: myPasssw0rd # Broker's password which will be used by cloud foundry to manipulate the broker
