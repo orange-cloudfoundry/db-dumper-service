@@ -229,10 +229,10 @@ public class DbDumperServiceInstanceServiceTest {
     }
 
     @Test
-    public void when_getting_service_instance_and_no_last_job_it_should_return_service_instance_with_in_progress_last_operation() {
+    public void when_getting_service_instance_and_no_last_job_it_should_return_service_instance_with_failed_last_operation() {
         when(repository.findOne(anyString())).thenReturn(dbDumperServiceInstance);
         ServiceInstance serviceInstance = instanceService.getServiceInstance(serviceId);
-        this.assertServiceInstanceGetRequest(serviceInstance, false, null);
+        this.assertServiceInstanceGetRequest(serviceInstance, true, "failed");
     }
 
     @Test
