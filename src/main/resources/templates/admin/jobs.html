@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
       layout:decorator="layout">
 <body>
 
@@ -16,15 +15,15 @@
     <div th:if="${jobs != null and jobs.isEmpty() == false}">
 
 
-        <table id="jobs-table" dt:table="true"
+        <table id="jobs-table"
                class="highlight bordered responsive-table">
             <thead>
             <tr>
                 <th data-field="id">Id</th>
-                <th dt:filterable="true" data-field="type">Type</th>
+                <th data-field="type">Type</th>
                 <th data-field="lastUpdate">Last Update</th>
-                <th dt:filterable="true" data-field="jobEvent">Current event</th>
-                <th dt:sortable="false" data-field="control">Control</th>
+                <th data-field="jobEvent">Current event</th>
+                <th data-field="control">Control</th>
             </tr>
             </thead>
 

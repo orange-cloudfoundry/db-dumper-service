@@ -1,6 +1,5 @@
 package com.orange.clara.cloud.servicedbdumper.controllers.admin;
 
-import com.github.dandelion.core.web.DandelionFilter;
 import com.orange.clara.cloud.servicedbdumper.Application;
 import com.orange.clara.cloud.servicedbdumper.config.Routes;
 import com.orange.clara.cloud.servicedbdumper.model.Job;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.mock.web.MockFilterConfig;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -48,7 +46,6 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 @ActiveProfiles({"local", "test-controller", "integration"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class JobsControllerTest {
-    protected DandelionFilter dandelionFilter;
     private MockMvc mockMvc;
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -63,10 +60,7 @@ public class JobsControllerTest {
     @Before
     public void setup() throws Exception {
 
-        this.dandelionFilter = new DandelionFilter();
-        this.dandelionFilter.init(new MockFilterConfig());
-
-        this.mockMvc = webAppContextSetup(webApplicationContext).addFilter(this.dandelionFilter).build();
+        this.mockMvc = webAppContextSetup(webApplicationContext).build();
         jobScheduled = new Job();
         jobScheduled.setJobType(JobType.CREATE_DUMP);
         jobScheduled.setJobEvent(JobEvent.SCHEDULED);
