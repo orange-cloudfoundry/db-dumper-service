@@ -3,7 +3,7 @@
 name: db-dumper-service
 memory: 1G
 instances: 2 # db-dumper-service handle n instances
-path: ./target/db-dumper-service-1.3.1.war
+path: ./target/db-dumper-service-1.3.2.war
 host: db-dumper-service
 timeout: 180
 env:
