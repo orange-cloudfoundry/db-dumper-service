@@ -1,6 +1,6 @@
 # db-dumper-service [![Build Status](https://travis-ci.org/orange-cloudfoundry/db-dumper-service.svg?branch=master)](https://travis-ci.org/orange-cloudfoundry/db-dumper-service) [![Codacy Badge](https://api.codacy.com/project/badge/grade/f94fec332f4645a099a99b9b743fc8f9)](https://www.codacy.com/app/arthur-halet/db-dumper-service) [![Codacy Badge](https://api.codacy.com/project/badge/coverage/f94fec332f4645a099a99b9b743fc8f9)](https://www.codacy.com/app/arthur-halet/db-dumper-service) [![Report badge](https://img.shields.io/badge/report-latest-blue.svg)](https://rawgit.com/orange-cloudfoundry/db-dumper-service/report/index.html)
 
-A Cloud Foundry service broker to dump and restore database on demand.
+A Cloud Foundry service broker to dump and restore databases on demand.
 
 Currently supported databases are:
 - mysql
