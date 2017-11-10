@@ -5,7 +5,7 @@ echo ""
 
 mysql_version="5.7.16"
 mysql_global_version="5.7"
-mariadb_version="10.1.19"
+mariadb_version="10.2.10"
 mongodb_version="3.3.2"
 postgresql_version="9.6.1"
 #####################################################################################
