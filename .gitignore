@@ -13,3 +13,4 @@ application-orange.yml
 /reports
 /trace.txt
 /**/*MemoryLeak*
+/.idea
