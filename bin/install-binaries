@@ -34,7 +34,7 @@ if [ "$1" == "--prefer-mysql" ]; then
     rm -Rf "$finalfile"
     rm "$filepath"
 else
-    fileurl="http://nyc2.mirrors.digitalocean.com/mariadb/mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
+    fileurl="http://ftp.hosteurope.de/mirror/archive.mariadb.org//mariadb-${mariadb_version}/bintar-linux-glibc_214-x86_64/mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
     filepath="mariadb-${mariadb_version}-linux-glibc_214-x86_64.tar.gz"
     finalfile="mariadb-${mariadb_version}-linux-glibc_214-x86_64"
     echo "Installing mysql dump and restore binaries from mariadb. "
@@ -48,6 +48,11 @@ else
     if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "0" ]; then
         echo "File ${fileurl} not found, so it can't be downloaded."
         rm "$filepath"
+        exit 1
+    fi
+    echo "ada4ca5e103f4ddefb0f4d94688457610693d406ff5240f5ca6d949c94cc3e7a ${filepath}" | sha256sum --check
+    if [ "$?" != "0" ]; then
+        echo "downloaded mariadb driver file does not match sha512 signature, aborting"
         exit 1
     fi
     mkdir -p "${WD}/src/main/resources/binaries/mysql/bin"
