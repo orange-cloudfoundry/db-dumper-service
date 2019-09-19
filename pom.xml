@@ -36,7 +36,7 @@
         <java.version>1.8</java.version>
         <cloudfoundry-client.version>1.1.5.ORANGEv26</cloudfoundry-client.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
-        <protobuf-java.version>2.6.1</protobuf-java.version>
+        <protobuf-java.version>3.10.0</protobuf-java.version>
         <humanize.version>1.2.2</humanize.version>
         <s3.connectors.version>2.2.7</s3.connectors.version>
     </properties>
